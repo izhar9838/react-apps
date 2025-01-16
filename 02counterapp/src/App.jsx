@@ -9,7 +9,10 @@ function App() {
       setCounter(counter=20);
     }
     else{
-    setCounter(counter+1);
+    setCounter(preCounter=> preCounter+1);
+    setCounter(preCounter=> preCounter+1);
+    setCounter(preCounter=> preCounter+1);
+    setCounter(preCounter=> preCounter+1);
     }
     
   }
@@ -18,7 +21,10 @@ function App() {
       setCounter(counter=0);
     }
     else{
-    setCounter(counter-1);
+      setCounter(preCounter=> preCounter-1);
+      setCounter(preCounter=> preCounter-1);
+      setCounter(preCounter=> preCounter-1);
+      setCounter(preCounter=> preCounter-1);
   }
     
   }
