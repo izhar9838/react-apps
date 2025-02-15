@@ -36,20 +36,20 @@ export default function Post() {
         })
     }
   return post ?(
-    <div className='py-8'>
+    <div classNameNameName='py-8'>
         <Container>
-            <div className='flex flex-wrap w-full justify-center mb-4 relative border rounded-xl p-2 '>
+            <div classNameNameName='flex flex-wrap w-full justify-center mb-4 relative border rounded-xl p-2 '>
                 <img
                 src={appwriteService.privewFile(post.featuredImage)}
                 alt={post.title}
-                className='rounded-xl'
+                classNameNameName='rounded-xl'
                 />
                 {isAuthtor && (
-                    <div className='absolute top-6 right-6'>
+                    <div classNameNameName='absolute top-6 right-6'>
                         <Link to={`/edit-post/${post.$id}`}>
                             <Button
                             bgColor='bg-blue-500'
-                            className='mr-2'
+                            classNameNameName='mr-2'
                             >Edit</Button>
                         </Link>
                         <Button bgColor='bg-blue-500' onClick={deletePost}>
@@ -58,10 +58,10 @@ export default function Post() {
                     </div>
                 )}
             </div>
-            <div className='w-full mb-6'>
-                <h1 className='text-2xl font-bold'>{post.title}</h1>
+            <div classNameNameName='w-full mb-6'>
+                <h1 classNameNameName='text-2xl font-bold'>{post.title}</h1>
             </div>
-            <div className='browser-css'>
+            <div classNameNameName='browser-css'>
                 {parse(post.content)}
             </div>
 

@@ -29,26 +29,26 @@ function App() {
   },[length,numberAllowed,symbolAllowed,passwordGenerator])
   return (
     <>
-      <div className='max-w-full h-full bg-cyan-500 m-1  '>
-        <div className=' '>
-          <input type="text" className="max-w-full w-2/3 h-9 bg-slate-700 m-3 p-4 rounded-md" placeholder='Password' value={password}
+      <div classNameNameName='max-w-full h-full bg-cyan-500 m-1  '>
+        <div classNameNameName=' '>
+          <input type="text" classNameNameName="max-w-full w-2/3 h-9 bg-slate-700 m-3 p-4 rounded-md" placeholder='Password' value={password}
           readOnly />
           
         </div>
-        <div className='flex justify-start items-center'>
-        <div className=' p-1 ml-2'>
+        <div classNameNameName='flex justify-start items-center'>
+        <div classNameNameName=' p-1 ml-2'>
           <input type="range" min={6} max={100} name='range' onChange={(e)=>{
             setLength(e.target.value);
           }} />
           <label htmlFor="range">Range {length}</label>
         </div>
-        <div className=' p-1 ml-2'>
+        <div classNameNameName=' p-1 ml-2'>
           <input type="checkbox"  name='number' defaultChecked={numberAllowed} onChange={()=>{
             setNumberAllowed((prev)=>!prev);
           }}/>
           <label htmlFor="number">Numbers</label>
         </div>
-        <div className=' p-1 ml-2'>
+        <div classNameNameName=' p-1 ml-2'>
           <input type="checkbox"  name='symbol' defaultChecked={symbolAllowed} onChange={()=>{
             setSymbolAllowed(pre=>!pre);
           }} />

@@ -23,7 +23,7 @@ function EditPost() {
     },[slug,navigate])
 
   return post ?(
-    <div className='py-8'>
+    <div classNameNameName='py-8'>
         <Container>
             <PostForm post={post}/>
         </Container>

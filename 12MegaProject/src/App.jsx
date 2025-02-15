@@ -30,7 +30,7 @@ function App() {
   }, [])
 
   return !loading ? (
-    <div className='min-w-screen min min-h-screen bg-gray-600 flex justify-center content-center flex-col flex-wrap'>
+    <div classNameNameName='min-w-screen min min-h-screen bg-gray-600 flex justify-center content-center flex-col flex-wrap'>
       <Header/>
       <main>
         TODO:  <Outlet />

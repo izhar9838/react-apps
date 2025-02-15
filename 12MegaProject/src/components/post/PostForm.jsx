@@ -71,8 +71,8 @@ useEffect(()=>{
 
 },[watch,slugtransform,setValue])
   return (
-    <form onSubmit={handleSubmit(submit)} className='flex flex-wrap'>
-      <div className='w-2/3 px-2'>
+    <form onSubmit={handleSubmit(submit)} classNameNameName='flex flex-wrap'>
+      <div classNameNameName='w-2/3 px-2'>
         <Input
         lable='Title'
         placeholder='Title'
@@ -83,7 +83,7 @@ useEffect(()=>{
         <Input
         lable='Slug :'
         placeholder='Slug'
-        className='mt-4'
+        classNameNameName='mt-4'
         {...register('slug',{
           required:true,
         })}
@@ -99,19 +99,19 @@ useEffect(()=>{
         />
 
       </div>
-      <div className='w-1/3 px-2'>
+      <div classNameNameName='w-1/3 px-2'>
         <Input
           label='Featured Image :'
           type='file'
-          className='mt-4'
+          classNameNameName='mt-4'
           accept='image/png,image/jpeg,image/jpg,image/gif'
           {...register('image',{
             required:!post
           })}
         />
         {post && (
-          <div className='w-full mb-4'>
-            <img src={authService.privewFile(post.featuredImage)} alt={post.title} className='rounded-lg' />
+          <div classNameNameName='w-full mb-4'>
+            <img src={authService.privewFile(post.featuredImage)} alt={post.title} classNameNameName='rounded-lg' />
           </div>
         )}
         <Select
@@ -122,7 +122,7 @@ useEffect(()=>{
         })}
         />
         <Button type='submit' bgColor={post ? 'bg-green-500' : undefined}
-        className='w-full'
+        classNameNameName='w-full'
         >
           {post ? 'Update' : 'Submit'}
         </Button>

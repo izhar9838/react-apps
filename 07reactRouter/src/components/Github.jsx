@@ -4,8 +4,8 @@ import { useLoaderData } from 'react-router-dom';
 export default function Github() {
    const data= useLoaderData()
     return(
-        <div className='text-center w-full h-screen flex  justify-center items-center'>
-            <h1 className='text-3xl text-center'>Github Follower : {data.followers}</h1>
+        <div classNameNameName='text-center w-full h-screen flex  justify-center items-center'>
+            <h1 classNameNameName='text-3xl text-center'>Github Follower : {data.followers}</h1>
             <img src={data.avatar_url} alt="github photo" />
         </div>
             
