@@ -198,13 +198,15 @@ const PersonalDetails = ({ control }) => (
               }}
               value={field.value ? undefined : ''}
             />
-            <label
-              htmlFor="image-upload"
-              className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
-            >
-              Upload Current Photo
-            </label>
-            {field.value && (
+            {!field.value && ( // Only show the upload button if no file is selected
+              <label
+                htmlFor="image-upload"
+                className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
+              >
+                Upload Current Photo
+              </label>
+            )}
+            {field.value && ( // Show the preview and remove button if a file is selected
               <div className="mt-2">
                 <img
                   src={URL.createObjectURL(field.value)}
