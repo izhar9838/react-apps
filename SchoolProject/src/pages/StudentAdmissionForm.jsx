@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 
+const validateEmail=(value) => {
+  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+  if (!emailRegex.test(value)) {
+    return 'Invalid email address';
+  }
+  return true;
+};
+
 const MultiStepForm = () => {
   const [step, setStep] = useState(1); // Track current step
   const { control, handleSubmit, trigger } = useForm(); // React Hook Form
@@ -26,16 +34,16 @@ const MultiStepForm = () => {
       case 1:
         return <PersonalDetails control={control} />;
       case 2:
-        return <Address control={control} />;
+        return <Contact_Details control={control} />;
       case 3:
-        return <StudyDetails control={control} />;
+        return <Academic_Info control={control} />;
       case 4:
         return <FeesDetails control={control} />;
       default:
         return null;
     }
   };
-
+  
   return (
     <div className="min-h-[70vh] flex flex-col justify-center items-center bg-gray-100 p-4">
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6">
@@ -80,15 +88,18 @@ const PersonalDetails = ({ control }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
     <Controller
-      name="name"
+      name="admissionId"
       control={control}
       defaultValue=""
-      rules={{ required: "Name is required" }}
+      rules={{
+        required: "admission id is required",
+        
+      }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <input
             {...field}
-            placeholder="Name"
+            placeholder="admission id"
             className="w-full p-2 border rounded"
           />
           {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
@@ -96,15 +107,171 @@ const PersonalDetails = ({ control }) => (
       )}
     />
     <Controller
-      name="email"
+      name="firstName"
+      control={control}
+      defaultValue=""
+      rules={{ required: "Name is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <input
+            {...field}
+            placeholder="firstName"
+            className="w-full p-2 border rounded"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    <Controller
+      name="lastName"
       control={control}
       defaultValue=""
       rules={{
-        required: "Email is required",
-        pattern: {
-          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-          message: "Invalid email address",
-        },
+        required: "lastName is required",
+        
+      }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <input
+            {...field}
+            placeholder="lastName"
+            className="w-full p-2 border rounded"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    <Controller
+      name="DOB"
+      control={control}
+      defaultValue=""
+      rules={{ required: "DOB is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <input
+            {...field}
+            placeholder="DOB"
+            type="date"
+            className="w-full p-2 border rounded"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    <Controller
+      name="gender"
+      control={control}
+      defaultValue=""
+      rules={{ required: "gender is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+        <select
+          {...field}
+          className="w-full p-2 border rounded"
+        >
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Prefer not to say">Prefer not to say</option>
+        </select>
+        {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+      </div>
+      )}
+    />
+    <Controller
+      name="image"
+      control={control}
+      defaultValue={null}
+      rules={{ required: "Photo is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <div className="relative">
+            <input
+              {...field}
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                field.onChange(file);
+              }}
+              value={field.value ? undefined : ''}
+            />
+            <label
+              htmlFor="image-upload"
+              className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
+            >
+              Upload Current Photo
+            </label>
+            {field.value && (
+              <div className="mt-2">
+                <img
+                  src={URL.createObjectURL(field.value)}
+                  alt="Preview"
+                  className="w-24 h-24 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => field.onChange(null)}
+                  className="mt-2 text-red-500 text-sm hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+          </div>
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    
+  </div>
+);
+
+// Step 2: Contact Detials
+const Contact_Details = ({ control }) => (
+  
+  <div>
+    <h2 className="text-xl font-semibold mb-4">Contact Details</h2>
+    <Controller
+      name="contact_details.address"
+      control={control}
+      defaultValue=""
+      rules={{ required: "Address is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <input
+            {...field}
+            placeholder="Address"
+            className="w-full p-2 border rounded"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    <Controller
+      name="contact_details.phoneNumber"
+      control={control}
+      defaultValue=""
+      rules={{ required: "phoneNumber is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <input
+            {...field}
+            placeholder="Phone Number"
+            className="w-full p-2 border rounded"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    <Controller
+      name="contact_details.email"
+      control={control}
+      defaultValue=""
+      rules={{ required: "Email is required" ,
+                validate:validateEmail
       }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
@@ -118,15 +285,31 @@ const PersonalDetails = ({ control }) => (
       )}
     />
     <Controller
-      name="phone"
+      name="contact_details.guardianName"
       control={control}
       defaultValue=""
-      rules={{ required: "Phone is required" }}
+      rules={{ required: "Guardian Name is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <input
             {...field}
-            placeholder="Phone"
+            placeholder="Guardian Name"
+            className="w-full p-2 border rounded"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    <Controller
+      name="contact_details.guardianNumber"
+      control={control}
+      defaultValue=""
+      rules={{ required: "Guardian Number is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <input
+            {...field}
+            placeholder="Guardian Number"
             className="w-full p-2 border rounded"
           />
           {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
@@ -136,91 +319,20 @@ const PersonalDetails = ({ control }) => (
   </div>
 );
 
-// Step 2: Address
-const Address = ({ control }) => (
-  <div>
-    <h2 className="text-xl font-semibold mb-4">Address</h2>
-    <Controller
-      name="address.street"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Street is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <input
-            {...field}
-            placeholder="Street"
-            className="w-full p-2 border rounded"
-          />
-          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
-        </div>
-      )}
-    />
-    <Controller
-      name="address.city"
-      control={control}
-      defaultValue=""
-      rules={{ required: "City is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <input
-            {...field}
-            placeholder="City"
-            className="w-full p-2 border rounded"
-          />
-          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
-        </div>
-      )}
-    />
-    <Controller
-      name="address.state"
-      control={control}
-      defaultValue=""
-      rules={{ required: "State is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <input
-            {...field}
-            placeholder="State"
-            className="w-full p-2 border rounded"
-          />
-          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
-        </div>
-      )}
-    />
-    <Controller
-      name="address.zip"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Zip Code is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <input
-            {...field}
-            placeholder="Zip Code"
-            className="w-full p-2 border rounded"
-          />
-          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
-        </div>
-      )}
-    />
-  </div>
-);
-
-// Step 3: Study Details
-const StudyDetails = ({ control }) => (
+// Step 3: Academic Info
+const Academic_Info = ({ control }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Study Details</h2>
     <Controller
-      name="study.course"
+      name="academic_info.rollNo"
       control={control}
       defaultValue=""
-      rules={{ required: "Course is required" }}
+      rules={{ required: "Roll No is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <input
             {...field}
-            placeholder="Course"
+            placeholder="Roll No"
             className="w-full p-2 border rounded"
           />
           {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
@@ -228,15 +340,15 @@ const StudyDetails = ({ control }) => (
       )}
     />
     <Controller
-      name="study.year"
+      name="academic_info.standard"
       control={control}
       defaultValue=""
-      rules={{ required: "Year is required" }}
+      rules={{ required: "Standard is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <input
             {...field}
-            placeholder="Year"
+            placeholder="Standard"
             className="w-full p-2 border rounded"
           />
           {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
@@ -244,15 +356,31 @@ const StudyDetails = ({ control }) => (
       )}
     />
     <Controller
-      name="study.institution"
+      name="academic_info.section"
       control={control}
       defaultValue=""
-      rules={{ required: "Institution is required" }}
+      rules={{ required: "Section is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <input
             {...field}
-            placeholder="Institution"
+            placeholder="Section"
+            className="w-full p-2 border rounded"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+        </div>
+      )}
+    />
+    <Controller
+      name="academic_info.academic_year"
+      control={control}
+      defaultValue=""
+      rules={{ required: "Academic year is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <input
+            {...field}
+            placeholder="Academic year"
             className="w-full p-2 border rounded"
           />
           {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
@@ -267,7 +395,7 @@ const FeesDetails = ({ control }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Fees Details</h2>
     <Controller
-      name="fees.amount"
+      name="fees_details.amount"
       control={control}
       defaultValue=""
       rules={{ required: "Amount is required" }}
@@ -282,21 +410,53 @@ const FeesDetails = ({ control }) => (
         </div>
       )}
     />
+    
     <Controller
-      name="fees.paymentMethod"
+  name="fees_details.fee_type"
+  control={control}
+  defaultValue={[]}
+  rules={{ required: "Fee Type is required" }}
+  render={({ field, fieldState: { error } }) => (
+    <div className="mb-4">
+      {["Tution Fee", "Examination Fee", "Other"].map((option) => (
+        <div key={option}>
+          <label>
+            <input
+              type="checkbox"
+              value={option}
+              checked={field.value.includes(option)} // Check if option is in the array
+              onChange={(e) => {
+                const value = e.target.value;
+                const newValue = field.value.includes(value)
+                  ? field.value.filter((v) => v !== value) // Deselect option
+                  : [...field.value, value]; // Select option
+                field.onChange(newValue); // Pass the updated array of selected values
+              }}
+            />
+            {option}
+          </label>
+        </div>
+      ))}
+      {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
+    </div>
+  )}
+/>
+
+    <Controller
+      name="fees_details.payment_mode"
       control={control}
       defaultValue=""
-      rules={{ required: "Payment Method is required" }}
+      rules={{  }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <select
             {...field}
             className="w-full p-2 border rounded"
           >
-            <option value="">Select Payment Method</option>
-            <option value="Credit Card">Credit Card</option>
-            <option value="Debit Card">Debit Card</option>
-            <option value="Net Banking">Net Banking</option>
+            <option value="">Select Payment Mode</option>
+            <option value="Cash">Cash</option>
+            <option value="Bank Trasnfer">Bank Transfer</option>
+            <option value="UPI">UPI</option>
           </select>
           {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
         </div>
