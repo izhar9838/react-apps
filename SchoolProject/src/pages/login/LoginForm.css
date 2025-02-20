@@ -1,0 +1,114 @@
+/* Center the login form on the screen */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 92vh;
+    background: linear-gradient(135deg, #e0cff2, #d7e2f5);
+    padding: 20px;
+  }
+  
+  /* Styling for the login box */
+  .login-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .login-box h2 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .login-box p {
+    margin-bottom: 20px;
+    color: #666;
+  }
+  
+  /* Styling for the form */
+  .login-form .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+  .login-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .login-form .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+  
+  .login-form .form-group input:focus {
+    border-color: #6a11cb;
+  }
+  
+  /* Styling for the login button */
+  .login-button {
+    width: 100%;
+    padding: 12px;
+    background: #6a11cb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .login-button:hover {
+    background: #2575fc;
+  }
+  
+  /* Styling for the signup link */
+  .signup-link {
+    margin-top: 15px;
+    color: #666;
+  }
+  
+  .signup-link a {
+    color: #6a11cb;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .signup-link a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 480px) {
+    .login-box {
+      padding: 20px;
+    }
+  
+    .login-box h2 {
+      font-size: 20px;
+    }
+  
+    .login-box p {
+      font-size: 14px;
+    }
+  
+    .login-form .form-group input {
+      font-size: 14px;
+    }
+  
+    .login-button {
+      font-size: 14px;
+    }
+  }

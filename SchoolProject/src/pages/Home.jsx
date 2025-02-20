@@ -6,7 +6,7 @@ function Home() {
   const navigate=useNavigate();
   return (
     <>
-  <section class="bg-blue-500 text-white py-20 w-100%">
+  <section class="bg-blue-500 text-white py-20 w-100% h-[92vh] flex flex-wrap items-center">
     <div class="container mx-auto text-center">
       <h2 class="text-4xl font-bold mb-4">Welcome to S.M Central Academy</h2>
       <p class="text-lg mb-8">Empowering students to achieve excellence in education and life.</p>

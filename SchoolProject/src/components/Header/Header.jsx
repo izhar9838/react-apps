@@ -1,14 +1,42 @@
-import React ,{useState}from 'react'
-import { useSelector } from 'react-redux';
+import React ,{useState,useEffect,useRef}from 'react'
+import { useSelector,useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../../store/authSlice';
 import './Header.css'
 import {Menu,X} from 'lucide-react';
 
 function Header() {
-    const authStatus = useSelector(state => state.auth.status);
+    const authStatus = useSelector(state => state.auth.isAuthenticated);
+    const dispatch=useDispatch();
     const navigate = useNavigate();
     const [isOpen ,setIsOpen]=useState(false);
     const toggleButton=()=>setIsOpen(!isOpen);
+    const menuRef = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                menuRef.current &&
+                !menuRef.current.contains(event.target) &&
+                !event.target.closest('.md\\:hidden') // Ensure the toggle button is not clicked
+              ) {
+                setIsOpen(false); // Close the menu
+              }
+        };
+    
+        // Add event listener when the component mounts
+        document.addEventListener('mousedown', handleClickOutside);
+    
+        // Clean up the event listener when the component unmounts
+        return () => {
+          document.removeEventListener('mousedown', handleClickOutside);
+        };
+      }, []);
+      const logoutHandler=(e)=>{
+        e.preventDefault();
+        dispatch(logout())
+        navigate("/")
+
+      }
     const navItems=[
         {
             name:"Home",
@@ -27,7 +55,7 @@ function Header() {
         },
         {
             name:"Login",
-            link:"/",
+            link:"/login",
             status:!authStatus
         },
     ]
@@ -46,7 +74,10 @@ function Header() {
                                 <button onClick={()=>navigate(item.link)} className='cursor-pointer nav-button w-full h-full font-normal'>{item.name}</button>
                             </li>
                         ):null)
+                        
                     }
+                    {authStatus && <li className='pl-2 pr-2 nav-li'><button onClick={logoutHandler} className='cursor-pointer nav-button w-full h-full font-normal'>Log out</button></li>}
+                    
                 </ul>
             </div>
             <div className='md:hidden mr-3'>
@@ -56,7 +87,7 @@ function Header() {
             </div>
             {
                 isOpen && (
-                   <div className='flex basis-full flex-col items-center mob-nav '>
+                   <div ref={menuRef} className='flex basis-full flex-col items-center mob-nav '>
                         <ul className='w-full flex flex-wrap flex-col justify-around items-center ' >
                             {
                                 navItems.map(item=>item.status?(
@@ -65,6 +96,7 @@ function Header() {
                                     </li>
                                 ):null)
                             }
+                            {authStatus && <li className='pl-2 pr-2 nav-li'><button onClick={logoutHandler} className='cursor-pointer nav-button w-full h-full font-normal'>Log out</button></li>}
                         </ul>
                    </div> 
                 )

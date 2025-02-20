@@ -97,9 +97,13 @@ const PersonalDetails = ({ control }) => (
       }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
+          <label htmlFor="admissionId" className="block  font-medium text-gray-700">
+        Admission Id
+        </label>
           <input
+            id="admissionId"
             {...field}
-            placeholder="admission id"
+
             className="w-full p-2 border rounded"
           />
           {error && <p className="text-red-500 text-sm mt-1">{error.message}</p>}
@@ -113,7 +117,11 @@ const PersonalDetails = ({ control }) => (
       rules={{ required: "Name is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
+          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+            First Name
+          </label>
           <input
+            id="firstName"
             {...field}
             placeholder="firstName"
             className="w-full p-2 border rounded"
@@ -132,7 +140,11 @@ const PersonalDetails = ({ control }) => (
       }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
+          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+            Last Name
+          </label>
           <input
+            id="lastName"
             {...field}
             placeholder="lastName"
             className="w-full p-2 border rounded"
@@ -148,7 +160,11 @@ const PersonalDetails = ({ control }) => (
       rules={{ required: "DOB is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
+          <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
+            Date of Birth
+          </label>
           <input
+            id="dob"
             {...field}
             placeholder="DOB"
             type="date"
@@ -165,7 +181,11 @@ const PersonalDetails = ({ control }) => (
       rules={{ required: "gender is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
+        <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+          Select Gender
+        </label>
         <select
+          id="gender"
           {...field}
           className="w-full p-2 border rounded"
         >
@@ -203,7 +223,7 @@ const PersonalDetails = ({ control }) => (
                 htmlFor="image-upload"
                 className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
               >
-                Upload Current Photo
+                Upload 
               </label>
             )}
             {field.value && ( // Show the preview and remove button if a file is selected
@@ -259,7 +279,11 @@ const Contact_Details = ({ control }) => (
       rules={{ required: "phoneNumber is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
+          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+        Phone Number
+          </label>
           <input
+          id="phoneNumber"
             {...field}
             placeholder="Phone Number"
             className="w-full p-2 border rounded"
