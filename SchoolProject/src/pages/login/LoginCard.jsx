@@ -14,10 +14,7 @@ function LoginCard() {
     <div className=' min-h-[70vh]  flex justify-around flex-wrap items-center card-container'>
       <div className='bg-white rounded-lg shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] p-5 card'>
       <button onClick={() => {
-    // Example data you want to pass
     const loginData = { role: 'student' };
-
-    // Navigate to /login/admin and pass the data via state
     navigate('loginForm', { state: { loginData } });
   }} className=''>
       <img src={studentCard} alt="" className='card_image'/>

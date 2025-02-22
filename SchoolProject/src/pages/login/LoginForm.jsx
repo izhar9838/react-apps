@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import axios from 'axios'
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../store/authSlice";
+import {store} from '../../store/store'
 
 const LoginForm = () => {
     const location=useLocation();
@@ -24,9 +25,16 @@ const LoginForm = () => {
           'Content-Type':'application/json',
         }
       })
-      const {user,token}=response.data;
-      localStorage.setItem('jwtToken',token);
-      dispatch(loginSuccess({token,user}))
+      console.log(response);
+      const{token,user}=response.data;
+      console.log('Token:', token, 'User:', user);
+      
+      
+      dispatch(loginSuccess({token,user}));
+      console.log('Redux state after login:', store.getState().auth);
+
+      
+      
       navigate("/")
 
       
@@ -67,7 +75,7 @@ const LoginForm = () => {
           <input
             type="hidden"
             name="role"
-            value={loginData.role} // Replace with your dynamic value if necessary
+            value={loginData?.role|| ''} // Replace with your dynamic value if necessary
             {...register('role')}
           />
           

@@ -2,7 +2,7 @@ import React from 'react';
 
 const FooterSection = ({ title, content }) => {
   return (
-    <div classNameName="footer-section">
+    <div className="footer-section">
       <h3>{title}</h3>
       {Array.isArray(content) ? (
         <ul>
