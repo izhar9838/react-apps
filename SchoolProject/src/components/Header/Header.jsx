@@ -7,6 +7,7 @@ import {Menu,X} from 'lucide-react';
 
 function Header() {
     const authStatus = useSelector(state => state.auth.isAuthenticated);
+    const authRole=useSelector(state=>state.auth?.user?.role);
     const dispatch=useDispatch();
     const navigate = useNavigate();
     const [isOpen ,setIsOpen]=useState(false);
@@ -62,7 +63,7 @@ function Header() {
 
   return (
     <header>
-        <div className='w-full  h-15 flex flex-wrap justify-between items-center nav-bar'>
+        <div className='bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 w-full  min-h-[7vh]  flex flex-wrap justify-between items-center nav-bar'>
             <div className='w-1/4'>
                 <h1>School Logo</h1>
             </div>
@@ -75,6 +76,9 @@ function Header() {
                             </li>
                         ):null)
                         
+                    }
+                    {
+                        (authStatus && authRole==='admin')&& <li className='pl-2 pr-2 nav-li'><button onClick={()=>navigate('admin')} className='cursor-pointer nav-button w-full h-full font-normal'>Admin</button></li>
                     }
                     {authStatus && <li className='pl-2 pr-2 nav-li'><button onClick={logoutHandler} className='cursor-pointer nav-button w-full h-full font-normal'>Log out</button></li>}
                     
@@ -96,7 +100,11 @@ function Header() {
                                     </li>
                                 ):null)
                             }
+                            {
+                            (authStatus && authRole==='admin')&& <li className='pl-2 pr-2 nav-li'><button onClick={()=>navigate('admin')} className='cursor-pointer nav-button w-full h-full font-normal'>Admin</button></li>
+                            }
                             {authStatus && <li className='pl-2 pr-2 nav-li'><button onClick={logoutHandler} className='cursor-pointer nav-button w-full h-full font-normal'>Log out</button></li>}
+                            
                         </ul>
                    </div> 
                 )

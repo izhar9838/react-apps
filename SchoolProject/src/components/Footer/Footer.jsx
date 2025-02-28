@@ -4,7 +4,7 @@ import './Footer.css';
 
 const Footer = () => {
   return (
-    <footer className="footer bottom-0 w-100%">
+    <footer className="footer bottom-0 w-100% bg-gradient-to-r from-green-50 via-emerald-50 to-green-50">
       <div className="footer-container">
         <FooterSection 
           title="About Us" 

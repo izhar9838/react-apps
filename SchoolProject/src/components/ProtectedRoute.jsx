@@ -1,16 +1,19 @@
-import { useSelector,useDispatch } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import { logout } from '../store/authSlice';
-
+import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ children }) => {
-  const authStatus = useSelector(state => state.auth?.isAuthenticated);
-  const userRole = useSelector(state => state.auth?.user?.role);
-  const disPatch=useDispatch();
-  if (!authStatus || userRole !== 'admin') {
-    disPatch(logout());
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
+  // Check if user is admin for admin routes
+  if (window.location.pathname.startsWith('/admin') && user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };
+
 export default ProtectedRoute;

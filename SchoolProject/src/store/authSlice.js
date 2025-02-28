@@ -4,7 +4,7 @@ const channel = new BroadcastChannel('auth_channel');
 const loadStateFromStorage = () => {
   const token = localStorage.getItem('authToken');
   const user = JSON.parse(localStorage.getItem('authUser') || 'null');
-  console.log('Loaded from storage:', { token, user });
+  // console.log('Loaded from storage:', { token, user });
   return {
     token: token || null,
     isAuthenticated: !!token,
@@ -20,12 +20,13 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         localStorage.setItem('authToken', action.payload.token);
+        localStorage.setItem('authUser', JSON.stringify(action.payload.user));
         
-        console.log('loginSuccess dispatched:', {
-          token: state.token,
-          isAuthenticated: state.isAuthenticated,
-          user: state.user,
-        });
+        // console.log('loginSuccess dispatched:', {
+        //   token: state.token,
+        //   isAuthenticated: state.isAuthenticated,
+        //   user: state.user,
+        // });
         
         
       },
@@ -34,6 +35,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser')
         channel.postMessage('logout'); // Ensure this runs
         console.log('logout dispatched');
       },
