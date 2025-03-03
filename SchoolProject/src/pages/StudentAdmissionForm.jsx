@@ -2,6 +2,8 @@ import React, { useState,useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Modal from "./Modal";
 import axios from 'axios';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 const validateEmail = (value) => {
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
   if (!emailRegex.test(value)) {
@@ -356,13 +358,13 @@ const PersonalDetails = ({ control }) => (
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <label
-            htmlFor="dob"
+            htmlFor="DOB"
             className="block text-sm lg:text-lg font-medium text-gray-600"
           >
             Date of Birth
           </label>
           <input
-            id="dob"
+            id="DOB"
             {...field}
             type="date"
             className="w-full p-2 border rounded"
@@ -832,31 +834,49 @@ const User_Password = ({ control }) => (
         </div>
       )}
     />
-    <Controller
-      name="userPass.password"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Password is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Password
-          </label>
+
+<Controller
+  name="userPass.password"
+  control={control}
+  defaultValue=""
+  rules={{ required: "Password is required" }}
+  render={({ field, fieldState: { error } }) => {
+    const [showPassword, setShowPassword] = useState(false);
+
+    return (
+      <div className="mb-4">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-600 lg:text-lg"
+        >
+          Password
+        </label>
+        <div className="relative">
           <input
             id="password"
             {...field}
-
-            className="w-full p-2 border rounded"
+            type={showPassword ? "text" : "password"}
+            className="w-full p-2 border rounded pr-10" // Added pr-10 for padding-right to accommodate the icon
           />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 flex items-center pr-3"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <FaEyeSlash className="text-gray-500" />
+            ) : (
+              <FaEye className="text-gray-500" />
+            )}
+          </button>
         </div>
-      )}
-    />
+        {error && (
+          <p className="text-red-500 text-sm mt-1">{error.message}</p>
+        )}
+      </div>
+    );
+  }}
+/>
     
   </div>
 );

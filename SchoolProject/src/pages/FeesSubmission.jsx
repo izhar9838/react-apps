@@ -2,6 +2,7 @@ import React, { useState ,useRef} from "react";
 import { useForm, Controller } from "react-hook-form";
 import Modal from "./Modal";
 import "./FeesSubmission.css"; // Optional external CSS if needed
+import axios from "axios";
 
 const FeeSubmissionForm = () => {
   const { control, handleSubmit, reset, formState: { errors } } = useForm({
@@ -28,17 +29,21 @@ const FeeSubmissionForm = () => {
     setIsSubmitting(true); // Show loading state
     try {
       // Simulate an API call
+      const token = localStorage.getItem('authToken');
      
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          Math.random() > 0.2 ? resolve() : reject(new Error("Submission failed"));
-        }, 1000);
-      });
-
+      const response= await axios.post("http://localhost:9090/api/admin/feesSubmission",feesData,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(JSON.stringify(response.data));
+      
       setModal({
         isOpen: true,
         title: "Success!",
-        message: "Your form has been submitted successfully.",
+        message: "Your Fees has been submitted successfully.",
         isSuccess: true,
       });
       reset();

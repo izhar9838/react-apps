@@ -35,6 +35,15 @@
     margin-bottom: 20px;
     text-align: left;
   }
+  .form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group input {
+    padding-right: 40px; /* Make space for the eye icon */
+    width: 100%;
+  }
   
   .login-form .form-group label {
     display: block;

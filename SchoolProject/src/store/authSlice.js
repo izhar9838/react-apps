@@ -3,7 +3,7 @@ const channel = new BroadcastChannel('auth_channel');
 // Load initial state from localStorage
 const loadStateFromStorage = () => {
   const token = localStorage.getItem('authToken');
-  const user = JSON.parse(localStorage.getItem('authUser') || 'null');
+  const user = JSON.parse(localStorage.getItem('authUser') || '{}');
   // console.log('Loaded from storage:', { token, user });
   return {
     token: token || null,
