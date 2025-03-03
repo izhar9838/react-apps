@@ -1,60 +1,91 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-*{
-    box-sizing: border-box;
-    font-family: "Poppins", serif;
+
+* {
+  box-sizing: border-box;
+  font-family: "Poppins", serif;
 }
 
-.nav-button{
+.nav-button {
   background-color: transparent;
-  border: 2px solid transparent; /* Initial border */
+  border: 2px solid transparent;
   position: relative;
   cursor: pointer;
   outline: none;
+  display: inline-block; /* Ensure button width matches text */
 }
-.nav-button::after{
+
+/* Underline animation for desktop */
+.nav-button::after {
   content: '';
   position: absolute;
-  left: 0;
+  left: 50%; /* Center the underline */
+  transform: translateX(-50%); /* Center align */
   bottom: 0;
   width: 0;
   height: 2px;
   background-color: rgb(3, 6, 15);
   transition: width 0.3s ease;
 }
-.nav-button:hover::after{
-    width: 100%;
+
+.nav-button:hover::after {
+  width: 100%; /* Matches text width due to inline-block */
 }
-li{
-  color:rgb(3, 6, 15);
-}
-.mob-nav{
+
+/* Mobile navigation styles */
+.mob-nav {
   display: none;
 }
-@media (max-width:778px) {
-  .mob-nav{
+
+@media (max-width: 767px) {
+  .mob-nav {
     display: block;
     width: 100%;
     position: absolute;
     top: 6vh;
-    animation: slideIn  .2s ease-in-out  forwards ;
+    animation: slideIn 0.2s ease-in-out forwards;
     background: linear-gradient(to right, var(--tw-gradient-stops));
     z-index: 1000;
   }
-  .mob-nav ul li{
+
+  .mob-nav ul li {
     margin: 3px 0;
   }
-  .mob-nav ul:first-child{
+
+  .mob-nav ul:first-child {
     margin: 5px 0 3px 0;
   }
-  .mob-nav ul:last-child{
+
+  .mob-nav ul:last-child {
     padding: 3px 0 5px 0;
   }
+
+  /* Underline animation for mobile nav */
+  .mob-nav .nav-button::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background-color: rgb(27, 22, 22); /* Match text color in mob-nav */
+    transition: width 0.3s ease;
+  }
+
+  .mob-nav .nav-button:hover::after {
+    width: 100%;
+  }
+
   @keyframes slideIn {
-    0%{
+    0% {
       transform: translateX(100%);
     }
-    100%{
+    100% {
       transform: translateX(0);
     }
   }
+}
+
+li {
+  color: rgb(3, 6, 15);
 }
