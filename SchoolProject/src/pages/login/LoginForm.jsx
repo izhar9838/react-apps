@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../../store/authSlice";
 import { store } from '../../store/store';
 import Home from "../Home";
-import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons from react-icons
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const LoginForm = () => {
     const location = useLocation();
@@ -16,12 +16,13 @@ const LoginForm = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const authStatus = useSelector(state => state.auth?.isAuthenticated);
-    const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+    const [showPassword, setShowPassword] = useState(false);
+    const [isExiting, setIsExiting] = useState(false); // State for exit animation
 
     const onSubmit = async (data) => {
         try {
             console.log(data);
-            const response = await axios.post('http://localhost:9090/api/login', data, {
+            const response = await axios.post('http://localhost:9090/api/public/login', data, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -39,16 +40,22 @@ const LoginForm = () => {
                 navigate("/", { replace: true });
             }
         } catch (error) {
-            console.log("Login failed", error.response );
-            
-            
+            console.log("Login failed", error.response);
         }
+    };
+
+    const handleForgotPassword = (e) => {
+        e.preventDefault();
+        setIsExiting(true);
+        setTimeout(() => {
+            navigate('/forgot-password');
+        }, 500); // Match animation duration
     };
 
     if (!authStatus) {
         return (
             <div className="login-container">
-                <div className="login-box">
+                <div className={`login-box ${isExiting ? 'fade-out' : 'fade-in'}`}>
                     <h2>Welcome Back</h2>
                     <p>Please log in to your account</p>
                     <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
@@ -65,7 +72,7 @@ const LoginForm = () => {
                         <div className="form-group" style={{ position: 'relative' }}>
                             <label htmlFor="password">Password</label>
                             <input
-                                type={showPassword ? "text" : "password"} // Toggle between text and password
+                                type={showPassword ? "text" : "password"}
                                 id="password"
                                 {...register('password', { required: 'Password is required' })}
                             />
@@ -74,7 +81,7 @@ const LoginForm = () => {
                                 style={{
                                     position: 'absolute',
                                     right: '10px',
-                                    top: '65%', // Adjust based on your styling
+                                    top: '65%',
                                     transform: 'translateY(-50%)',
                                     cursor: 'pointer'
                                 }}
@@ -94,6 +101,16 @@ const LoginForm = () => {
                         <button type="submit" className="login-button">
                             Log In
                         </button>
+
+                        <p className="mt-3 text-center text-sm text-gray-600">
+                            <a
+                                href="/forgot-password"
+                                onClick={handleForgotPassword}
+                                className="text-blue-600 hover:underline hover:text-blue-800"
+                            >
+                                Forgot Password?
+                            </a>
+                        </p>
                     </form>
 
                     <div className="signup-link">

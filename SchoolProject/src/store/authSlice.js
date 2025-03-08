@@ -9,6 +9,10 @@ const loadStateFromStorage = () => {
     token: token || null,
     isAuthenticated: !!token,
     user: user || null,
+    forgotPassword: {
+      email:  null, // Email for forgot password
+      otpVerified: false, // OTP verification status
+    },
   };
 };
 const authSlice = createSlice({
@@ -39,8 +43,28 @@ const authSlice = createSlice({
         channel.postMessage('logout'); // Ensure this runs
         console.log('logout dispatched');
       },
+      setForgotPasswordEmail: (state, action) => {
+        state.forgotPassword.email = action.payload;
+        state.forgotPassword.otpVerified = false; // Reset OTP verification
+        localStorage.setItem('forgotPasswordEmail', action.payload); // Persist email
+        // console.log('setForgotPasswordEmail dispatched:', {
+        //   email: state.forgotPassword.email,
+        // });
+      },
+      setOtpVerified: (state) => {
+        state.forgotPassword.otpVerified = true;
+        // No need to persist otpVerified in localStorage as it's transient
+        // console.log('setOtpVerified dispatched:', {
+        //   otpVerified: state.forgotPassword.otpVerified,
+        // });
+      },
+      clearForgotPassword: (state) => {
+        state.forgotPassword = { email: null, otpVerified: false };
+        localStorage.removeItem('forgotPasswordEmail');
+        // console.log('clearForgotPassword dispatched');
+      },
     },
   });
   
-  export const { loginSuccess, logout } = authSlice.actions;
+  export const { loginSuccess, logout,setForgotPasswordEmail, setOtpVerified, clearForgotPassword } = authSlice.actions;
   export default authSlice.reducer;

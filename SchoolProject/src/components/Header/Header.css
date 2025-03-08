@@ -30,6 +30,17 @@
 .nav-button:hover::after {
   width: 100%; /* Matches text width due to inline-block */
 }
+.mob-nav {
+  display: none; /* Default state for mobile nav when closed */
+}
+
+
+
+/* Ensure mobile nav is hidden when dropdown is open by increasing specificity */
+.profile-icon:focus + .mob-nav,
+.profile-icon:active + .mob-nav {
+  display: none !important; /* Force hide mobile nav when profile icon is clicked */
+}
 
 /* Mobile navigation styles */
 .mob-nav {
@@ -58,6 +69,7 @@
   .mob-nav ul:last-child {
     padding: 3px 0 5px 0;
   }
+  
 
   /* Underline animation for mobile nav */
   .mob-nav .nav-button::after {

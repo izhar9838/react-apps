@@ -6,14 +6,22 @@ import {store} from './store/store.js';
 import { Provider } from 'react-redux';
 import { createBrowserRouter,Route,RouterProvider,createRoutesFromElements } from 'react-router-dom';
 import Home from './pages/Home.jsx'
-import MultiStepForm from './pages/StudentAdmissionForm.jsx'
+import MultiStepForm from './pages/admin/StudentAdmissionForm.jsx'
 import LoginCard from './pages/login/LoginCard.jsx'
 import LoginForm from './pages/login/LoginForm.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx';
-import AdminDashboard from './pages/AdminDashboard.jsx';
-import TeacherEnroll from './pages/TeacherEnroll.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
+import TeacherEnroll from './pages/admin/TeacherEnroll.jsx';
 import ErrorPage from './pages/ErrorPage.jsx';
-import FeeSubmissionForm from './pages/FeesSubmission.jsx';
+import FeeSubmissionForm from './pages/admin/FeesSubmission.jsx';
+import ForgotPassword from './pages/login/ForgotPassword.jsx';
+import ResetPassword from './pages/login/ResetPassword.jsx';
+import TokenProtectedRoute from './components/ResetProtected.jsx';
+import TeacherDashboard from './pages/teacher/TeacherDashboard.jsx';
+import UploadMarksSelection from './pages/teacher/UploadMark.jsx';
+import UploadMarksEntry from './pages/teacher/UploadMarksEntry';
+import OtherFunctions from './pages/admin/OtherFunctions.jsx';
+import ClassSectionManager from './pages/admin/ClassSectionManager.jsx';
 
 
 const router=createBrowserRouter(
@@ -33,6 +41,7 @@ const router=createBrowserRouter(
       >
        
       </Route>
+      <Route path='/add-section' element={<ClassSectionManager/>}/>
       <Route 
         path="/admin/studentform" 
         element={
@@ -60,12 +69,20 @@ const router=createBrowserRouter(
           </ProtectedRoute>
       } 
     />
+    <Route path='other-Functions' element={<OtherFunctions/>}/>
       <Route path='/login' 
       element={<LoginCard/>}
       errorElement={<ErrorPage/>}/>
       <Route path='login/loginForm' element={<LoginForm/>}/>
-      {/* <Route path='/admin' element={<AdminDashboard/>}/> */}
-      {/* <Route path='/staff' element={<TeacherEnroll/>}/> */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token?" element={
+          <TokenProtectedRoute>
+            <ResetPassword />
+          </TokenProtectedRoute>
+        } />
+      <Route path='/teacher_dashboard' element={<TeacherDashboard/>}/>
+      <Route path='/teacher_dashboard/upload-marks' element={<UploadMarksSelection/>}/>
+
       <Route path='*' element={<ErrorPage error={{status:404,statusText:"This Page Doesn't exist"}}/>}/>
     </Route>
   )

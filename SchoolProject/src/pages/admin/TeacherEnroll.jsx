@@ -1,9 +1,7 @@
 import React, { useState,useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import Modal from "./Modal";
-import axios from 'axios';
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-
+import Modal from "../Modal";
+import axios from "axios";
 const validateEmail = (value) => {
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
   if (!emailRegex.test(value)) {
@@ -11,65 +9,64 @@ const validateEmail = (value) => {
   }
   return true;
 };
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(",")[1]); // Extract Base64 part
+      reader.onerror = (error) => reject(error);
+  });
+};
 
-const MultiStepForm = () => {
+const TeacherEnroll = () => {
   
-  const getInitialStep = () => {
-    const savedStep = localStorage.getItem("currentStep");
-    return savedStep ? parseInt(savedStep, 10) : 1;
-  };
-  const [step, setStep] = useState(getInitialStep);
+  
+  const [step, setStep] = useState(1);
   const [modal, setModal] = useState({ isOpen: false, title: "", message: "", isSuccess: false });
   const [isSubmitting, setIsSubmitting] = useState(false); // Added for loading state
+    
   
   const { control, handleSubmit, trigger, reset, clearErrors, getValues, formState } = useForm({
     defaultValues: {
-      admissionId: "",
       firstName: "",
       lastName: "",
       DOB: "",
       gender: "",
       image: null,
-      contact_details: {
+      teacher_contact: {
         address: "",
         phoneNumber: "",
-        email: "",
-        guardianName: "",
-        guardianNumber: "",
+        email: "",  
       },
-      academic_info: {
-        rollNo: "",
-        standard: "",
-        section: "",
-        academic_year: "",
-      },
-      fees_details: {
-        amount: "",
-        fee_type: [],
-        payment_mode: "",
+      professional_Details:{
+        position:"",
+        status:"",
+        qualification:"",
+        specialization:"",
+        experience:"",
+        classTeacher:""
       },
       userPass: {
         username: "",
         password: "",
-        role: "student",
+        role: "teacher",
       },
     },
     mode: "onSubmit",
     // reValidateMode: "onChange", // Validate only on blur
   });
   useEffect(() => {
-    localStorage.setItem("currentStep", step);
-    localStorage.setItem("formData", JSON.stringify(getValues()));
-    if (step === 5) {
+    
+    if (step === 4) {
       clearErrors();
     }
-  }, [step,getValues, clearErrors]);
+  }, [step, clearErrors]);
   
   const nextStep = async () => {
     const fieldsToValidate = getFieldsForStep(step);
     const isStepValid = await trigger(fieldsToValidate, { shouldFocus: true,shouldValidate:true });
     if (isStepValid) {
-      if (step === 4) { // Only reset Step 5 fields when moving to Step 5
+      if (step === 3) { // Only reset Step 4 fields when moving to Step 4
         clearErrors(["userPass.username", "userPass.password"]);
       // Optional: Add a small delay to ensure state updates
       await new Promise(resolve => setTimeout(resolve, 100)); // Reset state and clear errors
@@ -85,48 +82,33 @@ const MultiStepForm = () => {
     setStep((prevStep) => prevStep - 1);
     clearErrors(); // Clear all errors when going back to prevent lingering errors
   };
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(",")[1]); // Extract Base64 part
-        reader.onerror = (error) => reject(error);
-    });
-};
-  const onSubmit = async (data) => {
-    if (step === 5 && !isSubmitting) { // Add !isSubmitting check
-      const isValid = await trigger();
-      if (isValid) {
-        setIsSubmitting(true);
-        try {
-          const feesDetailsArray = [{
-            amount: data.fees_details.amount,
-            fee_type: data.fees_details.fee_type,
-            payment_mode: data.fees_details.payment_mode,
-          }];
-          
-          const imageBase64 = data.image ? await fileToBase64(data.image) : null;
 
-        // Construct the Student object
-        const studentData = {
-            admissionId: data.admissionId,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            DOB: data.DOB, // Assuming DOB is a Date object
-            gender: data.gender,
-            image: imageBase64, // Base64 string
-            academic_info: data.academic_info,
-            contact_details: data.contact_details,
-            fees_details: feesDetailsArray,
-            userPass: data.userPass
-        };
-          console.log("Submitting data:", studentData); // Log to verify single submission
-          const token = localStorage.getItem('authToken');
-          console.log(token);
-          
+  const onSubmit = async (data) => {
+    if (step === 4 && !isSubmitting) {
+      const isValid = await trigger(); // Validate all fields on final submit
+      if (isValid) {
+        setIsSubmitting(true); // Show loading state
+        try {
+          const imageBase64 = data.image ? await fileToBase64(data.image) : null;
+          // Simulate an API call
+         const teacherData={
+          firstName:data.firstName,
+          lastName:data.lastName,
+          DOB:data.DOB,
+          gender:data.gender,
+          image:imageBase64,
+          teacher_contact:data.teacher_contact,
+          professional_Details:data.professional_Details,
+          teacher_user_pass:data.userPass,
+         }
+         const token = localStorage.getItem('authToken');
+         console.log(teacherData);
+         
+         console.log(token);
+         
           const response = await axios.post(
-            "http://localhost:9090/api/admin/enrollStudent",
-            studentData,
+            "http://localhost:9090/api/admin/enrollTeacher",
+            teacherData,
             {
               headers: {
                 "Authorization": `Bearer ${token}`,
@@ -143,10 +125,7 @@ const MultiStepForm = () => {
           });
           reset();
           setStep(1);
-          localStorage.removeItem("formData"); // Clear form data after success
-          localStorage.setItem("currentStep", "1");
         } catch (error) {
-          console.error("Submission error:", error);
           setModal({
             isOpen: true,
             title: "Submission Failed",
@@ -154,34 +133,38 @@ const MultiStepForm = () => {
             isSuccess: false,
           });
         } finally {
-          setIsSubmitting(false);
+          setIsSubmitting(false); // Hide loading state
         }
+      
+        
+      
       }
+    } else {
+      console.log("Form Data Submitted:", data);
+      alert("Form submitted successfully!");
     }
   };
 
   const getFieldsForStep = (step) => {
     switch (step) {
       case 1:
-        return ["admissionId", "firstName", "lastName", "DOB", "gender", "image"];
+        return [ "firstName", "lastName", "DOB", "gender", "image"];
       case 2:
         return [
-          "contact_details.address",
-          "contact_details.phoneNumber",
-          "contact_details.email",
-          "contact_details.guardianName",
-          "contact_details.guardianNumber",
+          "teacher_contact.address",
+          "teacher_contact.phoneNumber",
+          "teacher_contact.email",
         ];
       case 3:
         return [
-          "academic_info.rollNo",
-          "academic_info.standard",
-          "academic_info.section",
-          "academic_info.academic_year",
+          "professional_Details.position",
+          "professional_Details.status",
+          "professional_Details.qualification",
+          "professional_Details.specialization",
+          "professional_Details.experience",
+          "professional_Details.classTeacher",
         ];
       case 4:
-        return ["fees_details.amount", "fees_details.fee_type", "fees_details.payment_mode"];
-      case 5:
         return ["userPass.username", "userPass.password"]; // Exclude role since it’s hidden and not required
       default:
         return [];
@@ -197,10 +180,8 @@ const MultiStepForm = () => {
       case 2:
         return <Contact_Details control={control} />;
       case 3:
-        return <Academic_Info control={control} />;
+        return <Professional_Details control={control} />;
       case 4:
-        return <FeesDetails control={control} />;
-      case 5:
         return <User_Password control={control} />;
       default:
         return null;
@@ -208,10 +189,10 @@ const MultiStepForm = () => {
   };
 
   return (
-    <div className="min-h-[70vh] flex flex-col justify-center items-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] p-4">
+    <div className="min-h-[70vh] flex flex-col font-roboto justify-center items-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] p-10">
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6">
-        <h1 className="lg:text-3xl text-2xl font-medium text-gray-800 text-center mb-6">
-          Student Registration Form
+        <h1 className="lg:text-3xl font-roboto text-2xl font-medium text-gray-800 text-center mb-6">
+          Staff Enroll Form
         </h1>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-6">{renderStep()}</div>
@@ -226,7 +207,7 @@ const MultiStepForm = () => {
                 Previous
               </button>
             )}
-            {step < 5 ? (
+            {step < 4 ? (
               <button
                 type="button"
                 onClick={nextStep}
@@ -241,7 +222,7 @@ const MultiStepForm = () => {
                 className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                 disabled={isSubmitting}
               >
-               {isSubmitting ? (
+                {isSubmitting ? (
                   <span className="flex items-center">
                     <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -257,13 +238,13 @@ const MultiStepForm = () => {
           </div>
         </form>
       </div>
-      <Modal
-        isOpen={modal.isOpen}
-        onClose={closeModal}
-        title={modal.title}
-        message={modal.message}
-        isSuccess={modal.isSuccess}
-      />
+       <Modal
+              isOpen={modal.isOpen}
+              onClose={closeModal}
+              title={modal.title}
+              message={modal.message}
+              isSuccess={modal.isSuccess}
+            />
     </div>
   );
 };
@@ -272,32 +253,7 @@ const MultiStepForm = () => {
 const PersonalDetails = ({ control }) => (
   <div>
     <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Personal Details</h2>
-    <Controller
-      name="admissionId"
-      control={control}
-      defaultValue=""
-      rules={{
-        required: "Admission ID is required",
-      }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="admissionId"
-            className="block text-sm lg:text-lg font-medium text-gray-600"
-          >
-            Admission Id
-          </label>
-          <input
-            id="admissionId"
-            {...field}
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
+    
     <Controller
       name="firstName"
       control={control}
@@ -358,13 +314,13 @@ const PersonalDetails = ({ control }) => (
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <label
-            htmlFor="DOB"
+            htmlFor="dob"
             className="block text-sm lg:text-lg font-medium text-gray-600"
           >
             Date of Birth
           </label>
           <input
-            id="DOB"
+            id="dob"
             {...field}
             type="date"
             className="w-full p-2 border rounded"
@@ -450,7 +406,7 @@ const PersonalDetails = ({ control }) => (
             )}
           </div>
           {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
+            <p className="text-red-500 text-sm mt-3">{error.message}</p>
           )}
         </div>
       )}
@@ -463,7 +419,7 @@ const Contact_Details = ({ control }) => (
   <div>
     <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Contact Details</h2>
     <Controller
-      name="contact_details.address"
+      name="teacher_contact.address"
       control={control}
       defaultValue=""
       rules={{ required: "Address is required" }}
@@ -488,7 +444,7 @@ const Contact_Details = ({ control }) => (
       )}
     />
     <Controller
-      name="contact_details.phoneNumber"
+      name="teacher_contact.phoneNumber"
       control={control}
       defaultValue=""
       rules={{ required: "Phone Number is required" }}
@@ -513,7 +469,7 @@ const Contact_Details = ({ control }) => (
       )}
     />
     <Controller
-      name="contact_details.email"
+      name="teacher_contact.email"
       control={control}
       defaultValue=""
       rules={{
@@ -540,78 +496,56 @@ const Contact_Details = ({ control }) => (
         </div>
       )}
     />
-    <Controller
-      name="contact_details.guardianName"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Guardian Name is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="guardianName"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Guardian Name
-          </label>
-          <input
-            id="guardianName"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="contact_details.guardianNumber"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Guardian Number is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Guardian Number
-          </label>
-          <input
-            id="guardianNumber"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
+    
+    
   </div>
 );
 
 // Step 3: Academic Info (unchanged, ensure defaultValues match)
-const Academic_Info = ({ control }) => (
+const Professional_Details = ({ control }) => (
   <div>
-    <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Study Details</h2>
+    <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Professional Detials</h2>
     <Controller
-      name="academic_info.rollNo"
+      name="professional_Details.position"
       control={control}
       defaultValue=""
-      rules={{ required: "Roll No is required" }}
+      rules={{ required: "Positon is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <label
-            htmlFor="rollNo"
+            htmlFor="position"
             className="block text-sm font-medium text-gray-600 lg:text-lg"
           >
-            Roll No
+            Position
           </label>
           <input
-            id="rollNo"
+            id="position"
+            {...field}
+            placeholder="eg: Head Master, Teacher, Principle etc"
+            className="w-full p-2 border rounded"
+          />
+          {error && (
+            <p className="text-red-500 text-sm mt-1">{error.message}</p>
+          )}
+        </div>
+      )}
+    />
+    <Controller
+      name="professional_Details.status"
+      control={control}
+      defaultValue=""
+      rules={{ required: "Status is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-600 lg:text-lg"
+          >
+            Status
+          </label>
+          <input
+            id="status"
+            placeholder="eg: Part Time, Full Time"
             {...field}
 
             className="w-full p-2 border rounded"
@@ -623,20 +557,20 @@ const Academic_Info = ({ control }) => (
       )}
     />
     <Controller
-      name="academic_info.standard"
+      name="professional_Details.qualification"
       control={control}
       defaultValue=""
-      rules={{ required: "Standard is required" }}
+      rules={{ required: "Qualification is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <label
-            htmlFor="standard"
+            htmlFor="qualification"
             className="block text-sm font-medium text-gray-600 lg:text-lg"
           >
-            Standard
+            Qualification
           </label>
           <input
-            id="standard"
+            id="qualification"
             {...field}
 
             className="w-full p-2 border rounded"
@@ -648,20 +582,20 @@ const Academic_Info = ({ control }) => (
       )}
     />
     <Controller
-      name="academic_info.section"
+      name="professional_Details.specialization"
       control={control}
       defaultValue=""
-      rules={{ required: "Section is required" }}
+      rules={{ required: "Specialization is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <label
-            htmlFor="section"
+            htmlFor="specialization"
             className="block text-sm font-medium text-gray-600 lg:text-lg"
           >
-            Section
+            Specialization
           </label>
           <input
-            id="section"
+            id="specialization"
             {...field}
 
             className="w-full p-2 border rounded"
@@ -673,20 +607,20 @@ const Academic_Info = ({ control }) => (
       )}
     />
     <Controller
-      name="academic_info.academic_year"
+      name="professional_Details.experience"
       control={control}
       defaultValue=""
-      rules={{ required: "Academic year is required" }}
+      rules={{ required: "Specialization is required" }}
       render={({ field, fieldState: { error } }) => (
         <div className="mb-4">
           <label
-            htmlFor="academic_year"
+            htmlFor="experience"
             className="block text-sm font-medium text-gray-600 lg:text-lg"
           >
-            Academic Year
+            Experience
           </label>
           <input
-            id="academic_year"
+            id="experience"
             {...field}
 
             className="w-full p-2 border rounded"
@@ -700,113 +634,10 @@ const Academic_Info = ({ control }) => (
   </div>
 );
 
-// Step 4: Fees Details (unchanged, ensure defaultValues match)
-const FeesDetails = ({ control }) => (
-  <div>
-    <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Fees Details</h2>
-    <Controller
-      name="fees_details.amount"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Amount is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="amount"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Amount
-          </label>
-          <input
-            id="amount"
-            {...field}
 
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-  name="fees_details.fee_type"
-  control={control}
-  defaultValue={[]} // Array to store multiple selected values
-  rules={{ required: "Fee Type is required" }}
-  render={({ field, fieldState: { error } }) => (
-    <div className="mb-4">
-      <label
-        htmlFor="fee_type"
-        className="block text-sm font-medium text-gray-600 lg:text-lg mb-2"
-      >
-        Fee Type
-      </label>
-      <div className="space-y-2">
-        {["Tuition Fee", "Examination Fee", "Other"].map((option) => (
-          <div key={option} className="flex items-center">
-            <input
-              type="checkbox"
-              id={`fee_type_${option.toLowerCase().replace(" ", "_")}`} // Unique ID for each checkbox
-              value={option}
-              checked={field.value.includes(option)}
-              onChange={(e) => {
-                const value = e.target.value;
-                const newValue = field.value.includes(value)
-                  ? field.value.filter((v) => v !== value) // Remove if already selected
-                  : [...field.value, value]; // Add if not selected
-                field.onChange(newValue);
-              }}
-              className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label
-              htmlFor={`fee_type_${option.toLowerCase().replace(" ", "_")}`}
-              className="text-sm text-gray-700"
-            >
-              {option}
-            </label>
-          </div>
-        ))}
-      </div>
-      {error && (
-        <p className="text-red-500 text-sm mt-1">{error.message}</p>
-      )}
-    </div>
-  )}
-/>
-    <Controller
-      name="fees_details.payment_mode"
-      control={control}
-      defaultValue=""
-      rules={{}}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="payment_mode"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Payment Mode
-          </label>
-          <select
-            id="payment_mode"
-            {...field}
-            className="w-full p-2 border rounded"
-          >
-            <option value="">Select Payment Mode</option>
-            <option value="Cash">Cash</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="UPI">UPI</option>
-          </select>
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-  </div>
-);
 
-// Step 5: User Password (unchanged, ensure defaultValues match)
+
+// Step 4: User Password (unchanged, ensure defaultValues match)
 const User_Password = ({ control }) => (
   <div>
     <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Username Password</h2>
@@ -834,51 +665,33 @@ const User_Password = ({ control }) => (
         </div>
       )}
     />
-
-<Controller
-  name="userPass.password"
-  control={control}
-  defaultValue=""
-  rules={{ required: "Password is required" }}
-  render={({ field, fieldState: { error } }) => {
-    const [showPassword, setShowPassword] = useState(false);
-
-    return (
-      <div className="mb-4">
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-600 lg:text-lg"
-        >
-          Password
-        </label>
-        <div className="relative">
+    <Controller
+      name="userPass.password"
+      control={control}
+      defaultValue=""
+      rules={{ required: "Password is required" }}
+      render={({ field, fieldState: { error } }) => (
+        <div className="mb-4">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-600 lg:text-lg"
+          >
+            Password
+          </label>
           <input
             id="password"
             {...field}
-            type={showPassword ? "text" : "password"}
-            className="w-full p-2 border rounded pr-10" // Added pr-10 for padding-right to accommodate the icon
+
+            className="w-full p-2 border rounded"
           />
-          <button
-            type="button"
-            className="absolute inset-y-0 right-0 flex items-center pr-3"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <FaEyeSlash className="text-gray-500" />
-            ) : (
-              <FaEye className="text-gray-500" />
-            )}
-          </button>
+          {error && (
+            <p className="text-red-500 text-sm mt-1">{error.message}</p>
+          )}
         </div>
-        {error && (
-          <p className="text-red-500 text-sm mt-1">{error.message}</p>
-        )}
-      </div>
-    );
-  }}
-/>
+      )}
+    />
     
   </div>
 );
 
-export default MultiStepForm;
+export default TeacherEnroll;

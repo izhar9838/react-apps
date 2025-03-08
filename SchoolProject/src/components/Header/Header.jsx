@@ -25,6 +25,7 @@ function Header() {
   const toggleDropdown = (e) => {
     e.stopPropagation();
     // console.log('Toggling dropdown, current state:', isDropdownOpen);
+    setIsOpen(false);
     setIsDropdownOpen(!isDropdownOpen);
   };
 
@@ -95,7 +96,7 @@ function Header() {
               <li className='nav-li'>
                 <button
                   onClick={() => navigate('admin')}
-                  className='cursor-pointer nav-button font-normal  text-black px-2'
+                  className='cursor-pointer nav-button font-medium  text-black px-2'
                 >
                   Admin
                 </button>

@@ -1,6 +1,6 @@
 import React, { useState ,useRef} from "react";
 import { useForm, Controller } from "react-hook-form";
-import Modal from "./Modal";
+import Modal from "../Modal";
 import "./FeesSubmission.css"; // Optional external CSS if needed
 import axios from "axios";
 

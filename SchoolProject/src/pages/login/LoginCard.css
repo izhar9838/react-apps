@@ -1,29 +1,61 @@
-.card_image{
-    width:110px;
-}
-.card-container{
-    width: 50vw;
-}
-@media (max-width:1024px) {
-    .card_image{
-        width:70px;
+/* LoginCard.css */
+.card_image {
+    width: 110px;
+    height: auto;
+  }
+  
+  .login-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .card-margin {
+    margin: 0.75rem;
+  }
+  
+  /* Extra small screens (max-width: 480px) */
+  @media (max-width: 480px) {
+    .login-content {
+      padding-left: 1rem;
+      padding-right: 1rem;
     }
-    .card-container{
-        width: 80vw;
+  
+    .card-margin {
+      margin: 0.5rem;
     }
-    .card{
-        padding: 5px;
+  
+    .xs\:grid-cols-1 {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
     }
-}
-@media (max-width:768px) {
-    .card_image{
-        width:75px;
+  
+    .card_image {
+      width: 75px;
     }
-    .card{
-        padding: 3px;
+  }
+  
+  /* Small screens (min-width: 481px and max-width: 640px) */
+  @media (min-width: 481px) and (max-width: 640px) {
+    .login-content {
+      padding-left: 1rem;
+      padding-right: 1rem;
     }
-    .card-container{
-        width: 100vw;
-        
+  
+    .card-margin {
+      margin: 0.5rem;
     }
-}
+  
+    .card_image {
+      width: 90px;
+    }
+  }
+  
+  /* Larger screens (min-width: 641px) */
+  @media (min-width: 641px) {
+    .card-margin {
+      margin: 0.75rem;
+    }
+  
+    .card_image {
+      width: 110px;
+    }
+  }
