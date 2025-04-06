@@ -107,7 +107,9 @@ const AdminDashboard = () => {
 
           {/* Other Functions Card */}
           <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg cursor-pointer transition-shadow card-margin"
-            >
+           
+           onClick={()=>navigate('/admin/other-Functions')}
+           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-full bg-purple-100 mb-4">
                 <FunctionIcon />

@@ -1,61 +1,89 @@
-/* LoginCard.css */
 .card_image {
-    width: 110px;
-    height: auto;
+  width: 80px; /* Reduced from 110px */
+  height: auto;
+}
+
+.login-content {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.card-margin {
+  margin: 0.5rem; /* Reduced from 0.75rem */
+}
+
+/* Center the grid */
+.grid {
+  display: grid;
+  justify-content: center; /* Center the grid horizontally */
+}
+
+/* Extra small screens (max-width: 480px) */
+@media (max-width: 480px) {
+  .login-content {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
-  
+
+  .card-margin {
+    margin: 0.25rem; /* Smaller margin */
+  }
+
+  .xs\:grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .card_image {
+    width: 50px; /* Smaller image for mobile */
+  }
+
+  .card-text {
+    font-size: 0.875rem; /* 14px, smaller than 18px (text-base) */
+    font-weight: 400; /* Lighter than medium (500) */
+  }
+}
+
+/* Small screens (min-width: 481px and max-width: 640px) */
+@media (min-width: 481px) and (max-width: 640px) {
   .login-content {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .card-margin {
-    margin: 0.75rem;
+    margin: 0.5rem;
   }
-  
-  /* Extra small screens (max-width: 480px) */
-  @media (max-width: 480px) {
-    .login-content {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-  
-    .card-margin {
-      margin: 0.5rem;
-    }
-  
-    .xs\:grid-cols-1 {
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-    }
-  
-    .card_image {
-      width: 75px;
-    }
+
+  .sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  
-  /* Small screens (min-width: 481px and max-width: 640px) */
-  @media (min-width: 481px) and (max-width: 640px) {
-    .login-content {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-  
-    .card-margin {
-      margin: 0.5rem;
-    }
-  
-    .card_image {
-      width: 90px;
-    }
+
+  .card_image {
+    width: 60px; /* Slightly larger than mobile but smaller than desktop */
   }
-  
-  /* Larger screens (min-width: 641px) */
-  @media (min-width: 641px) {
-    .card-margin {
-      margin: 0.75rem;
-    }
-  
-    .card_image {
-      width: 110px;
-    }
+
+  .card-text {
+    font-size: 0.9375rem; /* 15px, slightly larger than mobile */
+    font-weight: 400; /* Lighter weight */
   }
+}
+
+/* Larger screens (min-width: 641px) */
+@media (min-width: 641px) {
+  .card-margin {
+    margin: 0.5rem;
+  }
+
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .card_image {
+    width: 80px; /* Consistent with default */
+  }
+
+  .card-text {
+    font-size: 1rem; /* 16px, original text-base */
+    font-weight: 500; /* Original medium weight */
+  }
+}

@@ -16,9 +16,11 @@ function ForgotPassword() {
     try {
       const response = await axios.post('http://localhost:9090/api/public/forgot-password', { email });
       setMessage(response.data);
+      
       setStep(2); // Move to OTP verification step
     } catch (error) {
-      setMessage(error.response?.data || 'Error sending otp to email');
+      setMessage(error.response?.data || 'Email id is not Exist');
+      
     }
   };
 

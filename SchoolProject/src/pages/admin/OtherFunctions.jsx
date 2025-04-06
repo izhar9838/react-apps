@@ -40,7 +40,7 @@ const OtherFunctions = () => {
       <nav className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center p-6 items-center">
-            <h1 className="text-3xl font-medium text-gray-800">Other Functions</h1>
+            <h1 className="text-2xl font-medium text-gray-800">Other Functions</h1>
           </div>
         </div>
       </nav>
@@ -52,7 +52,7 @@ const OtherFunctions = () => {
           {/* Upload Marks Card */}
           <div 
             className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow card-margin" 
-            onClick={() => navigate('/teacher_dashboard/upload-marks')}
+            onClick={() => navigate('/admin/add-section')}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-full bg-blue-100 mb-4">
@@ -82,7 +82,7 @@ const OtherFunctions = () => {
           {/* Post Announcements Card */}
           <div 
             className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow card-margin"
-            onClick={() => navigate('/teacher/announcements')}
+            onClick={() => navigate('/admin/other-Functions/add-event')}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-full bg-yellow-100 mb-4">

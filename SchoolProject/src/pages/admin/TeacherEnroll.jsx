@@ -1,32 +1,30 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Modal from "../Modal";
 import axios from "axios";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 const validateEmail = (value) => {
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-  if (!emailRegex.test(value)) {
-    return "Invalid email address";
-  }
-  return true;
+  return emailRegex.test(value) || "Invalid email address";
 };
+
 const fileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(",")[1]); // Extract Base64 part
-      reader.onerror = (error) => reject(error);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result.split(",", 1));
+    reader.onerror = (error) => reject(error);
   });
 };
 
 const TeacherEnroll = () => {
-  
-  
   const [step, setStep] = useState(1);
   const [modal, setModal] = useState({ isOpen: false, title: "", message: "", isSuccess: false });
-  const [isSubmitting, setIsSubmitting] = useState(false); // Added for loading state
-    
-  
-  const { control, handleSubmit, trigger, reset, clearErrors, getValues, formState } = useForm({
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const { control, handleSubmit, trigger, reset, formState: { errors }, setValue } = useForm({
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -36,15 +34,15 @@ const TeacherEnroll = () => {
       teacher_contact: {
         address: "",
         phoneNumber: "",
-        email: "",  
+        email: "",
       },
-      professional_Details:{
-        position:"",
-        status:"",
-        qualification:"",
-        specialization:"",
-        experience:"",
-        classTeacher:""
+      professional_Details: {
+        position: "",
+        status: "",
+        qualification: "",
+        specialization: "",
+        experience: "",
+        classTeacher: "",
       },
       userPass: {
         username: "",
@@ -52,646 +50,339 @@ const TeacherEnroll = () => {
         role: "teacher",
       },
     },
-    mode: "onSubmit",
-    // reValidateMode: "onChange", // Validate only on blur
+    mode: "onChange",
   });
-  useEffect(() => {
-    
-    if (step === 4) {
-      clearErrors();
-    }
-  }, [step, clearErrors]);
-  
-  const nextStep = async () => {
-    const fieldsToValidate = getFieldsForStep(step);
-    const isStepValid = await trigger(fieldsToValidate, { shouldFocus: true,shouldValidate:true });
-    if (isStepValid) {
-      if (step === 3) { // Only reset Step 4 fields when moving to Step 4
-        clearErrors(["userPass.username", "userPass.password"]);
-      // Optional: Add a small delay to ensure state updates
-      await new Promise(resolve => setTimeout(resolve, 100)); // Reset state and clear errors
+
+  const getFieldsForStep = (step, isLargeScreen = false) => {
+    if (isLargeScreen) {
+      switch (step) {
+        case 1: return ["firstName", "lastName", "DOB", "gender", "image", "teacher_contact.address", "teacher_contact.phoneNumber", "teacher_contact.email"];
+        case 2: return ["professional_Details.position", "professional_Details.status", "professional_Details.qualification", "professional_Details.specialization", "professional_Details.experience", "professional_Details.classTeacher", "userPass.username", "userPass.password"];
+        default: return [];
       }
-      setStep((prevStep) => prevStep + 1)
-      const allFields = Object.keys(getValues());
-      const fieldsToClear = allFields.filter((field) => !fieldsToValidate.includes(field));
-      clearErrors(fieldsToClear);
+    } else {
+      switch (step) {
+        case 1: return ["firstName", "lastName", "DOB", "gender", "image"];
+        case 2: return ["teacher_contact.address", "teacher_contact.phoneNumber", "teacher_contact.email"];
+        case 3: return ["professional_Details.position", "professional_Details.status", "professional_Details.qualification", "professional_Details.specialization", "professional_Details.experience", "professional_Details.classTeacher"];
+        case 4: return ["userPass.username", "userPass.password"];
+        default: return [];
+      }
+    }
+  };
+
+  const nextStep = async (isLargeScreen = false) => {
+    const fieldsToValidate = getFieldsForStep(step, isLargeScreen);
+    const isStepValid = await trigger(fieldsToValidate, { shouldFocus: true });
+    if (isStepValid) {
+      const maxSteps = isLargeScreen ? 2 : 4;
+      if (step < maxSteps) {
+        setStep((prev) => prev + 1);
+      } else {
+        handleSubmit(onSubmit)();
+      }
+    } else {
+      const firstErrorField = fieldsToValidate.find(field => {
+        if (field.includes('.')) {
+          const [parent, child] = field.split('.');
+          return errors[parent]?.[child];
+        }
+        return errors[field];
+      });
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField.split('.').join('-'));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+        }
+      }
     }
   };
 
   const prevStep = () => {
-    setStep((prevStep) => prevStep - 1);
-    clearErrors(); // Clear all errors when going back to prevent lingering errors
+    setStep((prev) => prev - 1);
   };
 
   const onSubmit = async (data) => {
-    if (step === 4 && !isSubmitting) {
-      const isValid = await trigger(); // Validate all fields on final submit
-      if (isValid) {
-        setIsSubmitting(true); // Show loading state
-        try {
-          const imageBase64 = data.image ? await fileToBase64(data.image) : null;
-          // Simulate an API call
-         const teacherData={
-          firstName:data.firstName,
-          lastName:data.lastName,
-          DOB:data.DOB,
-          gender:data.gender,
-          image:imageBase64,
-          teacher_contact:data.teacher_contact,
-          professional_Details:data.professional_Details,
-          teacher_user_pass:data.userPass,
-         }
-         const token = localStorage.getItem('authToken');
-         console.log(teacherData);
-         
-         console.log(token);
-         
-          const response = await axios.post(
-            "http://localhost:9090/api/admin/enrollTeacher",
-            teacherData,
-            {
-              headers: {
-                "Authorization": `Bearer ${token}`,
-              },
-            }
-          );
-          console.log(response.data);
-          
-          setModal({
-            isOpen: true,
-            title: "Success!",
-            message: response.data,
-            isSuccess: true,
-          });
-          reset();
-          setStep(1);
-        } catch (error) {
-          setModal({
-            isOpen: true,
-            title: "Submission Failed",
-            message: "Something went wrong. Please try again later.",
-            isSuccess: false,
-          });
-        } finally {
-          setIsSubmitting(false); // Hide loading state
-        }
-      
-        
-      
+    if (!isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        const imageBase64 = data.image ? await fileToBase64(data.image) : null;
+        const teacherData = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          DOB: data.DOB,
+          gender: data.gender,
+          image: imageBase64,
+          teacher_contact: data.teacher_contact,
+          professional_Details: data.professional_Details,
+          teacher_user_pass: data.userPass,
+        };
+        const token = localStorage.getItem('authToken');
+        const response = await axios.post("http://localhost:9090/api/admin/enrollTeacher", teacherData, {
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+        setModal({
+          isOpen: true,
+          title: "Success!",
+          message: response.data,
+          isSuccess: true,
+        });
+        reset();
+        setStep(1);
+        setImagePreview(null);
+      } catch (error) {
+        console.error("Submission error:", error);
+        setModal({
+          isOpen: true,
+          title: "Submission Failed",
+          message: "Something went wrong. Please try again later.",
+          isSuccess: false,
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-    } else {
-      console.log("Form Data Submitted:", data);
-      alert("Form submitted successfully!");
     }
   };
 
-  const getFieldsForStep = (step) => {
-    switch (step) {
-      case 1:
-        return [ "firstName", "lastName", "DOB", "gender", "image"];
-      case 2:
-        return [
-          "teacher_contact.address",
-          "teacher_contact.phoneNumber",
-          "teacher_contact.email",
-        ];
-      case 3:
-        return [
-          "professional_Details.position",
-          "professional_Details.status",
-          "professional_Details.qualification",
-          "professional_Details.specialization",
-          "professional_Details.experience",
-          "professional_Details.classTeacher",
-        ];
-      case 4:
-        return ["userPass.username", "userPass.password"]; // Exclude role since it’s hidden and not required
-      default:
-        return [];
+  const closeModal = () => setModal({ ...modal, isOpen: false });
+
+  const handleImageChange = (e, onChange) => {
+    const file = e.target.files[0];
+    if (file) {
+      onChange(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
-  const closeModal = () => {
-    setModal({ ...modal, isOpen: false });
-  };
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return <PersonalDetails control={control} />;
-      case 2:
-        return <Contact_Details control={control} />;
-      case 3:
-        return <Professional_Details control={control} />;
-      case 4:
-        return <User_Password control={control} />;
-      default:
-        return null;
-    }
+
+  const removeImage = () => {
+    setValue('image', null);
+    setImagePreview(null);
   };
 
   return (
-    <div className="min-h-[70vh] flex flex-col font-roboto justify-center items-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] p-10">
-      <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6">
-        <h1 className="lg:text-3xl font-roboto text-2xl font-medium text-gray-800 text-center mb-6">
-          Staff Enroll Form
-        </h1>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-6">{renderStep()}</div>
-          <div className="flex justify-between">
-            {step > 1 && (
-              <button
-                type="button"
-                onClick={prevStep}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                disabled={isSubmitting}
-              >
-                Previous
-              </button>
+    <div className="min-h-[70vh] flex justify-center items-center bg-gray-100 p-2 sm:p-4">
+      <div className="w-[85vw] bg-white rounded-lg shadow-md p-4 md:p-6">
+        <h1 className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4 md:mb-6">Staff Enrollment Form</h1>
+        <p className="text-sm text-gray-600 text-center mb-4">All fields marked with <span className="text-red-500">*</span> are required.</p>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="hidden md:block space-y-4">
+            {step === 1 && (
+              <div className="grid md:grid-cols-2 gap-4">
+                <PersonalDetails control={control} handleImageChange={handleImageChange} imagePreview={imagePreview} removeImage={removeImage} />
+                <Contact_Details control={control} />
+              </div>
             )}
-            {step < 4 ? (
-              <button
-                type="button"
-                onClick={nextStep}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                disabled={isSubmitting}
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
-                    </svg>
-                    Submitting...
-                  </span>
-                ) : (
-                  "Submit"
-                )}
-              </button>
+            {step === 2 && (
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <Professional_Details control={control} />
+                </div>
+                <User_Password control={control} />
+              </div>
             )}
+            <div className="flex justify-between mt-4">
+              {step > 1 && (
+                <button type="button" onClick={prevStep} className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm" disabled={isSubmitting}>
+                  Previous
+                </button>
+              )}
+              <button type="button" onClick={() => nextStep(true)} className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm" disabled={isSubmitting}>
+                {step === 2 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
+              </button>
+            </div>
           </div>
+
+          <div className="md:hidden space-y-4">
+            {step === 1 && <PersonalDetails control={control} handleImageChange={handleImageChange} imagePreview={imagePreview} removeImage={removeImage} />}
+            {step === 2 && <Contact_Details control={control} />}
+            {step === 3 && <Professional_Details control={control} />}
+            {step === 4 && <User_Password control={control} />}
+            <div className="flex justify-between mt-4">
+              {step > 1 && (
+                <button type="button" onClick={prevStep} className="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 text-xs" disabled={isSubmitting}>
+                  Previous
+                </button>
+              )}
+              <button type="button" onClick={() => nextStep(false)} className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs" disabled={isSubmitting}>
+                {step === 4 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
+              </button>
+            </div>
+          </div>
+
+          {modal.isOpen && <Modal isOpen={modal.isOpen} onClose={closeModal} title={modal.title} message={modal.message} isSuccess={modal.isSuccess} />}
         </form>
       </div>
-       <Modal
-              isOpen={modal.isOpen}
-              onClose={closeModal}
-              title={modal.title}
-              message={modal.message}
-              isSuccess={modal.isSuccess}
-            />
     </div>
   );
 };
 
-// Step 1: Personal Details (unchanged, but ensure defaultValues match)
-const PersonalDetails = ({ control }) => (
+// Reusable Components
+const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage }) => {
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Personal Details</h2>
+      <Field label="First Name" name="firstName" control={control} type="text" required />
+      <Field label="Last Name" name="lastName" control={control} type="text" required />
+      <Field label="Date of Birth" name="DOB" control={control} type="date" required />
+      <SelectField label="Gender" name="gender" control={control} options={["Male", "Female", "Prefer not to say"]} required />
+      <ImageField label="Photo" name="image" control={control} handleImageChange={handleImageChange} imagePreview={imagePreview} required removeImage={removeImage} />
+    </div>
+  );
+};
+
+const Contact_Details = ({ control }) => {
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Contact Details</h2>
+      <Field label="Address" name="teacher_contact.address" control={control} type="text" required />
+      <Field label="Phone Number" name="teacher_contact.phoneNumber" control={control} type="text" required />
+      <Field label="Email" name="teacher_contact.email" control={control} type="text" required validate={validateEmail} />
+    </div>
+  );
+};
+
+const Professional_Details = ({ control }) => {
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Professional Details</h2>
+      <Field label="Position" name="professional_Details.position" control={control} type="text" required />
+      <Field label="Status" name="professional_Details.status" control={control} type="text" required />
+      <Field label="Qualification" name="professional_Details.qualification" control={control} type="text" required />
+      <Field label="Specialization" name="professional_Details.specialization" control={control} type="text" required />
+      <Field label="Experience" name="professional_Details.experience" control={control} type="text" required />
+      <Field label="Class Teacher" name="professional_Details.classTeacher" control={control} type="text" required />
+    </div>
+  );
+};
+
+const User_Password = ({ control }) => {
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Username Password</h2>
+      <Field label="Username" name="userPass.username" control={control} type="text" required autoComplete="off" />
+      <PasswordField label="Password" name="userPass.password" control={control} required autoComplete="new-password" />
+    </div>
+  );
+};
+
+// Reusable Field Components
+const Field = ({ label, name, control, type, required, validate, autoComplete }) => (
   <div>
-    <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Personal Details</h2>
-    
+    <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
     <Controller
-      name="firstName"
+      name={name}
       control={control}
-      defaultValue=""
-      rules={{ required: "Name is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="firstName"
-            className="block text-sm lg:text-lg font-medium text-gray-600"
-          >
-            First Name
-          </label>
-          <input
-            id="firstName"
-            {...field}
+      rules={{ required: required ? "This field is required" : false, validate }}
+      render={({ field }) => (
+        <input
+          {...field}
+          type={type}
+          id={name.replace('.', '-')}
+          autoComplete={autoComplete || "off"}
+          className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
+        />
+      )}
+    />
+  </div>
+);
 
-            className="w-full p-2 border rounded"
+const ImageField = ({ label, name, control, handleImageChange, imagePreview, required, removeImage }) => (
+  <div>
+    <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <Controller
+      name={name}
+      control={control}
+      rules={{ required: required ? "This field is required" : false }}
+      render={({ field: { onChange, value, ...field } }) => (
+        <div>
+          <input
+            {...field}
+            type="file"
+            id={name}
+            accept="image/*"
+            onChange={(e) => handleImageChange(e, onChange)}
+            className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
           />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
+          {imagePreview && (
+            <div className="mt-2">
+              <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="text-red-500 text-xs hover:underline mt-1"
+              >
+                Remove
+              </button>
+            </div>
           )}
         </div>
       )}
     />
-    <Controller
-      name="lastName"
-      control={control}
-      defaultValue=""
-      rules={{
-        required: "Last Name is required",
-      }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="lastName"
-            className="block text-sm lg:text-lg font-medium text-gray-600"
-          >
-            Last Name
-          </label>
-          <input
-            id="lastName"
-            {...field}
+  </div>
+);
 
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
+const SelectField = ({ label, name, control, options, required }) => (
+  <div>
+    <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <Controller
+      name={name}
+      control={control}
+      rules={{ required: required ? "This field is required" : false }}
+      render={({ field }) => (
+        <select
+          {...field}
+          id={name.replace('.', '-')}
+          className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
+        >
+          <option value="">Select {label}</option>
+          {options.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
       )}
     />
-    <Controller
-      name="DOB"
-      control={control}
-      defaultValue=""
-      rules={{ required: "DOB is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="dob"
-            className="block text-sm lg:text-lg font-medium text-gray-600"
-          >
-            Date of Birth
-          </label>
-          <input
-            id="dob"
-            {...field}
-            type="date"
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="gender"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Gender is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="gender"
-            className="block text-sm  lg:text-lg font-medium text-gray-600"
-          >
-            Select Gender
-          </label>
-          <select
-            id="gender"
-            {...field}
-            className="w-full p-2 border rounded"
-          >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Prefer not to say">Prefer not to say</option>
-          </select>
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="image"
-      control={control}
-      defaultValue={null}
-      rules={{ required: "Photo is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
+  </div>
+);
+
+const PasswordField = ({ label, name, control, required, autoComplete }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  return (
+    <div>
+      <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <Controller
+        name={name}
+        control={control}
+        rules={{ required: required ? "This field is required" : false }}
+        render={({ field }) => (
           <div className="relative">
             <input
               {...field}
-              id="image-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                field.onChange(file);
-              }}
-              value={field.value ? undefined : ""}
+              type={showPassword ? "text" : "password"}
+              id={name.replace('.', '-')}
+              autoComplete={autoComplete || "new-password"}
+              className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm pr-8"
             />
-            {!field.value && (
-              <label
-                htmlFor="image-upload"
-                className="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out"
-              >
-                Upload Photo
-              </label>
-            )}
-            {field.value && (
-              <div className="mt-2">
-                <img
-                  src={URL.createObjectURL(field.value)}
-                  alt="Preview"
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => field.onChange(null)}
-                  className="mt-2 text-red-500 text-sm hover:underline"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 flex items-center pr-2"
+            >
+              {showPassword ? <FaEyeSlash className="text-gray-500 h-4 w-4" /> : <FaEye className="text-gray-500 h-4 w-4" />}
+            </button>
           </div>
-          {error && (
-            <p className="text-red-500 text-sm mt-3">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-  </div>
-);
-
-// Step 2: Contact Details (unchanged, ensure defaultValues match)
-const Contact_Details = ({ control }) => (
-  <div>
-    <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Contact Details</h2>
-    <Controller
-      name="teacher_contact.address"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Address is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="address"
-            className="block text-sm  lg:text-lg font-medium text-gray-600"
-          >
-            Address
-          </label>
-          <input
-            id="address"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="teacher_contact.phoneNumber"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Phone Number is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="phoneNumber"
-            className="block text-sm  lg:text-lg font-medium text-gray-600"
-          >
-            Phone Number
-          </label>
-          <input
-            id="phoneNumber"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="teacher_contact.email"
-      control={control}
-      defaultValue=""
-      rules={{
-        required: "Email is required",
-        validate: validateEmail,
-      }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="email"
-            className="block text-sm lg:text-lg font-medium text-gray-600"
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    
-    
-  </div>
-);
-
-// Step 3: Academic Info (unchanged, ensure defaultValues match)
-const Professional_Details = ({ control }) => (
-  <div>
-    <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Professional Detials</h2>
-    <Controller
-      name="professional_Details.position"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Positon is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="position"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Position
-          </label>
-          <input
-            id="position"
-            {...field}
-            placeholder="eg: Head Master, Teacher, Principle etc"
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="professional_Details.status"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Status is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="status"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Status
-          </label>
-          <input
-            id="status"
-            placeholder="eg: Part Time, Full Time"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="professional_Details.qualification"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Qualification is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="qualification"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Qualification
-          </label>
-          <input
-            id="qualification"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="professional_Details.specialization"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Specialization is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="specialization"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Specialization
-          </label>
-          <input
-            id="specialization"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="professional_Details.experience"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Specialization is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="experience"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Experience
-          </label>
-          <input
-            id="experience"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-  </div>
-);
-
-
-
-
-// Step 4: User Password (unchanged, ensure defaultValues match)
-const User_Password = ({ control }) => (
-  <div>
-    <h2 className="lg:text-2xl text-xl text-gray-700 font-medium mb-4">Username Password</h2>
-    <Controller
-      name="userPass.username"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Username is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="username"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Username
-          </label>
-          <input
-            id="username"
-            {...field}
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    <Controller
-      name="userPass.password"
-      control={control}
-      defaultValue=""
-      rules={{ required: "Password is required" }}
-      render={({ field, fieldState: { error } }) => (
-        <div className="mb-4">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-600 lg:text-lg"
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            {...field}
-
-            className="w-full p-2 border rounded"
-          />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error.message}</p>
-          )}
-        </div>
-      )}
-    />
-    
-  </div>
-);
+        )}
+      />
+    </div>
+  );
+};
 
 export default TeacherEnroll;

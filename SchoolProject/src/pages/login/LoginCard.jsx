@@ -13,13 +13,13 @@ function LoginCard() {
 
   if (!authStatus) {
     return (
-      <div className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] min-h-[78vh] font-sans">
+      <div className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] min-h-[78vh] font-sans flex items-center justify-center">
         {/* Main Content */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[78vh]  login-content">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 login-content">
           {/* Cards Grid */}
-          <div className="grid grid-cols-3 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 h-full place-content-center items-center">
+          <div className="grid grid-cols-3 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-full place-content-center items-center justify-center">
             {/* Student Login Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow card-margin">
+            <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow card-margin">
               <button
                 onClick={() => {
                   const loginData = { role: 'student' };
@@ -27,13 +27,13 @@ function LoginCard() {
                 }}
                 className="flex flex-col items-center text-center w-full"
               >
-                <img src={studentCard} alt="Student Login" className="card_image mb-4" />
-                <p className="text-lg font-medium text-gray-800">Students Login</p>
+                <img src={studentCard} alt="Student Login" className="card_image mb-3" />
+                <p className="text-base font-medium text-gray-800 card-text">Students Login</p>
               </button>
             </div>
 
             {/* Teacher Login Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow card-margin">
+            <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow card-margin">
               <button
                 onClick={() => {
                   const loginData = { role: 'teacher' };
@@ -41,13 +41,13 @@ function LoginCard() {
                 }}
                 className="flex flex-col items-center text-center w-full"
               >
-                <img src={teacherCard} alt="Teacher Login" className="card_image mb-4" />
-                <p className="text-lg font-medium text-gray-800">Teachers Login</p>
+                <img src={teacherCard} alt="Teacher Login" className="card_image mb-3" />
+                <p className="text-base font-medium text-gray-800 card-text">Teachers Login</p>
               </button>
             </div>
 
             {/* Admin Login Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow card-margin">
+            <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow card-margin">
               <button
                 onClick={() => {
                   const loginData = { role: 'admin' };
@@ -55,8 +55,8 @@ function LoginCard() {
                 }}
                 className="flex flex-col items-center text-center w-full"
               >
-                <img src={adminCard} alt="Admin Login" className="card_image mb-4" />
-                <p className="text-lg font-medium text-gray-800">Admin Login</p>
+                <img src={adminCard} alt="Admin Login" className="card_image mb-3" />
+                <p className="text-base font-medium text-gray-800 card-text">Admin Login</p>
               </button>
             </div>
           </div>

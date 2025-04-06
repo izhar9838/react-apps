@@ -1,0 +1,42 @@
+/* EventUploadForm.css */
+.form-input {
+    transition: all 0.3s ease;
+  }
+  
+  .form-input:hover {
+    border-color: #a5b4fc; /* Tailwind indigo-300 */
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.2); /* Tailwind indigo-500 with opacity */
+  }
+  
+  .form-input:focus {
+    border-color: #6366f1; /* Tailwind indigo-500 */
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+  }
+  
+  .file-input::-webkit-file-upload-button {
+    background-color: #e0e7ff; /* Tailwind indigo-100 */
+    color: #4f46e5; /* Tailwind indigo-600 */
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem 0 0 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  
+  .file-input::-webkit-file-upload-button:hover {
+    background-color: #c7d2fe; /* Tailwind indigo-200 */
+  }
+  
+  .submit-btn {
+    transition: all 0.3s ease;
+  }
+  
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  
+  .shadow-3xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }

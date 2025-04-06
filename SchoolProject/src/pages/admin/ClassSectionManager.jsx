@@ -1,33 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const ClassSectionManager = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [sections, setSections] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [newSection, setNewSection] = useState({
     name: '',
-    studentCount: ''
+    studentCount: '',
+    capacity: ''
   });
 
-  const classes = ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'];
+  useEffect(() => {
+    fetchClasses();
+  }, []);
 
-  const classSections = {
-    'Class 1': [
-      { name: 'A', studentCount: 30 },
-      { name: 'B', studentCount: 25 }
-    ],
-    'Class 2': [
-      { name: 'A', studentCount: 28 },
-      { name: 'B', studentCount: 32 }
-    ],
-    'Class 3': [],
-    'Class 4': [],
-    'Class 5': []
+  const fetchClasses = async () => {
+    const token = localStorage.getItem('authToken');
+    try {
+      const response = await axios.get("http://localhost:9090/api/admin/classes", {
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      const fetchedClasses = Array.isArray(response.data) ? response.data : [];
+      setClasses(fetchedClasses);
+      if (fetchedClasses.length > 0) {
+        setSelectedClass(fetchedClasses[0].name);
+        fetchSections(fetchedClasses[0].name);
+      }
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+      setClasses([]);
+    }
+  };
+
+  const fetchSections = async (className) => {
+    const token = localStorage.getItem('authToken');
+    try {
+      const response = await axios.get(`http://localhost:9090/api/admin/classes/${className}/sections`, {
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      setSections(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching sections:", error);
+      setSections([]);
+    }
   };
 
   const handleClassChange = (e) => {
     const className = e.target.value;
     setSelectedClass(className);
-    setSections(classSections[className] || []);
+    fetchSections(className);
   };
 
   const handleInputChange = (e) => {
@@ -38,79 +60,88 @@ const ClassSectionManager = () => {
     }));
   };
 
-  const handleAddSection = () => {
+  const handleAddSection = async () => {
     if (!selectedClass) {
       alert('Please select a class first');
       return;
     }
     
-    if (!newSection.name || !newSection.studentCount) {
+    if (!newSection.name || !newSection.studentCount || !newSection.capacity) {
       alert('Please fill in all fields');
       return;
     }
 
-    const updatedSections = [...sections, {
-      name: newSection.name,
-      studentCount: parseInt(newSection.studentCount)
-    }];
+    const studentCount = parseInt(newSection.studentCount);
+    const capacity = parseInt(newSection.capacity);
 
-    setSections(updatedSections);
-    setNewSection({ name: '', studentCount: '' });
-    classSections[selectedClass] = updatedSections;
+    if (studentCount > capacity) {
+      alert('Student count cannot exceed capacity');
+      return;
+    }
+
+    const sectionData = {
+      name: newSection.name,
+      studentCount: studentCount,
+      capacity: capacity
+    };
+
+    const token = localStorage.getItem('authToken');
+    try {
+      await axios.post(`http://localhost:9090/api/admin/classes/${selectedClass}/sections`, sectionData, {
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      fetchSections(selectedClass);
+      setNewSection({ name: '', studentCount: '', capacity: '' });
+    } catch (error) {
+      console.error("Error adding section:", error);
+      alert('Failed to add section. Please try again.');
+    }
+  };
+
+  const handleCapacityChange = async (index, newCapacity) => {
+    const capacity = parseInt(newCapacity);
+    if (isNaN(capacity) || capacity < 0) {
+      alert('Please enter a valid capacity');
+      return;
+    }
+
+    const section = sections[index];
+    if (capacity < section.studentCount) {
+      alert('Capacity cannot be less than current student count');
+      return;
+    }
+
+    const token = localStorage.getItem('authToken');
+    try {
+      await axios.put(`http://localhost:9090/api/admin/classes/${selectedClass}/sections/${section.name}`, 
+        { ...section, capacity },
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      fetchSections(selectedClass);
+    } catch (error) {
+      console.error("Error updating capacity:", error);
+      alert('Failed to update capacity. Please try again.');
+    }
   };
 
   return (
-    <div 
-      style={{ 
-        minHeight: selectedClass ? 'auto' : '80vh',
-        padding: '20px',
-        width: '100%',
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}
-    >
+    <div className={`min-h-[80vh] ${selectedClass ? 'min-h-fit' : ''} p-5 max-w-6xl mx-auto`}>
       {/* Class Selection */}
-      <div 
-        style={{ 
-          marginBottom: '20px',
-          display: 'flex',
-          justifyContent: 'center',
-          width: '100%',
-          paddingTop: selectedClass ? '0' : '20px' // Adds some top padding when no class is selected
-        }}
-      >
-        <div 
-          style={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '15px',
-            alignItems: 'center'
-          }}
-        >
-          <label 
-            htmlFor="classSelect" 
-            style={{ 
-              fontSize: '1.2rem'
-            }}
-          >
+      <div className="mb-5 flex justify-center items-center w-full pt-5">
+        <div className="flex flex-col gap-4 items-center">
+          <label htmlFor="classSelect" className="text-xl md:text-2xl font-medium text-gray-700">
             Select Class:
           </label>
           <select
             id="classSelect"
             value={selectedClass}
             onChange={handleClassChange}
-            style={{ 
-              padding: '8px 12px',
-              fontSize: '1rem',
-              width: 'min(300px, 80vw)',
-              borderRadius: '4px',
-              border: '1px solid #ddd'
-            }}
+            className="p-2 text-base w-[min(300px,80vw)] rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">-- Select a Class --</option>
-            {classes.map(className => (
-              <option key={className} value={className}>
-                {className}
+            {classes.map(cls => (
+              <option key={cls.name} value={cls.name}>
+                {cls.name}
               </option>
             ))}
           </select>
@@ -119,52 +150,40 @@ const ClassSectionManager = () => {
 
       {/* Sections Table and Form */}
       {selectedClass && (
-        <div style={{ width: '100%' }}>
-          <h3 style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <div className="w-full">
+          <h3 className="text-center text-lg md:text-xl font-semibold text-gray-800 mb-5">
             Sections for {selectedClass}
           </h3>
           
-          <div style={{ overflowX: 'auto' }}>
-            <table 
-              style={{ 
-                width: '100%', 
-                borderCollapse: 'collapse', 
-                marginBottom: '20px',
-                minWidth: '300px'
-              }}
-            >
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse mb-5 min-w-[400px]">
               <thead>
-                <tr style={{ backgroundColor: '#f2f2f2' }}>
-                  <th style={{ border: '1px solid #ddd', padding: '8px', minWidth: '100px' }}>
-                    Section Name
-                  </th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px', minWidth: '100px' }}>
-                    Student Count
-                  </th>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 p-2 text-center min-w-[100px]">Section Name</th>
+                  <th className="border border-gray-300 p-2 text-center min-w-[100px]">Student Count</th>
+                  <th className="border border-gray-300 p-2 text-center min-w-[100px]">Capacity</th>
                 </tr>
               </thead>
               <tbody>
                 {sections.length > 0 ? (
                   sections.map((section, index) => (
                     <tr key={index}>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        {section.name}
-                      </td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        {section.studentCount}
+                      <td className="border border-gray-300 p-2 text-center">{section.name}</td>
+                      <td className="border border-gray-300 p-2 text-center">{section.studentCount}</td>
+                      <td className="border border-gray-300 p-2 text-center">
+                        <input
+                          type="number"
+                          value={section.capacity}
+                          onChange={(e) => handleCapacityChange(index, e.target.value)}
+                          className="w-20 p-1 border border-gray-300 rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          min={section.studentCount}
+                        />
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td 
-                      colSpan="2" 
-                      style={{ 
-                        border: '1px solid #ddd', 
-                        padding: '8px', 
-                        textAlign: 'center' 
-                      }}
-                    >
+                    <td colSpan="3" className="border border-gray-300 p-2 text-center">
                       No sections found
                     </td>
                   </tr>
@@ -174,35 +193,16 @@ const ClassSectionManager = () => {
           </div>
 
           {/* Add Section Form */}
-          <div 
-            style={{ 
-              border: '1px solid #ddd', 
-              padding: '15px',
-              borderRadius: '4px'
-            }}
-          >
-            <h4 style={{ marginBottom: '15px' }}>Add New Section</h4>
-            <div 
-              style={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                gap: '10px',
-                marginBottom: '15px',
-                alignItems: 'center'
-              }}
-            >
+          <div className="border border-gray-300 p-4 rounded-md">
+            <h4 className="text-base md:text-lg font-medium mb-4 text-gray-700">Add New Section</h4>
+            <div className="flex flex-col gap-3 mb-4 items-center">
               <input
                 type="text"
                 name="name"
                 value={newSection.name}
                 onChange={handleInputChange}
                 placeholder="Section Name (e.g., A)"
-                style={{ 
-                  padding: '8px', 
-                  width: 'min(250px, 80vw)',
-                  borderRadius: '4px',
-                  border: '1px solid #ddd'
-                }}
+                className="p-2 w-[min(250px,80vw)] border border-gray-300 rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="number"
@@ -210,28 +210,22 @@ const ClassSectionManager = () => {
                 value={newSection.studentCount}
                 onChange={handleInputChange}
                 placeholder="Student Count"
-                style={{ 
-                  padding: '8px', 
-                  width: 'min(250px, 80vw)',
-                  borderRadius: '4px',
-                  border: '1px solid #ddd'
-                }}
+                className="p-2 w-[min(250px,80vw)] border border-gray-300 rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                min="0"
+              />
+              <input
+                type="number"
+                name="capacity"
+                value={newSection.capacity}
+                onChange={handleInputChange}
+                placeholder="Section Capacity"
+                className="p-2 w-[min(250px,80vw)] border border-gray-300 rounded-md text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                 min="0"
               />
             </div>
             <button
               onClick={handleAddSection}
-              style={{
-                padding: '8px 15px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                width: 'min(150px, 50vw)',
-                display: 'block',
-                margin: '0 auto'
-              }}
+              className="block mx-auto px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 w-[min(150px,50vw)]"
             >
               Add Section
             </button>
