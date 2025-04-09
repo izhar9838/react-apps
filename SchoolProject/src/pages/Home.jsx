@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-// import './Home.css';
 
 function Home() {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ function Home() {
         <section
           className="text-gray-800 py-20 w-full h-[92vh] flex flex-wrap items-center"
         >
-          <div className="container mx-auto text-center">
+          <div className="container mx-auto text-center px-4 sm:px-6">
             <h1 className="lg:text-5xl md:text-4xl sm:text-3xl text-2xl font-semibold mb-6 text-gray-800">
               <div className="waves text-gray-700" data-word="Welcome to S.M Central Academy">
                 Welcome to S.M Central Academy
@@ -35,8 +34,8 @@ function Home() {
 
         {/* Admin Section */}
         {userRole === "admin" && authStatus && (
-          <section className="container mx-auto py-12 w-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center">
+          <section className="container mx-auto py-12 w-full px-4 sm:px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               <button
                 className="cursor-pointer"
                 onClick={() => navigate("/studentform")}
@@ -72,23 +71,28 @@ function Home() {
         <h2 className="text-3xl font-bold text-center mb-8 border-b-2 border-gray-800 text-gray-800 pb-4">
           Latest News
         </h2>
-        <section className="py-12 w-full container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-lg m-4">
-              <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">School Reopening</h3>
-              <p className="text-gray-700">
-                The school will reopen on January 10th, 2024. Please check the updated schedule.
-              </p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-lg m-4">
+        <section className="py-12 w-full container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <button 
+              className="cursor-pointer"
+              onClick={() => navigate("/time-table")}
+            >
+              <div className="bg-white p-6 rounded-lg shadow-lg h-full flex flex-col justify-between">
+                <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">School Time Table</h3>
+                <p className="text-gray-700 flex-grow">
+                  Get the Latest Time Table of School;
+                </p>
+              </div>
+            </button>
+            <div className="bg-white p-6 rounded-lg shadow-lg h-full flex flex-col justify-between">
               <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">Sports Day</h3>
-              <p className="text-gray-700">
+              <p className="text-gray-700 flex-grow">
                 Join us for our annual Sports Day on January 20th, 2024.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-lg m-4">
+            <div className="bg-white p-6 rounded-lg shadow-lg h-full flex flex-col justify-between">
               <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">Exam Results</h3>
-              <p className="text-gray-700">
+              <p className="text-gray-700 flex-grow">
                 The results for the final exams will be announced on January 15th, 2024.
               </p>
             </div>

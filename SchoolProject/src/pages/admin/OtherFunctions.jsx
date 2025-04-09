@@ -67,7 +67,7 @@ const OtherFunctions = () => {
           {/* Share Resources Card */}
           <div 
             className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow card-margin"
-            onClick={() => navigate('/teacher/resources')}
+            onClick={() => navigate('/admin/create-time-table')}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-full bg-green-100 mb-4">

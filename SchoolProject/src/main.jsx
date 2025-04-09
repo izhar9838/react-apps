@@ -24,6 +24,8 @@ import OtherFunctions from './pages/admin/OtherFunctions.jsx';
 import ClassSectionManager from './pages/admin/ClassSectionManager.jsx';
 import TeacherProtectedRoute from './pages/teacher/TeacherProtected.jsx';
 import EventUploadForm from './pages/admin/EventUploadForm.jsx';
+import Timetable from './pages/TimeTable.jsx';
+import CreateTimetable from './pages/admin/CreateTimeTable.jsx';
 
 
 const router=createBrowserRouter(
@@ -48,12 +50,22 @@ const router=createBrowserRouter(
           <ClassSectionManager/>
         </ProtectedRoute>
       }/>
+      <Route path='/time-table' element={<Timetable/>}/>
       <Route 
         path="/admin/studentform" 
         element={
 
             <ProtectedRoute>
               <StudentAdmissionForm />
+            </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/create-time-table" 
+        element={
+
+            <ProtectedRoute>
+              <CreateTimetable/>
             </ProtectedRoute>
         } 
       />
