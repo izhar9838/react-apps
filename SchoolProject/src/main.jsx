@@ -26,6 +26,8 @@ import TeacherProtectedRoute from './pages/teacher/TeacherProtected.jsx';
 import EventUploadForm from './pages/admin/EventUploadForm.jsx';
 import Timetable from './pages/TimeTable.jsx';
 import CreateTimetable from './pages/admin/CreateTimeTable.jsx';
+import HallOfFame from './pages/HallOfFame.jsx';
+import CreateHallOfFame from './pages/admin/CreateHallofFame.jsx';
 
 
 const router=createBrowserRouter(
@@ -50,6 +52,7 @@ const router=createBrowserRouter(
           <ClassSectionManager/>
         </ProtectedRoute>
       }/>
+      <Route path='/hall-of-fame' element={<HallOfFame/>}/>
       <Route path='/time-table' element={<Timetable/>}/>
       <Route 
         path="/admin/studentform" 
@@ -58,6 +61,24 @@ const router=createBrowserRouter(
             <ProtectedRoute>
               <StudentAdmissionForm />
             </ProtectedRoute>
+        } 
+      />
+       <Route 
+        path="/admin/other-Functions/hallofFame" 
+        element={
+
+            <ProtectedRoute>
+              <CreateHallOfFame />
+            </ProtectedRoute>
+        } 
+      />
+       <Route 
+        path="/teacher/teacher-dashboard" 
+        element={
+
+            <TeacherProtectedRoute>
+              <TeacherDashboard />
+              </TeacherProtectedRoute>
         } 
       />
       <Route 

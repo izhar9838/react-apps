@@ -75,7 +75,9 @@ function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             <button 
               className="cursor-pointer"
-              onClick={() => navigate("/time-table")}
+              onClick={() => { 
+                window.scrollTo(0, 0);
+                navigate("/time-table")}}
             >
               <div className="bg-white p-6 rounded-lg shadow-lg h-full flex flex-col justify-between">
                 <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">School Time Table</h3>
@@ -84,12 +86,18 @@ function Home() {
                 </p>
               </div>
             </button>
+            <button
+            
+            className="cursor-pointer"
+            onClick={() =>{window.scrollTo(0, 0);
+                       navigate("/hall-of-fame")}}>
             <div className="bg-white p-6 rounded-lg shadow-lg h-full flex flex-col justify-between">
-              <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">Sports Day</h3>
+              <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">Hall of Fame</h3>
               <p className="text-gray-700 flex-grow">
-                Join us for our annual Sports Day on January 20th, 2024.
+                Top Student who scored highest in the exams & Sports;
               </p>
             </div>
+            </button>
             <div className="bg-white p-6 rounded-lg shadow-lg h-full flex flex-col justify-between">
               <h3 className="lg:text-xl text-lg font-medium mb-4 text-gray-800">Exam Results</h3>
               <p className="text-gray-700 flex-grow">

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import ClassRoomImg from '../../assets/admin-rel/otherfunction/classroom.png'
 import TimeTableImg from '../../assets/admin-rel/otherfunction/timetable.png'
 import EventsImg from '../../assets/admin-rel/otherfunction/events.png'
+import HallOfFameImg from '../../assets/admin-rel/otherfunction/HallOfFame.jpg'
 
 // SVG Icons as Components
 const Sections = () => (
@@ -27,6 +28,13 @@ const AddEvents = () => (
   <img 
     src={EventsImg} 
     alt="Announcements Icon" 
+    className="h-14 w-14" 
+  />
+);
+const HallOfFame = () => (
+  <img 
+    src={HallOfFameImg} 
+    alt="Hall of Fame" 
     className="h-14 w-14" 
   />
 );
@@ -90,6 +98,19 @@ const OtherFunctions = () => {
               </div>
               <div>
                 <h3 className="text-lg font-medium text-gray-800">Add Events</h3>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow card-margin"
+            onClick={() => navigate('/admin/other-Functions/hallofFame')}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 rounded-full bg-yellow-100 mb-4">
+                <HallOfFame />
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-gray-800">Hall of Fame </h3>
               </div>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import axios from 'axios';
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../../store/authSlice";
-import { store } from '../../store/store';
+// import { store } from '../../store/store';
 import Home from "../Home";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -18,7 +18,7 @@ const LoginForm = () => {
     const authStatus = useSelector(state => state.auth?.isAuthenticated);
     const [showPassword, setShowPassword] = useState(false);
     const [isExiting, setIsExiting] = useState(false); // State for exit animation
-
+    const [errorMessage, setErrorMessage] = useState(null);
     const onSubmit = async (data) => {
         try {
             console.log(data);
@@ -31,16 +31,30 @@ const LoginForm = () => {
             console.log(response.data);
             
             dispatch(loginSuccess({ token, user }));
+            console.log("dispatch success");
+            
 
             if (user.role === 'admin') {
                 navigate('/admin', { replace: true });
             } else if (user.role === 'teacher') {
-                navigate('/');
+                navigate('/', { replace: true });
             } else {
                 navigate("/", { replace: true });
             }
         } catch (error) {
             console.log("Login failed", error.response);
+            console.error("Login failed:", error);
+            // Handle different types of errors
+            if (error.response) {
+                // Server responded with a status code (e.g., 400, 401)
+                setErrorMessage(error.response.data.message || "Invalid username or password");
+            } else if (error.request) {
+                // Request was made but no response received (e.g., network error)
+                setErrorMessage("Network error: Could not reach the server");
+            } else {
+                // Other errors (e.g., malformed request)
+                setErrorMessage(error.message || "An unexpected error occurred");
+            }
         }
     };
 
@@ -58,6 +72,7 @@ const LoginForm = () => {
                 <div className={`login-box ${isExiting ? 'fade-out' : 'fade-in'}`}>
                     <h2>Welcome Back</h2>
                     <p>Please log in to your account</p>
+                    {errorMessage && <p className="error-message">{errorMessage}</p>}
                     <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
                         <div className="form-group">
                             <label htmlFor="username">Username</label>

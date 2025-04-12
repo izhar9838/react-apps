@@ -15,7 +15,6 @@ function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const menuRef = useRef(null);
   const dropdownRef = useRef(null);
-
   const toggleMenu = (e) => {
     e.stopPropagation(); // Prevent click from bubbling to handleClickOutside
     // console.log('Toggle menu clicked, current isOpen:', isOpen);
@@ -71,7 +70,7 @@ function Header() {
 
   return (
     <header>
-      <div className='bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 w-full min-h-[7vh] flex flex-wrap justify-between items-center nav-bar'>
+      <div className=' bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 w-full min-h-[7vh] flex flex-wrap justify-between items-center nav-bar'>
         <div className='w-1/4 pl-4'>
           <h1 className='text-xl font-bold text-black'>School Logo</h1>
         </div>
@@ -102,6 +101,19 @@ function Header() {
                 </button>
               </li>
             )}
+            {authStatus && authRole === 'teacher' && (
+                <li className='nav-li px-2 py-2'>
+                  <button
+                    onClick={() => {
+                      navigate('teacher/teacher-dashboard');
+                      setIsOpen(false);
+                    }}
+                    className='cursor-pointer nav-button w-full h-full font-medium '
+                  >
+                    Teacher
+                  </button>
+                </li>
+              )}
           </ul>
 
           {/* Mobile Profile and Menu Toggle */}
@@ -265,6 +277,19 @@ function Header() {
                     className='cursor-pointer nav-button w-full h-full font-medium '
                   >
                     Admin
+                  </button>
+                </li>
+              )}
+              {authStatus && authRole === 'teacher' && (
+                <li className='nav-li px-2 py-2'>
+                  <button
+                    onClick={() => {
+                      navigate('teacher');
+                      setIsOpen(false);
+                    }}
+                    className='cursor-pointer nav-button w-full h-full font-medium '
+                  >
+                    Teacher
                   </button>
                 </li>
               )}

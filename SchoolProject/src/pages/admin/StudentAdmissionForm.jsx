@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Modal from "../Modal";
-import axios from 'axios';
+import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
-const validateEmail = (value) => {
-  const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-  return emailRegex.test(value) || "Invalid email address";
-};
+import Cropper from "react-easy-crop";
+import { checkImageSize, getCroppedImg, fileToBase64,validateEmail } from "./ImageUtil" // Updated import
 
 const StudentAdmissionForm = () => {
   const [step, setStep] = useState(1);
@@ -15,6 +12,12 @@ const StudentAdmissionForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [classes, setClasses] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
   const { control, handleSubmit, trigger, reset, formState: { errors }, setValue } = useForm({
     defaultValues: {
       admissionId: "",
@@ -42,8 +45,8 @@ const StudentAdmissionForm = () => {
         payment_mode: "",
       },
       userPass: {
-        username: "", // Explicitly empty
-        password: "", // Explicitly empty
+        username: "",
+        password: "",
         role: "student",
       },
     },
@@ -55,10 +58,10 @@ const StudentAdmissionForm = () => {
   }, []);
 
   const fetchClasses = async () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     try {
       const response = await axios.get("http://localhost:9090/api/admin/classes", {
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setClasses(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
@@ -67,13 +70,38 @@ const StudentAdmissionForm = () => {
     }
   };
 
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = (error) => reject(error);
-    });
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const handleCropSave = useCallback(async () => {
+    try {
+      const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
+      const file = new File([croppedImage], "profile.jpg", { type: "image/jpeg" });
+      setValue("image", file);
+      setImagePreview(URL.createObjectURL(file));
+      setCropModalOpen(false);
+    } catch (error) {
+      console.error("Crop error:", error);
+      setModal({
+        isOpen: true,
+        title: "Crop Error",
+        message: "Failed to crop the image. Please try again.",
+        isSuccess: false,
+      });
+    }
+  }, [imageToCrop, croppedAreaPixels, setValue]);
+
+  const customHandleImageChange = (e, onChange, onImageError, setImagePreview) => {
+    const file = e.target.files[0];
+    if (file) {
+      const sizeValid = checkImageSize(file, onImageError);
+      if (sizeValid) {
+        const imageUrl = URL.createObjectURL(file);
+        setImageToCrop(imageUrl);
+        setCropModalOpen(true);
+      }
+    }
   };
 
   const onSubmit = async (data) => {
@@ -93,15 +121,22 @@ const StudentAdmissionForm = () => {
           DOB: data.DOB,
           gender: data.gender,
           image: imageBase64,
-          academic_info: data.academic_info,
           contact_details: data.contact_details,
+          academic_info: data.academic_info,
           fees_details: feesDetailsArray,
           userPass: data.userPass,
         };
-        const token = localStorage.getItem('authToken');
-        const response = await axios.post("http://localhost:9090/api/admin/enrollStudent", studentData, {
-          headers: { "Authorization": `Bearer ${token}` },
-        });
+        const token = localStorage.getItem("authToken");
+        const response = await axios.post(
+          "http://localhost:9090/api/admin/enrollStudent",
+          studentData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         setModal({
           isOpen: true,
           title: "Success!",
@@ -128,18 +163,64 @@ const StudentAdmissionForm = () => {
   const getFieldsForStep = (step, isLargeScreen = false) => {
     if (isLargeScreen) {
       switch (step) {
-        case 1: return ["admissionId", "firstName", "lastName", "DOB", "gender", "image", "contact_details.address", "contact_details.phoneNumber", "contact_details.email", "contact_details.guardianName", "contact_details.guardianNumber"];
-        case 2: return ["academic_info.rollNo", "academic_info.standard", "academic_info.section", "academic_info.academic_year", "fees_details.amount", "fees_details.fee_type", "fees_details.payment_mode", "userPass.username", "userPass.password"];
-        default: return [];
+        case 1:
+          return [
+            "admissionId",
+            "firstName",
+            "lastName",
+            "DOB",
+            "gender",
+            "image",
+            "contact_details.address",
+            "contact_details.phoneNumber",
+            "contact_details.email",
+            "contact_details.guardianName",
+            "contact_details.guardianNumber",
+          ];
+        case 2:
+          return [
+            "academic_info.rollNo",
+            "academic_info.standard",
+            "academic_info.section",
+            "academic_info.academic_year",
+            "fees_details.amount",
+            "fees_details.fee_type",
+            "fees_details.payment_mode",
+            "userPass.username",
+            "userPass.password",
+          ];
+        default:
+          return [];
       }
     } else {
       switch (step) {
-        case 1: return ["admissionId", "firstName", "lastName", "DOB", "gender", "image"];
-        case 2: return ["contact_details.address", "contact_details.phoneNumber", "contact_details.email", "contact_details.guardianName", "contact_details.guardianNumber"];
-        case 3: return ["academic_info.rollNo", "academic_info.standard", "academic_info.section", "academic_info.academic_year"];
-        case 4: return ["fees_details.amount", "fees_details.fee_type", "fees_details.payment_mode"];
-        case 5: return ["userPass.username", "userPass.password"];
-        default: return [];
+        case 1:
+          return ["admissionId", "firstName", "lastName", "DOB", "gender", "image"];
+        case 2:
+          return [
+            "contact_details.address",
+            "contact_details.phoneNumber",
+            "contact_details.email",
+            "contact_details.guardianName",
+            "contact_details.guardianNumber",
+          ];
+        case 3:
+          return [
+            "academic_info.rollNo",
+            "academic_info.standard",
+            "academic_info.section",
+            "academic_info.academic_year",
+          ];
+        case 4:
+          return [
+            "fees_details.amount",
+            "fees_details.fee_type",
+            "fees_details.payment_mode",
+          ];
+        case 5:
+          return ["userPass.username", "userPass.password"];
+        default:
+          return [];
       }
     }
   };
@@ -155,17 +236,17 @@ const StudentAdmissionForm = () => {
         handleSubmit(onSubmit)();
       }
     } else {
-      const firstErrorField = fieldsToValidate.find(field => {
-        if (field.includes('.')) {
-          const [parent, child] = field.split('.');
+      const firstErrorField = fieldsToValidate.find((field) => {
+        if (field.includes(".")) {
+          const [parent, child] = field.split(".");
           return errors[parent]?.[child];
         }
         return errors[field];
       });
       if (firstErrorField) {
-        const element = document.getElementById(firstErrorField.split('.').join('-'));
+        const element = document.getElementById(firstErrorField.split(".").join("-"));
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
           element.focus();
         }
       }
@@ -178,29 +259,41 @@ const StudentAdmissionForm = () => {
 
   const closeModal = () => setModal({ ...modal, isOpen: false });
 
-  const handleImageChange = (e, onChange) => {
-    const file = e.target.files[0];
-    if (file) {
-      onChange(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const removeImage = () => {
+    setValue("image", null);
+    setImagePreview(null);
   };
 
-  const removeImage = () => {
-    setValue('image', null);
-    setImagePreview(null);
+  const handleImageError = (message) => {
+    setModal({
+      isOpen: true,
+      title: "Image Size Error",
+      message,
+      isSuccess: false,
+    });
   };
 
   return (
     <div className="min-h-[70vh] flex justify-center items-center bg-gray-100 p-2 sm:p-4">
       <div className="w-[85vw] bg-white rounded-lg shadow-md p-4 md:p-6">
-        <h1 className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4 md:mb-6">Student Admission Form</h1>
-        <p className="text-sm text-gray-600 text-center mb-4">All fields marked with <span className="text-red-500">*</span> are required.</p>
+        <h1 className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4 md:mb-6">
+          Student Admission Form
+        </h1>
+        <p className="text-sm text-gray-600 text-center mb-4">
+          All fields marked with <span className="text-red-500">*</span> are required.
+        </p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="hidden md:block space-y-4">
             {step === 1 && (
               <div className="grid md:grid-cols-2 gap-4">
-                <PersonalDetails control={control} handleImageChange={handleImageChange} imagePreview={imagePreview} removeImage={removeImage} />
+                <PersonalDetails
+                  control={control}
+                  handleImageChange={customHandleImageChange}
+                  imagePreview={imagePreview}
+                  removeImage={removeImage}
+                  onImageError={handleImageError}
+                  setImagePreview={setImagePreview}
+                />
                 <Contact_Details control={control} />
               </div>
             )}
@@ -215,35 +308,107 @@ const StudentAdmissionForm = () => {
             )}
             <div className="flex justify-between mt-4">
               {step > 1 && (
-                <button type="button" onClick={prevStep} className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm" disabled={isSubmitting}>
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
+                  disabled={isSubmitting}
+                >
                   Previous
                 </button>
               )}
-              <button type="button" onClick={() => nextStep(true)} className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm" disabled={isSubmitting}>
+              <button
+                type="button"
+                onClick={() => nextStep(true)}
+                className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
+                disabled={isSubmitting}
+              >
                 {step === 2 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
               </button>
             </div>
           </div>
 
           <div className="md:hidden space-y-4">
-            {step === 1 && <PersonalDetails control={control} handleImageChange={handleImageChange} imagePreview={imagePreview} removeImage={removeImage} />}
+            {step === 1 && (
+              <PersonalDetails
+                control={control}
+                handleImageChange={customHandleImageChange}
+                imagePreview={imagePreview}
+                removeImage={removeImage}
+                onImageError={handleImageError}
+                setImagePreview={setImagePreview}
+              />
+            )}
             {step === 2 && <Contact_Details control={control} />}
             {step === 3 && <Academic_Info control={control} classes={classes} />}
             {step === 4 && <FeesDetails control={control} />}
             {step === 5 && <User_Password control={control} />}
             <div className="flex justify-between mt-4">
               {step > 1 && (
-                <button type="button" onClick={prevStep} className="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 text-xs" disabled={isSubmitting}>
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 text-xs"
+                  disabled={isSubmitting}
+                >
                   Previous
                 </button>
               )}
-              <button type="button" onClick={() => nextStep(false)} className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs" disabled={isSubmitting}>
+              <button
+                type="button"
+                onClick={() => nextStep(false)}
+                className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
+                disabled={isSubmitting}
+              >
                 {step === 5 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
               </button>
             </div>
           </div>
 
-          {modal.isOpen && <Modal isOpen={modal.isOpen} onClose={closeModal} title={modal.title} message={modal.message} isSuccess={modal.isSuccess} />}
+          {modal.isOpen && (
+            <Modal
+              isOpen={modal.isOpen}
+              onClose={closeModal}
+              title={modal.title}
+              message={modal.message}
+              isSuccess={modal.isSuccess}
+            />
+          )}
+
+          {cropModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px]">
+                <h2 className="text-lg font-semibold mb-4">Crop Image</h2>
+                <div className="relative w-full h-[300px]">
+                  <Cropper
+                    image={imageToCrop}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                  />
+                </div>
+                <div className="mt-4 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setCropModalOpen(false)}
+                    className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCropSave}
+                    className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
@@ -251,7 +416,7 @@ const StudentAdmissionForm = () => {
 };
 
 // Reusable Components
-const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage }) => {
+const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, onImageError, setImagePreview }) => {
   return (
     <div className="space-y-3">
       <h2 className="text-lg md:text-xl text-gray-700 font-medium">Personal Details</h2>
@@ -259,8 +424,22 @@ const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage
       <Field label="First Name" name="firstName" control={control} type="text" required />
       <Field label="Last Name" name="lastName" control={control} type="text" required />
       <Field label="Date of Birth" name="DOB" control={control} type="date" required />
-      <SelectField label="Gender" name="gender" control={control} options={["Male", "Female", "Prefer not to say"]} required />
-      <ImageField label="Photo" name="image" control={control} handleImageChange={handleImageChange} imagePreview={imagePreview} required removeImage={removeImage} />
+      <SelectField
+        label="Gender"
+        name="gender"
+        control={control}
+        options={["Male", "Female", "Prefer not to say"]}
+        required
+      />
+      <ImageField
+        label="Photo"
+        name="image"
+        control={control}
+        handleImageChange={(e, onChange) => handleImageChange(e, onChange, onImageError, setImagePreview)}
+        imagePreview={imagePreview}
+        required
+        removeImage={removeImage}
+      />
     </div>
   );
 };
@@ -271,7 +450,14 @@ const Contact_Details = ({ control }) => {
       <h2 className="text-lg md:text-xl text-gray-700 font-medium">Contact Details</h2>
       <Field label="Address" name="contact_details.address" control={control} type="text" required />
       <Field label="Phone Number" name="contact_details.phoneNumber" control={control} type="text" required />
-      <Field label="Email" name="contact_details.email" control={control} type="text" required validate={validateEmail} />
+      <Field
+        label="Email"
+        name="contact_details.email"
+        control={control}
+        type="text"
+        required
+        validate={validateEmail}
+      />
       <Field label="Guardian Name" name="contact_details.guardianName" control={control} type="text" required />
       <Field label="Guardian Number" name="contact_details.guardianNumber" control={control} type="text" required />
     </div>
@@ -283,7 +469,13 @@ const Academic_Info = ({ control, classes = [] }) => {
     <div className="space-y-3">
       <h2 className="text-lg md:text-xl text-gray-700 font-medium">Academic Details</h2>
       <Field label="Roll No" name="academic_info.rollNo" control={control} type="text" required />
-      <SelectField label="Standard" name="academic_info.standard" control={control} options={classes.map(cls => cls.name)} required />
+      <SelectField
+        label="Standard"
+        name="academic_info.standard"
+        control={control}
+        options={classes.map((cls) => cls.name)}
+        required
+      />
       <Field label="Section" name="academic_info.section" control={control} type="text" required />
       <Field label="Academic Year" name="academic_info.academic_year" control={control} type="text" required />
     </div>
@@ -295,8 +487,20 @@ const FeesDetails = ({ control }) => {
     <div className="space-y-3">
       <h2 className="text-lg md:text-xl text-gray-700 font-medium">Fees Details</h2>
       <Field label="Amount" name="fees_details.amount" control={control} type="text" required />
-      <CheckboxGroup label="Fee Type" name="fees_details.fee_type" control={control} options={["Tuition Fee", "Examination Fee", "Other"]} required />
-      <SelectField label="Payment Mode" name="fees_details.payment_mode" control={control} options={["Cash", "Bank Transfer", "UPI"]} required />
+      <CheckboxGroup
+        label="Fee Type"
+        name="fees_details.fee_type"
+        control={control}
+        options={["Tuition Fee", "Examination Fee", "Other"]}
+        required
+      />
+      <SelectField
+        label="Payment Mode"
+        name="fees_details.payment_mode"
+        control={control}
+        options={["Cash", "Bank Transfer", "UPI"]}
+        required
+      />
     </div>
   );
 };
@@ -306,7 +510,13 @@ const User_Password = ({ control }) => {
     <div className="space-y-3">
       <h2 className="text-lg md:text-xl text-gray-700 font-medium">Username Password</h2>
       <Field label="Username" name="userPass.username" control={control} type="text" required autoComplete="off" />
-      <PasswordField label="Password" name="userPass.password" control={control} required autoComplete="new-password" />
+      <PasswordField
+        label="Password"
+        name="userPass.password"
+        control={control}
+        required
+        autoComplete="new-password"
+      />
     </div>
   );
 };
@@ -325,8 +535,8 @@ const Field = ({ label, name, control, type, required, validate, autoComplete })
         <input
           {...field}
           type={type}
-          id={name.replace('.', '-')}
-          autoComplete={autoComplete || "off"} // Default to "off" if not specified
+          id={name.replace(".", "-")}
+          autoComplete={autoComplete || "off"}
           className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
         />
       )}
@@ -351,7 +561,7 @@ const ImageField = ({ label, name, control, handleImageChange, imagePreview, req
             id={name}
             accept="image/*"
             onChange={(e) => handleImageChange(e, onChange)}
-            className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
+            className="mt-1 block w-full p-2 text-sm md:text-sm border border-gray-300 rounded-lg shadow-sm transition-all file-input"
           />
           {imagePreview && (
             <div className="mt-2">
@@ -383,12 +593,14 @@ const SelectField = ({ label, name, control, options, required }) => (
       render={({ field }) => (
         <select
           {...field}
-          id={name.replace('.', '-')}
+          id={name.replace(".", "-")}
           className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
         >
           <option value="">Select {label}</option>
           {options.map((option) => (
-            <option key={option} value={option}>{option}</option>
+            <option key={option} value={option}>
+              {option}
+            </option>
           ))}
         </select>
       )}
@@ -404,23 +616,32 @@ const CheckboxGroup = ({ label, name, control, options, required }) => (
     <Controller
       name={name}
       control={control}
-      rules={{ required: required ? true : false, validate: value => value.length > 0 || true }}
+      rules={{ required: required ? true : false, validate: (value) => value.length > 0 || true }}
       render={({ field }) => (
         <div className="space-y-1">
           {options.map((option) => (
             <div key={option} className="flex items-center">
               <input
                 type="checkbox"
-                id={`${name.replace('.', '-')}_${option}`}
+                id={`${name.replace(".", "-")}_${option}`}
                 value={option}
                 checked={field.value.includes(option)}
                 onChange={(e) => {
                   const value = e.target.value;
-                  field.onChange(field.value.includes(value) ? field.value.filter(v => v !== value) : [...field.value, value]);
+                  field.onChange(
+                    field.value.includes(value)
+                      ? field.value.filter((v) => v !== value)
+                      : [...field.value, value]
+                  );
                 }}
                 className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded"
               />
-              <label htmlFor={`${name.replace('.', '-')}_${option}`} className="text-xs md:text-sm text-gray-700">{option}</label>
+              <label
+                htmlFor={`${name.replace(".", "-")}_${option}`}
+                className="text-xs md:text-sm text-gray-700"
+              >
+                {option}
+              </label>
             </div>
           ))}
         </div>
@@ -429,7 +650,7 @@ const CheckboxGroup = ({ label, name, control, options, required }) => (
   </div>
 );
 
-const PasswordField = ({ label, name, control, required, autoComplete }) => {
+const PasswordField = ({ control, label, name, required, autoComplete }) => {
   const [showPassword, setShowPassword] = useState(false);
   return (
     <div>
@@ -445,8 +666,8 @@ const PasswordField = ({ label, name, control, required, autoComplete }) => {
             <input
               {...field}
               type={showPassword ? "text" : "password"}
-              id={name.replace('.', '-')}
-              autoComplete={autoComplete || "new-password"} // Prevent autofill
+              id={name.replace(".", "-")}
+              autoComplete={autoComplete || "new-password"}
               className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm pr-8"
             />
             <button
@@ -454,7 +675,11 @@ const PasswordField = ({ label, name, control, required, autoComplete }) => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 flex items-center pr-2"
             >
-              {showPassword ? <FaEyeSlash className="text-gray-500 h-4 w-4" /> : <FaEye className="text-gray-500 h-4 w-4" />}
+              {showPassword ? (
+                <FaEyeSlash className="text-gray-500 h-4 w-4" />
+              ) : (
+                <FaEye className="text-gray-500 h-4 w-4" />
+              )}
             </button>
           </div>
         )}
