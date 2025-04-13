@@ -71,8 +71,8 @@ const LoginForm = () => {
             <div className="login-container">
                 <div className={`login-box ${isExiting ? 'fade-out' : 'fade-in'}`}>
                     <h2>Welcome Back</h2>
-                    <p>Please log in to your account</p>
-                    {errorMessage && <p className="error-message">{errorMessage}</p>}
+                    {!errorMessage &&<p>Please log in to your account</p>}
+                    {errorMessage && <h1 className="text-red-500">{errorMessage}</h1>}
                     <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
