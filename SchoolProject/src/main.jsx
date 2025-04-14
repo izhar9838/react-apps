@@ -28,7 +28,7 @@ import Timetable from './pages/TimeTable.jsx';
 import CreateTimetable from './pages/admin/CreateTimeTable.jsx';
 import HallOfFame from './pages/HallOfFame.jsx';
 import CreateHallOfFame from './pages/admin/CreateHallofFame.jsx';
-
+import BlogForm from './pages/teacher/BlogForm.jsx';
 
 const router=createBrowserRouter(
   createRoutesFromElements(
@@ -80,7 +80,15 @@ const router=createBrowserRouter(
               <TeacherDashboard />
               </TeacherProtectedRoute>
         } 
-      />
+      /> <Route 
+      path="/teacher-dashboard/create-blog" 
+      element={
+
+          <TeacherProtectedRoute>
+            <BlogForm />
+            </TeacherProtectedRoute>
+      } 
+    />
       <Route 
         path="/admin/create-time-table" 
         element={

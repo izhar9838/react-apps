@@ -15,7 +15,6 @@ const schema = yup.object().shape({
 
 const UploadMarksSelection = () => {
   const navigate = useNavigate();
-  const teacherId = 1; // Replace with actual teacher ID
 
   // State for dropdown options
   const [classes, setClasses] = useState([]);
@@ -23,6 +22,7 @@ const UploadMarksSelection = () => {
   const [subjects, setSubjects] = useState([]);
   const [examinations, setExaminations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Initialize React Hook Form
   const {
@@ -44,65 +44,109 @@ const UploadMarksSelection = () => {
   const className = watch('className');
   const sectionId = watch('sectionId');
 
-  // Fetch initial data
+  // Fetch classes
   useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      axios.get(`/api/teacher/classes/${teacherId}`),
-      axios.get('/api/teacher/examinations'),
-    ])
-      .then(([classesResponse, examsResponse]) => {
-        const classList = Array.isArray(classesResponse.data) ? classesResponse.data : [];
-        setClasses(classList);
-        setExaminations(Array.isArray(examsResponse.data) ? examsResponse.data : []);
-      })
-      .catch((error) => {
-        console.error('Error fetching initial data:', error);
-        setClasses([]);
-        setExaminations([]);
-      })
-      .finally(() => setLoading(false));
-  }, [teacherId]);
+    fetchClasses();
+  }, []);
 
+  const fetchClasses = async () => {
+    setLoading(false);
+    setError(null);
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.get("http://localhost:9090/api/teacher/classes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setClasses(Array.isArray(response.data) ? response.data : []);
+      console.log(response.data);
+      
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+      setError(error)
+      setClasses([]);
+    }
+    finally{
+      setLoading(false);
+    }
+  };
   // Fetch sections when class changes (specifically for 10th A)
   useEffect(() => {
     if (className === '10th A') {
-      setLoading(true);
-      axios
-        .get(`/api/teacher/sections/${teacherId}/class/${className}`)
-        .then((response) => {
+      const fetchSections = async () => {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem('authToken');
+
+        if (!token) {
+          setError('Authentication token not found. Please log in again.');
+          setLoading(false);
+          return;
+        }
+
+        try {
+          const response = await axios.get(`/api/teacher/sections/class/${className}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          console.log('Sections response:', response.data); // Debug log
           const sectionList = Array.isArray(response.data) ? response.data : [];
           setSections(sectionList);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('Error fetching sections:', error);
+          setError('Failed to fetch sections. Please try again.');
           setSections([]);
-        })
-        .finally(() => setLoading(false));
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchSections();
     } else {
       setSections([]);
       setSubjects([]);
     }
-  }, [className, teacherId]);
+  }, [className]);
 
   // Fetch subjects when section changes
   useEffect(() => {
     if (sectionId) {
-      setLoading(true);
-      axios
-        .get(`/api/teacher/subjects/${teacherId}/class/${className}/section/${sectionId}`)
-        .then((response) => {
+      const fetchSubjects = async () => {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem('authToken');
+
+        if (!token) {
+          setError('Authentication token not found. Please log in again.');
+          setLoading(false);
+          return;
+        }
+
+        try {
+          const response = await axios.get(
+            `/api/teacher/subjects/class/${className}/section/${sectionId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          console.log('Subjects response:', response.data); // Debug log
           const subjectList = Array.isArray(response.data) ? response.data : [];
           setSubjects(subjectList);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('Error fetching subjects:', error);
+          setError('Failed to fetch subjects. Please try again.');
           setSubjects([]);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [sectionId, className, teacherId]);
+        } finally {
+          setLoading(false);
+        }
+      };
 
+      fetchSubjects();
+    }
+  }, [sectionId, className]);
+  
   // Handle form submission
   const onSubmit = (data) => {
     const selectedSection = sections.find((s) => s.id === data.sectionId);
@@ -129,7 +173,7 @@ const UploadMarksSelection = () => {
   }
 
   return (
-    <div className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] min너지h-[93vh] font-sans">
+    <div className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] min-h-[93vh] font-sans">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-center p-6 items-center">
           <h1 className="text-2xl font-medium text-gray-800">Select Details to Upload Marks</h1>
@@ -138,6 +182,7 @@ const UploadMarksSelection = () => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white rounded-lg shadow-md p-6">
+          {error && <p className="text-red-600 mb-4">{error}</p>}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Class Selection */}
             <div>
@@ -149,8 +194,8 @@ const UploadMarksSelection = () => {
                 <option value="">Select a class</option>
                 {Array.isArray(classes) && classes.length > 0 ? (
                   classes.map((cls) => (
-                    <option key={cls} value={cls}>
-                      {cls}
+                    <option key={cls.id} value={cls.name}>
+                      {cls.name}
                     </option>
                   ))
                 ) : (

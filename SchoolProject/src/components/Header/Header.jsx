@@ -284,7 +284,7 @@ function Header() {
                 <li className='nav-li px-2 py-2'>
                   <button
                     onClick={() => {
-                      navigate('teacher');
+                      navigate('teacher/teacher-dashboard');
                       setIsOpen(false);
                     }}
                     className='cursor-pointer nav-button w-full h-full font-medium '
