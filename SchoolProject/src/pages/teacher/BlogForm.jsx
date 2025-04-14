@@ -5,6 +5,7 @@ import 'react-easy-crop/react-easy-crop.css';
 import { getCroppedImg, fileToBase64 } from '../admin/ImageUtil';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import Modal from '../Modal'; // Assuming Modal.jsx is in the same directory
 import './BlogForm.css';
 
 const BlogForm = () => {
@@ -17,12 +18,14 @@ const BlogForm = () => {
   const [showCropper, setShowCropper] = useState(false);
   const [imageError, setImageError] = useState(null);
   const [submitError, setSubmitError] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const fileInputRef = useRef(null);
 
   const onSubmit = async (data) => {
-    console.log('Form submitted', data); // Debug log
+    console.log('Form submitted', data);
     const authToken = localStorage.getItem('authToken');
-    console.log('Auth Token:', authToken); // Debug log
+    console.log('Auth Token:', authToken);
     try {
       const payload = {
         title: data.title,
@@ -47,8 +50,11 @@ const BlogForm = () => {
       setImageError(null);
       setSubmitError(null);
       if (fileInputRef.current) fileInputRef.current.value = null;
+      window.scrollTo(0, 0); // Scroll to top
+      setShowSuccessModal(true); // Show success modal
     } catch (error) {
-      console.error('API Error Details:', error.response ? error.response : error.message); // Detailed error log
+      window.scrollTo(0, 0); // Scroll to top
+      console.error('API Error Details:', error.response ? error.response : error.message);
       if (error.response) {
         setSubmitError(error.response.data.message || 'Failed to submit blog post. Please try again.');
       } else if (error.request) {
@@ -56,6 +62,7 @@ const BlogForm = () => {
       } else {
         setSubmitError('An unexpected error occurred.');
       }
+      setShowErrorModal(true); // Show error modal
     }
   };
 
@@ -108,6 +115,14 @@ const BlogForm = () => {
     setImagePreview(null);
     setValue('image', null);
     if (fileInputRef.current) fileInputRef.current.value = null;
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+  };
+
+  const closeErrorModal = () => {
+    setShowErrorModal(false);
   };
 
   return (
@@ -196,7 +211,7 @@ const BlogForm = () => {
           </div>
 
           {/* Submit Error */}
-          {submitError && <p className="mt-1 text-sm text-red-600">{submitError}</p>}
+          {submitError && !showErrorModal && <p className="mt-1 text-sm text-red-600">{submitError}</p>}
 
           {/* Submit Button */}
           <div className="flex justify-end">
@@ -226,6 +241,24 @@ const BlogForm = () => {
             </div>
           </div>
         )}
+
+        {/* Success Modal */}
+        <Modal
+          isOpen={showSuccessModal}
+          onClose={closeSuccessModal}
+          title="Success"
+          message="Your blog post has been published successfully."
+          isSuccess={true}
+        />
+
+        {/* Error Modal */}
+        <Modal
+          isOpen={showErrorModal}
+          onClose={closeErrorModal}
+          title="Error"
+          message={submitError || "An unexpected error occurred."}
+          isSuccess={false}
+        />
       </div>
     </div>
   );
