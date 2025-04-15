@@ -2,7 +2,7 @@ import React from 'react'
 
 function ErrorPage({ error }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)]">
       <div className="p-6 bg-white rounded-lg shadow-lg text-center">
         <h1 className="text-4xl font-bold text-red-600">
           {error?.status === 404 ? "404 - Page Not Found" : "Oops! An Error Occurred"}

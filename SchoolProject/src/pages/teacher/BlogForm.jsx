@@ -5,7 +5,7 @@ import 'react-easy-crop/react-easy-crop.css';
 import { getCroppedImg, fileToBase64 } from '../admin/ImageUtil';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import Modal from '../Modal'; // Assuming Modal.jsx is in the same directory
+import Modal from '../Modal'; 
 import './BlogForm.css';
 
 const BlogForm = () => {
@@ -23,17 +23,22 @@ const BlogForm = () => {
   const fileInputRef = useRef(null);
 
   const onSubmit = async (data) => {
-    console.log('Form submitted', data);
     const authToken = localStorage.getItem('authToken');
-    console.log('Auth Token:', authToken);
     try {
+      // Extract only the base64 part from the data URL
+      let imageBase64 = data.image || null;
+      if (imageBase64 && imageBase64.startsWith('data:image/')) {
+        imageBase64 = imageBase64.split(',')[1]; // Remove data URL prefix
+      }
+
       const payload = {
         title: data.title,
         author: data.author,
         category: data.category,
         content: data.content,
-        image: data.image || null,
+        image: imageBase64, // Send only the base64 string
       };
+
 
       const response = await axios.post('http://localhost:9090/api/teacher/postBlog', payload, {
         headers: {
@@ -42,7 +47,7 @@ const BlogForm = () => {
         },
       });
 
-      console.log('API Response:', response.data);
+
       reset();
       setImagePreview(null);
       setImageSrc(null);
@@ -77,6 +82,9 @@ const BlogForm = () => {
       setShowCropper(true);
       setImageError(null);
     };
+    reader.onerror = () => {
+      setImageError('Failed to read the image file.');
+    };
   };
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
@@ -100,7 +108,7 @@ const BlogForm = () => {
 
       const croppedImageBase64 = await fileToBase64(croppedImageBlob);
       setImagePreview(croppedImageBase64);
-      setValue('image', croppedImageBase64);
+      setValue('image', croppedImageBase64); // Store full data URL for preview
       setShowCropper(false);
       setImageError(null);
     } catch (error) {

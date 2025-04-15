@@ -64,7 +64,7 @@ const StudentAdmissionForm = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setClasses(Array.isArray(response.data) ? response.data : []);
-      console.log(response.data);
+      // console.log(response.data);
       
     } catch (error) {
       console.error("Error fetching classes:", error);

@@ -38,7 +38,7 @@ const FeeSubmissionForm = () => {
           },
         }
       );
-      console.log(JSON.stringify(response.data));
+      // console.log(JSON.stringify(response.data));
       
       setModal({
         isOpen: true,

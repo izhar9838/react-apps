@@ -12,8 +12,8 @@ const TokenProtectedRoute = ({ children }) => {
     const verifyToken = async () => {
       try {
         // Use the email from navigation state if needed; for now, assume OTP is enough
-        console.log(token);
-        console.log(window.history.state.user?.email);
+        // console.log(token);
+        // console.log(window.history.state.user?.email);
         
         
         const response = await axios.post('http://localhost:9090/api/public/verify-otp', {
