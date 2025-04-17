@@ -87,7 +87,9 @@ export const fileToBase64 = (file) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
-      resolve(reader.result); // Return full data URL (e.g., data:image/jpeg;base64,...)
+      // Extract only the base64 string, removing the data URL prefix
+      const base64String = reader.result.split(',')[1];
+      resolve(base64String); // Return only the base64 part (e.g., /9j/...)
     };
     reader.onerror = (error) => reject(error);
   });

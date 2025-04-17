@@ -1,5 +1,5 @@
 .card_image {
-  width: 80px; /* Reduced from 110px */
+  width: 80px;
   height: auto;
 }
 
@@ -9,13 +9,13 @@
 }
 
 .card-margin {
-  margin: 0.5rem; /* Reduced from 0.75rem */
+  margin: 0.5rem;
 }
 
 /* Center the grid */
 .grid {
   display: grid;
-  justify-content: center; /* Center the grid horizontally */
+  justify-content: center;
 }
 
 /* Extra small screens (max-width: 480px) */
@@ -26,7 +26,7 @@
   }
 
   .card-margin {
-    margin: 0.25rem; /* Smaller margin */
+    margin: 0.25rem;
   }
 
   .xs\:grid-cols-1 {
@@ -34,12 +34,12 @@
   }
 
   .card_image {
-    width: 50px; /* Smaller image for mobile */
+    width: 50px;
   }
 
   .card-text {
-    font-size: 0.875rem; /* 14px, smaller than 18px (text-base) */
-    font-weight: 400; /* Lighter than medium (500) */
+    font-size: 0.875rem;
+    font-weight: 400;
   }
 }
 
@@ -59,12 +59,12 @@
   }
 
   .card_image {
-    width: 60px; /* Slightly larger than mobile but smaller than desktop */
+    width: 60px;
   }
 
   .card-text {
-    font-size: 0.9375rem; /* 15px, slightly larger than mobile */
-    font-weight: 400; /* Lighter weight */
+    font-size: 0.9375rem;
+    font-weight: 400;
   }
 }
 
@@ -79,11 +79,11 @@
   }
 
   .card_image {
-    width: 80px; /* Consistent with default */
+    width: 80px;
   }
 
   .card-text {
-    font-size: 1rem; /* 16px, original text-base */
-    font-weight: 500; /* Original medium weight */
+    font-size: 1rem;
+    font-weight: 500;
   }
 }

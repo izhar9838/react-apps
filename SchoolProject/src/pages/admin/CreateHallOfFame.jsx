@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 import Modal from "../Modal";
 import Cropper from "react-easy-crop";
 import { getCroppedImg, fileToBase64 } from "./ImageUtil";
+import { usePageAnimation } from "../usePageAnimation";
 
 const CreateHallOfFame = () => {
   const [imagePreview, setImagePreview] = useState(null);
@@ -21,6 +23,10 @@ const CreateHallOfFame = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const fileInputRef = useRef(null);
 
+  // Use the animation hook
+  const location = useLocation();
+  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname);
+
   const {
     register,
     handleSubmit,
@@ -28,7 +34,14 @@ const CreateHallOfFame = () => {
     control,
     setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      name: "",
+      achievement: "",
+      image: null,
+    },
+    mode: "onChange",
+  });
 
   // Define checkImageSize function to enforce 2MB limit
   const checkImageSize = (file, onError) => {
@@ -79,7 +92,6 @@ const CreateHallOfFame = () => {
   const handleImageChange = (e, onChange) => {
     const file = e.target.files[0];
     if (file) {
-      // No size check before cropping, proceed directly to crop modal
       const imageUrl = URL.createObjectURL(file);
       setImageToCrop(imageUrl);
       setCropModalOpen(true);
@@ -147,24 +159,28 @@ const CreateHallOfFame = () => {
     setModalState({ ...modalState, isOpen: false });
   };
 
-  const formVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-  };
-
   return (
-    <div className="h-screen w-full bg-gray-100 flex items-center justify-center p-4 sm:p-6 md:p-8">
+    <motion.div
+      className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] h-screen w-full flex items-center justify-center p-4 sm:p-6 md:p-8"
+      variants={sectionVariants}
+      initial="hidden"
+      animate={controls}
+    >
       <motion.div
+        ref={formRef}
         className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-lg"
-        variants={formVariants}
+        variants={containerVariants}
         initial="hidden"
-        animate="visible"
+        animate={controls}
       >
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-medium mb-4 sm:mb-6 text-center text-gray-800">
+        <motion.h2
+          className="text-xl sm:text-2xl md:text-3xl font-medium mb-4 sm:mb-6 text-center text-gray-800"
+          variants={fieldVariants}
+        >
           Add Hall of Fame Entry
-        </h2>
+        </motion.h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
-          <div>
+          <motion.div variants={fieldVariants}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Name <span className="text-red-500">*</span>
             </label>
@@ -179,9 +195,9 @@ const CreateHallOfFame = () => {
             {errors.name && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.name.message}</p>
             )}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={fieldVariants}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Achievement <span className="text-red-500">*</span>
             </label>
@@ -196,9 +212,9 @@ const CreateHallOfFame = () => {
             {errors.achievement && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.achievement.message}</p>
             )}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={fieldVariants}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Image <span className="text-red-500">*</span>
             </label>
@@ -223,13 +239,16 @@ const CreateHallOfFame = () => {
                         alt="Preview"
                         className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg shadow-md"
                       />
-                      <button
+                      <motion.button
                         type="button"
                         onClick={removeImage}
                         className="text-red-500 text-xs hover:underline ml-4"
+                        variants={buttonVariants}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
                         Remove
-                      </button>
+                      </motion.button>
                     </div>
                   )}
                   {errors.image && (
@@ -238,30 +257,59 @@ const CreateHallOfFame = () => {
                 </div>
               )}
             />
-          </div>
+          </motion.div>
 
-          <button
-            type="submit"
-            className="w-30 bg-green-500 text-white px-4 py-3 rounded-md hover:bg-green-600 transition duration-300 text-sm"
-          >
-            Add Entry
-          </button>
+          <motion.div className="flex justify-center" variants={containerVariants}>
+            <motion.button
+              type="submit"
+              className="bg-green-500 text-white px-4 py-3 rounded-md hover:bg-green-600 transition duration-300 text-sm"
+              variants={buttonVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Add Entry
+            </motion.button>
+          </motion.div>
         </form>
       </motion.div>
 
-      <Modal
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        title={modalState.title}
-        message={modalState.message}
-        isSuccess={modalState.isSuccess}
-      />
+      {/* Animated Feedback Modal */}
+      {modalState.isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Modal
+            isOpen={modalState.isOpen}
+            onClose={closeModal}
+            title={modalState.title}
+            message={modalState.message}
+            isSuccess={modalState.isSuccess}
+          />
+        </motion.div>
+      )}
 
+      {/* Animated Crop Modal */}
       {cropModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px]">
-            <h2 className="text-lg font-semibold mb-4">Crop Image</h2>
-            <div className="relative w-full h-[300px]">
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px]"
+            variants={containerVariants}
+            initial="hidden"
+            animate={controls}
+          >
+            <motion.h2 className="text-lg font-semibold mb-4" variants={fieldVariants}>
+              Crop Image
+            </motion.h2>
+            <motion.div className="relative w-full h-[300px]" variants={fieldVariants}>
               <Cropper
                 image={imageToCrop}
                 crop={crop}
@@ -271,27 +319,33 @@ const CreateHallOfFame = () => {
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
               />
-            </div>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
+            </motion.div>
+            <motion.div className="mt-4 flex justify-end space-x-2" variants={containerVariants}>
+              <motion.button
                 type="button"
                 onClick={() => setCropModalOpen(false)}
                 className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
+                variants={buttonVariants}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Cancel
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
                 onClick={handleCropSave}
                 className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
+                variants={buttonVariants}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Save
-              </button>
-            </div>
-          </div>
-        </div>
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

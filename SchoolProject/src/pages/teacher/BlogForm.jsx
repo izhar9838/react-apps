@@ -4,8 +4,10 @@ import Cropper from 'react-easy-crop';
 import 'react-easy-crop/react-easy-crop.css';
 import { getCroppedImg, fileToBase64 } from '../admin/ImageUtil';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import Modal from '../Modal'; 
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
+import { usePageAnimation } from '../usePageAnimation';
+import Modal from '../Modal';
 import './BlogForm.css';
 
 const BlogForm = () => {
@@ -22,13 +24,36 @@ const BlogForm = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const fileInputRef = useRef(null);
 
+  const location = useLocation();
+  const { formRef, controls, sectionVariants, containerVariants, cardVariants } =
+    usePageAnimation(location.pathname);
+
+  // Workaround for tab-switching visibility issue
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        setTimeout(() => {
+          controls.start("visible");
+        }, 100);
+      }
+    };
+    const handleFocus = () => {
+      controls.start("visible");
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [controls]);
+
   const onSubmit = async (data) => {
     const authToken = localStorage.getItem('authToken');
     try {
-      // Extract only the base64 part from the data URL
       let imageBase64 = data.image || null;
       if (imageBase64 && imageBase64.startsWith('data:image/')) {
-        imageBase64 = imageBase64.split(',')[1]; // Remove data URL prefix
+        imageBase64 = imageBase64.split(',')[1];
       }
 
       const payload = {
@@ -36,17 +61,15 @@ const BlogForm = () => {
         author: data.author,
         category: data.category,
         content: data.content,
-        image: imageBase64, // Send only the base64 string
+        image: imageBase64,
       };
 
-
-      const response = await axios.post('http://localhost:9090/api/teacher/postBlog', payload, {
+      await axios.post('http://localhost:9090/api/teacher/postBlog', payload, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
       });
-
 
       reset();
       setImagePreview(null);
@@ -55,10 +78,10 @@ const BlogForm = () => {
       setImageError(null);
       setSubmitError(null);
       if (fileInputRef.current) fileInputRef.current.value = null;
-      window.scrollTo(0, 0); // Scroll to top
-      setShowSuccessModal(true); // Show success modal
+      window.scrollTo(0, 0);
+      setShowSuccessModal(true);
     } catch (error) {
-      window.scrollTo(0, 0); // Scroll to top
+      window.scrollTo(0, 0);
       console.error('API Error Details:', error.response ? error.response : error.message);
       if (error.response) {
         setSubmitError(error.response.data.message || 'Failed to submit blog post. Please try again.');
@@ -67,7 +90,7 @@ const BlogForm = () => {
       } else {
         setSubmitError('An unexpected error occurred.');
       }
-      setShowErrorModal(true); // Show error modal
+      setShowErrorModal(true);
     }
   };
 
@@ -108,7 +131,7 @@ const BlogForm = () => {
 
       const croppedImageBase64 = await fileToBase64(croppedImageBlob);
       setImagePreview(croppedImageBase64);
-      setValue('image', croppedImageBase64); // Store full data URL for preview
+      setValue('image', croppedImageBase64);
       setShowCropper(false);
       setImageError(null);
     } catch (error) {
@@ -134,14 +157,31 @@ const BlogForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Create Blog/News Post</h2>
-        <p className="text-sm text-gray-600 mb-6 text-center">Fields marked with <span className="text-red-600">*</span> are required</p>
+    <motion.div
+      className="min-h-screen bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] flex items-center justify-center p-4"
+      variants={sectionVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div
+        ref={formRef}
+        variants={containerVariants}
+        initial="hidden"
+        animate={controls}
+        className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6"
+      >
+        <motion.h2 variants={cardVariants} className="text-2xl font-bold text-gray-800 mb-4 text-center">
+          Create Blog/News Post
+        </motion.h2>
+        <motion.p variants={cardVariants} className="text-sm text-gray-600 mb-6 text-center">
+          Fields marked with <span className="text-red-600">*</span> are required
+        </motion.p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title <span className="text-red-600">*</span></label>
+          <motion.div variants={cardVariants}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title <span className="text-red-600">*</span>
+            </label>
             <input
               type="text"
               {...register('title', {
@@ -151,12 +191,16 @@ const BlogForm = () => {
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter blog title"
             />
-            {errors.title?.type === 'minLength' && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
-          </div>
+            {errors.title?.type === 'minLength' && (
+              <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+            )}
+          </motion.div>
 
           {/* Author */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Author <span className="text-red-600">*</span></label>
+          <motion.div variants={cardVariants}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Author <span className="text-red-600">*</span>
+            </label>
             <input
               type="text"
               {...register('author', {
@@ -166,12 +210,16 @@ const BlogForm = () => {
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter author name"
             />
-            {errors.author?.type === 'minLength' && <p className="mt-1 text-sm text-red-600">{errors.author.message}</p>}
-          </div>
+            {errors.author?.type === 'minLength' && (
+              <p className="mt-1 text-sm text-red-600">{errors.author.message}</p>
+            )}
+          </motion.div>
 
           {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category <span className="text-red-600">*</span></label>
+          <motion.div variants={cardVariants}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category <span className="text-red-600">*</span>
+            </label>
             <select
               {...register('category', { required: true })}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -182,11 +230,13 @@ const BlogForm = () => {
               <option value="tech">Tech</option>
               <option value="lifestyle">Lifestyle</option>
             </select>
-          </div>
+          </motion.div>
 
           {/* Content */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Content <span className="text-red-600">*</span></label>
+          <motion.div variants={cardVariants}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Content <span className="text-red-600">*</span>
+            </label>
             <textarea
               {...register('content', {
                 required: true,
@@ -196,59 +246,99 @@ const BlogForm = () => {
               rows="6"
               placeholder="Write your content here..."
             ></textarea>
-            {errors.content?.type === 'minLength' && <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>}
-          </div>
+            {errors.content?.type === 'minLength' && (
+              <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+            )}
+          </motion.div>
 
           {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image <span className="text-red-600">*</span></label>
+          <motion.div variants={cardVariants}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Featured Image <span className="text-red-600">*</span>
+            </label>
             <input
               type="file"
               {...register('image', { required: true })}
               accept="image/*"
               onChange={handleImageChange}
-              className="mt-1 block w-full p-2 text-sm md:text-sm border border-gray-300 rounded-lg shadow-sm transition-all file-input"
+              className="mt-1 block w-full p-2 text-sm md:text-sm border border-gray-300 rounded-lg shadow-sm file-input"
               ref={fileInputRef}
             />
             {imageError && <p className="mt-1 text-sm text-red-600">{imageError}</p>}
             {imagePreview && (
-              <div className="mt-4">
+              <motion.div variants={cardVariants} className="mt-4">
                 <img src={imagePreview} alt="Preview" className="max-w-full h-auto rounded-md max-h-48 object-cover" />
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
 
           {/* Submit Error */}
-          {submitError && !showErrorModal && <p className="mt-1 text-sm text-red-600">{submitError}</p>}
+          {submitError && !showErrorModal && (
+            <motion.p variants={cardVariants} className="mt-1 text-sm text-red-600">{submitError}</motion.p>
+          )}
 
           {/* Submit Button */}
-          <div className="flex justify-end">
-            <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">Publish</button>
-          </div>
+          <motion.div variants={cardVariants} className="flex justify-end">
+            <motion.button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md"
+              whileHover={{ scale: 1.05 }}
+            >
+              Publish
+            </motion.button>
+          </motion.div>
         </form>
 
         {/* Cropper Modal */}
-        {showCropper && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-              <h3 className="text-lg font-semibold mb-4">Crop Image</h3>
-              <div className="relative w-full h-64">
-                <Cropper
-                  image={imageSrc}
-                  crop={crop}
-                  zoom={zoom}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={onCropComplete}
-                />
-              </div>
-              <div className="mt-4 flex justify-end space-x-2">
-                <button onClick={handleCancelCrop} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">Cancel</button>
-                <button onClick={handleCrop} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Crop & Save</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {showCropper && (
+            <motion.div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="bg-white rounded-lg p-6 w-full max-w-lg"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <motion.h3 variants={cardVariants} className="text-lg font-semibold mb-4">
+                  Crop Image
+                </motion.h3>
+                <div className="relative w-full h-64">
+                  <Cropper
+                    image={imageSrc}
+                    crop={crop}
+                    zoom={zoom}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                  />
+                </div>
+                <motion.div variants={cardVariants} className="mt-4 flex justify-end space-x-2">
+                  <motion.button
+                    onClick={handleCancelCrop}
+                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    onClick={handleCrop}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    Crop & Save
+                  </motion.button>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Success Modal */}
         <Modal
@@ -267,8 +357,8 @@ const BlogForm = () => {
           message={submitError || "An unexpected error occurred."}
           isSuccess={false}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

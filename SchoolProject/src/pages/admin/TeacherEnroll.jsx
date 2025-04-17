@@ -1,10 +1,13 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useLocation } from "react-router-dom";
 import Modal from "../Modal";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Cropper from "react-easy-crop";
 import { checkImageSize, getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
+import { motion } from "framer-motion";
+import { usePageAnimation } from "../usePageAnimation";
 
 const TeacherEnroll = () => {
   const [step, setStep] = useState(1);
@@ -17,6 +20,10 @@ const TeacherEnroll = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Use the animation hook
+  const location = useLocation();
+  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname);
 
   const { control, handleSubmit, trigger, reset, formState: { errors }, setValue } = useForm({
     defaultValues: {
@@ -58,6 +65,10 @@ const TeacherEnroll = () => {
       }
       const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
       const file = new File([croppedImage], "profile.jpg", { type: "image/jpeg" });
+      const sizeValid = checkImageSize(file, handleImageError);
+      if (!sizeValid) {
+        throw new Error("Cropped image size exceeds limit");
+      }
       setValue("image", file, { shouldValidate: true });
       setImagePreview(URL.createObjectURL(file));
       setCropModalOpen(false);
@@ -69,20 +80,21 @@ const TeacherEnroll = () => {
       setModal({
         isOpen: true,
         title: "Crop Error",
-        message: "Failed to crop the image. Please try again.",
+        message: error.message || "Failed to crop or validate the image. Please try again.",
         isSuccess: false,
       });
     }
   }, [imageToCrop, croppedAreaPixels, setValue]);
 
-  const customHandleImageChange = (e, onImageError) => {
+  const customHandleImageChange = (e, onChange) => {
     const file = e.target.files[0];
     if (file) {
-      const sizeValid = checkImageSize(file, onImageError);
+      const sizeValid = checkImageSize(file, handleImageError);
       if (sizeValid) {
         const imageUrl = URL.createObjectURL(file);
         setImageToCrop(imageUrl);
         setCropModalOpen(true);
+        onChange(file);
       }
     }
   };
@@ -248,18 +260,35 @@ const TeacherEnroll = () => {
   };
 
   return (
-    <div className="min-h-[70vh] flex justify-center items-center bg-gray-100 p-2 sm:p-4">
-      <div className="w-[85vw] bg-white rounded-lg shadow-md p-4 md:p-6">
-        <h1 className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4 md:mb-6">
+    <motion.div
+      className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] min-h-[70vh] flex justify-center items-center p-2 sm:p-4"
+      variants={sectionVariants}
+      initial="hidden"
+      animate={controls}
+    >
+      <motion.div
+        ref={formRef}
+        className="w-[85vw] bg-white rounded-lg shadow-md p-4 md:p-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate={controls}
+      >
+        <motion.h1
+          className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4 md:mb-6"
+          variants={fieldVariants}
+        >
           Staff Enrollment Form
-        </h1>
-        <p className="text-sm text-gray-600 text-center mb-4">
+        </motion.h1>
+        <motion.p
+          className="text-sm text-gray-600 text-center mb-4"
+          variants={fieldVariants}
+        >
           All fields marked with <span className="text-red-500">*</span> are required.
-        </p>
+        </motion.p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="hidden md:block space-y-4">
+          <motion.div className="hidden md:block space-y-4" variants={containerVariants}>
             {step === 1 && (
-              <div className="grid md:grid-cols-2 gap-4">
+              <motion.div className="grid md:grid-cols-2 gap-4" variants={containerVariants}>
                 <PersonalDetails
                   control={control}
                   handleImageChange={customHandleImageChange}
@@ -268,41 +297,48 @@ const TeacherEnroll = () => {
                   onImageError={handleImageError}
                   errors={errors}
                   fileInputRef={fileInputRef}
+                  variants={fieldVariants}
                 />
-                <Contact_Details control={control} errors={errors} />
-              </div>
+                <Contact_Details control={control} errors={errors} variants={fieldVariants} />
+              </motion.div>
             )}
             {step === 2 && (
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <Professional_Details control={control} errors={errors} />
-                </div>
-                <User_Password control={control} errors={errors} />
-              </div>
+              <motion.div className="grid md:grid-cols-2 gap-4" variants={containerVariants}>
+                <motion.div className="space-y-4" variants={containerVariants}>
+                  <Professional_Details control={control} errors={errors} variants={fieldVariants} />
+                </motion.div>
+                <User_Password control={control} errors={errors} variants={fieldVariants} />
+              </motion.div>
             )}
-            <div className="flex justify-between mt-4">
+            <motion.div className="flex justify-between mt-4" variants={containerVariants}>
               {step > 1 && (
-                <button
+                <motion.button
                   type="button"
                   onClick={prevStep}
                   className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
                   disabled={isSubmitting}
+                  variants={buttonVariants}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Previous
-                </button>
+                </motion.button>
               )}
-              <button
+              <motion.button
                 type="button"
                 onClick={() => nextStep(true)}
                 className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
                 disabled={isSubmitting}
+                variants={buttonVariants}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {step === 2 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
-              </button>
-            </div>
-          </div>
+              </motion.button>
+            </motion.div>
+          </motion.div>
 
-          <div className="md:hidden space-y-4">
+          <motion.div className="md:hidden space-y-4" variants={containerVariants}>
             {step === 1 && (
               <PersonalDetails
                 control={control}
@@ -312,48 +348,58 @@ const TeacherEnroll = () => {
                 onImageError={handleImageError}
                 errors={errors}
                 fileInputRef={fileInputRef}
+                variants={fieldVariants}
               />
             )}
-            {step === 2 && <Contact_Details control={control} errors={errors} />}
-            {step === 3 && <Professional_Details control={control} errors={errors} />}
-            {step === 4 && <User_Password control={control} errors={errors} />}
-            <div className="flex justify-between mt-4">
+            {step === 2 && <Contact_Details control={control} errors={errors} variants={fieldVariants} />}
+            {step === 3 && <Professional_Details control={control} errors={errors} variants={fieldVariants} />}
+            {step === 4 && <User_Password control={control} errors={errors} variants={fieldVariants} />}
+            <motion.div className="flex justify-between mt-4" variants={containerVariants}>
               {step > 1 && (
-                <button
+                <motion.button
                   type="button"
                   onClick={prevStep}
                   className="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 text-xs"
                   disabled={isSubmitting}
+                  variants={buttonVariants}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Previous
-                </button>
+                </motion.button>
               )}
-              <button
+              <motion.button
                 type="button"
                 onClick={() => nextStep(false)}
                 className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
                 disabled={isSubmitting}
+                variants={buttonVariants}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 {step === 4 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
-              </button>
-            </div>
-          </div>
-
-          {modal.isOpen && (
-            <Modal
-              isOpen={modal.isOpen}
-              onClose={closeModal}
-              title={modal.title}
-              message={modal.message}
-              isSuccess={modal.isSuccess}
-            />
-          )}
+              </motion.button>
+            </motion.div>
+          </motion.div>
 
           {cropModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px]">
-                <h2 className="text-lg font-semibold mb-4">Crop Image</h2>
-                <div className="relative w-full h-[300px]">
+            <motion.div
+              className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div
+                className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px]"
+                variants={containerVariants}
+                initial="hidden"
+                animate={controls}
+              >
+                <motion.h2 className="text-lg font-semibold mb-4" variants={fieldVariants}>
+                  Crop Image
+                </motion.h2>
+                <motion.div className="relative w-full h-[300px]" variants={fieldVariants}>
                   <Cropper
                     image={imageToCrop}
                     crop={crop}
@@ -363,39 +409,64 @@ const TeacherEnroll = () => {
                     onZoomChange={setZoom}
                     onCropComplete={onCropComplete}
                   />
-                </div>
-                <div className="mt-4 flex justify-end space-x-2">
-                  <button
+                </motion.div>
+                <motion.div className="mt-4 flex justify-end space-x-2" variants={containerVariants}>
+                  <motion.button
                     type="button"
                     onClick={() => setCropModalOpen(false)}
                     className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
+                    variants={buttonVariants}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     Cancel
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     onClick={handleCropSave}
                     className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
+                    variants={buttonVariants}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     Save
-                  </button>
-                </div>
-              </div>
-            </div>
+                  </motion.button>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           )}
         </form>
-      </div>
-    </div>
+
+        {modal.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Modal
+              isOpen={modal.isOpen}
+              onClose={closeModal}
+              title={modal.title}
+              message={modal.message}
+              isSuccess={modal.isSuccess}
+            />
+          </motion.div>
+        )}
+      </motion.div>
+    </motion.div>
   );
 };
 
-const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, onImageError, errors, fileInputRef }) => {
+const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, onImageError, errors, fileInputRef, variants }) => {
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Personal Details</h2>
-      <Field label="First Name" name="firstName" control={control} type="text" required errors={errors} />
-      <Field label="Last Name" name="lastName" control={control} type="text" required errors={errors} />
-      <Field label="Date of Birth" name="DOB" control={control} type="date" required errors={errors} />
+    <motion.div className="space-y-3" variants={variants}>
+      <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
+        Personal Details
+      </motion.h2>
+      <Field label="First Name" name="firstName" control={control} type="text" required errors={errors} variants={variants} />
+      <Field label="Last Name" name="lastName" control={control} type="text" required errors={errors} variants={variants} />
+      <Field label="Date of Birth" name="DOB" control={control} type="date" required errors={errors} variants={variants} />
       <SelectField
         label="Gender"
         name="gender"
@@ -403,28 +474,32 @@ const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage
         options={["Male", "Female", "Prefer not to say"]}
         required
         errors={errors}
+        variants={variants}
       />
       <ImageField
         label="Photo"
         name="image"
         control={control}
-        handleImageChange={(e) => handleImageChange(e, onImageError)}
+        handleImageChange={handleImageChange}
         imagePreview={imagePreview}
         required
         removeImage={removeImage}
         errors={errors}
         fileInputRef={fileInputRef}
+        variants={variants}
       />
-    </div>
+    </motion.div>
   );
 };
 
-const Contact_Details = ({ control, errors }) => {
+const Contact_Details = ({ control, errors, variants }) => {
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Contact Details</h2>
-      <Field label="Address" name="teacher_contact.address" control={control} type="text" required errors={errors} />
-      <Field label="Phone Number" name="teacher_contact.phoneNumber" control={control} type="text" required errors={errors} />
+    <motion.div className="space-y-3" variants={variants}>
+      <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
+        Contact Details
+      </motion.h2>
+      <Field label="Address" name="teacher_contact.address" control={control} type="text" required errors={errors} variants={variants} />
+      <Field label="Phone Number" name="teacher_contact.phoneNumber" control={control} type="text" required errors={errors} variants={variants} />
       <Field
         label="Email"
         name="teacher_contact.email"
@@ -433,17 +508,20 @@ const Contact_Details = ({ control, errors }) => {
         required
         validate={validateEmail}
         errors={errors}
+        variants={variants}
       />
-    </div>
+    </motion.div>
   );
 };
 
-const Professional_Details = ({ control, errors }) => {
+const Professional_Details = ({ control, errors, variants }) => {
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Professional Details</h2>
-      <Field label="Position" name="professional_Details.position" control={control} type="text" required errors={errors} />
-      <Field label="Status" name="professional_Details.status" control={control} type="text" required errors={errors} />
+    <motion.div className="space-y-3" variants={variants}>
+      <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
+        Professional Details
+      </motion.h2>
+      <Field label="Position" name="professional_Details.position" control={control} type="text" required errors={errors} variants={variants} />
+      <Field label="Status" name="professional_Details.status" control={control} type="text" required errors={errors} variants={variants} />
       <Field
         label="Qualification"
         name="professional_Details.qualification"
@@ -451,6 +529,7 @@ const Professional_Details = ({ control, errors }) => {
         type="text"
         required
         errors={errors}
+        variants={variants}
       />
       <Field
         label="Specialization"
@@ -459,18 +538,21 @@ const Professional_Details = ({ control, errors }) => {
         type="text"
         required
         errors={errors}
+        variants={variants}
       />
-      <Field label="Experience" name="professional_Details.experience" control={control} type="text" required errors={errors} />
-      <Field label="Class Teacher" name="professional_Details.classTeacher" control={control} type="text" required errors={errors} />
-    </div>
+      <Field label="Experience" name="professional_Details.experience" control={control} type="text" required errors={errors} variants={variants} />
+      <Field label="Class Teacher" name="professional_Details.classTeacher" control={control} type="text" required errors={errors} variants={variants} />
+    </motion.div>
   );
 };
 
-const User_Password = ({ control, errors }) => {
+const User_Password = ({ control, errors, variants }) => {
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg md:text-xl text-gray-700 font-medium">Username Password</h2>
-      <Field label="Username" name="userPass.username" control={control} type="text" required autoComplete="off" errors={errors} />
+    <motion.div className="space-y-3" variants={variants}>
+      <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
+        Username Password
+      </motion.h2>
+      <Field label="Username" name="userPass.username" control={control} type="text" required autoComplete="off" errors={errors} variants={variants} />
       <PasswordField
         label="Password"
         name="userPass.password"
@@ -478,12 +560,13 @@ const User_Password = ({ control, errors }) => {
         required
         autoComplete="new-password"
         errors={errors}
+        variants={variants}
       />
-    </div>
+    </motion.div>
   );
 };
 
-const Field = ({ label, name, control, type, required, validate, autoComplete, errors }) => {
+const Field = ({ label, name, control, type, required, validate, autoComplete, errors, variants }) => {
   const getErrorMessage = () => {
     if (!errors) return null;
     if (name.includes(".")) {
@@ -494,7 +577,7 @@ const Field = ({ label, name, control, type, required, validate, autoComplete, e
   };
 
   return (
-    <div>
+    <motion.div variants={variants}>
       <label htmlFor={name.replace(".", "-")} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -512,7 +595,9 @@ const Field = ({ label, name, control, type, required, validate, autoComplete, e
               type={type}
               id={name.replace(".", "-")}
               autoComplete={autoComplete || "off"}
-              className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
+                getErrorMessage() ? "border-red-500" : "border-gray-300"
+              }`}
             />
             {getErrorMessage() && (
               <p className="text-red-500 text-xs mt-1">{getErrorMessage()}</p>
@@ -520,13 +605,13 @@ const Field = ({ label, name, control, type, required, validate, autoComplete, e
           </div>
         )}
       />
-    </div>
+    </motion.div>
   );
 };
 
-const ImageField = ({ label, name, control, handleImageChange, imagePreview, required, removeImage, errors, fileInputRef }) => {
+const ImageField = ({ label, name, control, handleImageChange, imagePreview, required, removeImage, errors, fileInputRef, variants }) => {
   return (
-    <div>
+    <motion.div variants={variants}>
       <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -534,13 +619,14 @@ const ImageField = ({ label, name, control, handleImageChange, imagePreview, req
         name={name}
         control={control}
         rules={{ required: required ? `${label} is required` : false }}
-        render={() => (
+        render={({ field: { onChange, value, ...field } }) => (
           <div>
             <input
+              {...field}
               type="file"
               id={name}
               accept="image/*"
-              onChange={(e) => handleImageChange(e)}
+              onChange={(e) => handleImageChange(e, onChange)}
               className="mt-1 block w-full p-2 text-sm md:text-sm border border-gray-300 rounded-lg shadow-sm transition-all file-input"
               ref={fileInputRef}
             />
@@ -548,23 +634,26 @@ const ImageField = ({ label, name, control, handleImageChange, imagePreview, req
             {imagePreview && (
               <div className="mt-2">
                 <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
-                <button
+                <motion.button
                   type="button"
                   onClick={removeImage}
                   className="text-red-500 text-xs hover:underline mt-1"
+                  variants={buttonVariants}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Remove
-                </button>
+                </motion.button>
               </div>
             )}
           </div>
         )}
       />
-    </div>
+    </motion.div>
   );
 };
 
-const SelectField = ({ label, name, control, options, required, errors }) => {
+const SelectField = ({ label, name, control, options, required, errors, variants }) => {
   const getErrorMessage = () => {
     if (!errors) return null;
     if (name.includes(".")) {
@@ -575,7 +664,7 @@ const SelectField = ({ label, name, control, options, required, errors }) => {
   };
 
   return (
-    <div>
+    <motion.div variants={variants}>
       <label htmlFor={name.replace(".", "-")} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -588,7 +677,9 @@ const SelectField = ({ label, name, control, options, required, errors }) => {
             <select
               {...field}
               id={name.replace(".", "-")}
-              className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm"
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
+                getErrorMessage() ? "border-red-500" : "border-gray-300"
+              }`}
             >
               <option value="">Select {label}</option>
               {options.map((option) => (
@@ -601,11 +692,11 @@ const SelectField = ({ label, name, control, options, required, errors }) => {
           </div>
         )}
       />
-    </div>
+    </motion.div>
   );
 };
 
-const PasswordField = ({ label, name, control, required, autoComplete, errors }) => {
+const PasswordField = ({ label, name, control, required, autoComplete, errors, variants }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const getErrorMessage = () => {
@@ -618,7 +709,7 @@ const PasswordField = ({ label, name, control, required, autoComplete, errors })
   };
 
   return (
-    <div>
+    <motion.div variants={variants}>
       <label htmlFor={name.replace(".", "-")} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
@@ -633,7 +724,9 @@ const PasswordField = ({ label, name, control, required, autoComplete, errors })
               type={showPassword ? "text" : "password"}
               id={name.replace(".", "-")}
               autoComplete={autoComplete || "new-password"}
-              className="w-full p-1.5 md:p-2 border border-gray-300 rounded-md text-xs md:text-sm pr-8"
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm pr-8 ${
+                getErrorMessage() ? "border-red-500" : "border-gray-300"
+              }`}
             />
             <button
               type="button"
@@ -650,7 +743,7 @@ const PasswordField = ({ label, name, control, required, autoComplete, errors })
           </div>
         )}
       />
-    </div>
+    </motion.div>
   );
 };
 

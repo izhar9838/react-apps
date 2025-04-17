@@ -1,5 +1,7 @@
-import React, { useState ,useRef} from "react";
+import React, { useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { motion } from "framer-motion";
+import { usePageAnimation } from "../usePageAnimation"; // Import the custom hook
 import Modal from "../Modal";
 import "./FeesSubmission.css"; // Optional external CSS if needed
 import axios from "axios";
@@ -19,31 +21,38 @@ const FeeSubmissionForm = () => {
   const [slipData, setSlipData] = useState(null); // Store slip data for printing
   const printRef = useRef(); // Reference to the printable area
 
+  // Use the custom animation hook
+  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation();
+
   const onSubmit = async (data) => {
     const feesData = {
       amount: parseInt(data.amount, 10),
       fee_type: data.fee_type.join(", "),
       payment_mode: data.payment_mode,
-      student: { studentId: data.studentId }, // Fixed typo: "sutdentIdId" -> "studentId"
+      student: { studentId: data.studentId },
     };
     setIsSubmitting(true); // Show loading state
     try {
-      // Simulate an API call
-      const token = localStorage.getItem('authToken');
-     
-      const response= await axios.post("http://localhost:9090/api/admin/feesSubmission",feesData,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        }
-      );
-      // console.log(JSON.stringify(response.data));
-      
+      const token = localStorage.getItem("authToken");
+      const response = await axios.post("http://localhost:9090/api/admin/feesSubmission", feesData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Set slipData for printable slip
+      setSlipData({
+        studentId: data.studentId,
+        amount: data.amount,
+        fee_type: data.fee_type.join(", "),
+        payment_mode: data.payment_mode,
+        paymentId: response.data.paymentId || "N/A", // Adjust based on API response
+      });
+
       setModal({
         isOpen: true,
         title: "Success!",
-        message: "Your Fees has been submitted successfully.",
+        message: "Your Fees have been submitted successfully.",
         isSuccess: true,
       });
       reset();
@@ -58,19 +67,37 @@ const FeeSubmissionForm = () => {
       setIsSubmitting(false); // Hide loading state
     }
   };
+
   const closeModal = () => {
     setModal({ ...modal, isOpen: false });
+    setSlipData(null); // Clear slip data on modal close
   };
 
   return (
-    <section className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] w-full min-h-[92vh] flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-xl sm:text-2xl font-medium text-gray-800 mb-4 text-center">Fee Submission</h2>
+    <motion.section
+      className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] w-full min-h-[92vh] flex items-center justify-center px-4 sm:px-6 lg:px-8"
+      variants={sectionVariants}
+      initial="hidden"
+      animate={controls}
+    >
+      <motion.div
+        ref={formRef}
+        className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg"
+        variants={containerVariants}
+        initial="hidden"
+        animate={controls}
+      >
+        <motion.h2
+          className="text-xl sm:text-2xl font-medium text-gray-800 mb-4 text-center"
+          variants={fieldVariants}
+        >
+          Fee Submission
+        </motion.h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Student ID */}
-          <div>
+          <motion.div variants={fieldVariants}>
             <label htmlFor="studentId" className="block text-md font-medium text-gray-600">
-              Student ID 
+              Student ID
             </label>
             <Controller
               name="studentId"
@@ -88,10 +115,10 @@ const FeeSubmissionForm = () => {
             {errors.studentId && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.studentId.message}</p>
             )}
-          </div>
+          </motion.div>
 
           {/* Amount */}
-          <div>
+          <motion.div variants={fieldVariants}>
             <label htmlFor="amount" className="block text-md font-medium text-gray-600">
               Amount
             </label>
@@ -112,10 +139,10 @@ const FeeSubmissionForm = () => {
             {errors.amount && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.amount.message}</p>
             )}
-          </div>
+          </motion.div>
 
           {/* Fee Type */}
-          <div>
+          <motion.div variants={fieldVariants}>
             <label className="block text-md font-medium text-gray-600">Fee Type</label>
             <Controller
               name="fee_type"
@@ -147,10 +174,10 @@ const FeeSubmissionForm = () => {
             {errors.fee_type && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.fee_type.message}</p>
             )}
-          </div>
+          </motion.div>
 
           {/* Payment Mode */}
-          <div>
+          <motion.div variants={fieldVariants}>
             <label htmlFor="payment_mode" className="block text-md font-medium text-gray-600">
               Payment Mode
             </label>
@@ -174,50 +201,76 @@ const FeeSubmissionForm = () => {
             {errors.payment_mode && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.payment_mode.message}</p>
             )}
-          </div>
+          </motion.div>
 
           {/* Submit Button */}
-          <button
+          <motion.button
             type="submit"
             disabled={isSubmitting}
-            className="w-1/4  py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
+            className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
+            variants={buttonVariants}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             {isSubmitting ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
-                    </svg>
-                    Submitting...
-                  </span>
-                ) : (
-                  "Submit"
-                )}
-          </button>
-        </form> 
-      </div>
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
+                </svg>
+                Submitting...
+              </span>
+            ) : (
+              "Submit"
+            )}
+          </motion.button>
+        </form>
+      </motion.div>
+
       {/* Printable Slip (Hidden on Screen) */}
       {slipData && (
-        <div ref={printRef} className="print-slip hidden print:block p-6 bg-white">
-          <h3 className="text-lg font-bold text-center mb-4">Fee Submission Slip</h3>
-          <div className="space-y-2">
+        <motion.div
+          ref={printRef}
+          className="print-slip hidden print:block p-6 bg-white"
+          variants={containerVariants}
+          initial="hidden"
+          animate={controls}
+        >
+          <motion.h3
+            className="text-lg font-bold text-center mb-4"
+            variants={fieldVariants}
+          >
+            Fee Submission Slip
+          </motion.h3>
+          <motion.div className="space-y-2" variants={containerVariants}>
             <p><strong>Student ID:</strong> {slipData.studentId}</p>
             <p><strong>Amount:</strong> ₹{slipData.amount}</p>
             <p><strong>Fee Type:</strong> {slipData.fee_type}</p>
             <p><strong>Payment Mode:</strong> {slipData.payment_mode}</p>
             <p><strong>Payment ID:</strong> {slipData.paymentId}</p>
             <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-      <Modal
-                    isOpen={modal.isOpen}
-                    onClose={closeModal}
-                    title={modal.title}
-                    message={modal.message}
-                    isSuccess={modal.isSuccess}
-                  />
-    </section>
+
+      {/* Animated Modal */}
+      {modal.isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Modal
+            isOpen={modal.isOpen}
+            onClose={closeModal}
+            title={modal.title}
+            message={modal.message}
+            isSuccess={modal.isSuccess}
+          />
+        </motion.div>
+      )}
+    </motion.section>
   );
 };
 

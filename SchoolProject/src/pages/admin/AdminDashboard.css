@@ -1,32 +1,26 @@
-/* AdminDashboard.css */
-@media (max-width: 480px) { /* Extra small screens */
-    .dashboard-content {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-  
-    .card-margin {
-      margin: 0.5rem;
-    }
-  
-    .xs\:grid-cols-1 {
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-    }
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
-  
-  @media (min-width: 481px) and (max-width: 640px) { /* Small screens */
-    .dashboard-content {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-  
-    .card-margin {
-      margin: 0.5rem;
-    }
+  .card-margin {
+    margin: 0.5rem;
   }
-  
-  @media (min-width: 641px) { /* Larger screens */
-    .card-margin {
-      margin: 0.75rem;
-    }
+  .xs\\:grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
+}
+@media (min-width: 481px) and (max-width: 640px) {
+  .dashboard-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .card-margin {
+    margin: 0.5rem;
+  }
+}
+@media (min-width: 641px) {
+  .card-margin {
+    margin: 0.75rem;
+  }
+}

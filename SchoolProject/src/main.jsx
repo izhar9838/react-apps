@@ -31,6 +31,8 @@ import CreateHallOfFame from './pages/admin/CreateHallofFame.jsx';
 import BlogForm from './pages/teacher/BlogForm.jsx';
 import BlogList from './pages/BlogList.jsx';
 import BlogDetails from './pages/BlogDetails.jsx';
+import AccountPage from './pages/login/AccountPage.jsx';
+import AdminAdd from './pages/admin/AdminAdd.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -55,6 +57,7 @@ const router = createBrowserRouter(
       <Route path="/hall-of-fame" element={<HallOfFame />} />
       <Route path="/time-table" element={<Timetable />} />
       <Route path="/blog-news" element={<BlogList />} />
+      <Route path="/accountInfo" element={<AccountPage />} />
       <Route path="/blog-news/blog/:id" element={<BlogDetails />} /> {/* Corrected route */}
       <Route
         path="/admin/studentform"
@@ -69,6 +72,14 @@ const router = createBrowserRouter(
         element={
           <ProtectedRoute>
             <CreateHallOfFame />
+          </ProtectedRoute>
+        }
+      />
+       <Route
+        path="/admin/other-Functions/add-admin"
+        element={
+          <ProtectedRoute>
+            <AdminAdd />
           </ProtectedRoute>
         }
       />
