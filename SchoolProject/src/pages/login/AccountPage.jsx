@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { FaUserCircle, FaEdit, FaKey } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
+import { useLocation,Navigate } from "react-router-dom";
 import { usePageAnimation } from "../usePageAnimation";
+
 
 const AccountPage = () => {
   const [user, setUser] = useState(null);
@@ -47,7 +48,7 @@ const AccountPage = () => {
       // Additional trigger for focus events
       controls.start("visible");
     };
-
+    
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("focus", handleFocus);
     return () => {
@@ -74,18 +75,11 @@ const AccountPage = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <motion.div
-        className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)]"
-        variants={sectionVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <p className="text-xl text-red-600">Error loading account details</p>
-      </motion.div>
-    );
-  }
+ // Check if user is logged in
+ const token = localStorage.getItem("authToken");
+ if (!token) {
+   return <Navigate to="/login" replace />;
+ }
 
   // Handle user.image as a base64 string or URL
   let profileImageSrc = "https://via.placeholder.com/150";
@@ -186,7 +180,7 @@ const AccountPage = () => {
               initial="hidden"
               animate="visible"
               whileHover={{ scale: 1.05 }}
-              href="/edit-profile"
+              href="/accountInfo/edit-profile"
               className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
             >
               <FaEdit className="mr-2" /> Edit Profile

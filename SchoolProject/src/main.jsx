@@ -32,7 +32,8 @@ import BlogForm from './pages/teacher/BlogForm.jsx';
 import BlogList from './pages/BlogList.jsx';
 import BlogDetails from './pages/BlogDetails.jsx';
 import AccountPage from './pages/login/AccountPage.jsx';
-import AdminAdd from './pages/admin/AdminAdd.jsx'
+import AdminAdd from './pages/admin/AdminAdd.jsx';
+import EditProfile from './pages/login/EditProfile.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -58,6 +59,7 @@ const router = createBrowserRouter(
       <Route path="/time-table" element={<Timetable />} />
       <Route path="/blog-news" element={<BlogList />} />
       <Route path="/accountInfo" element={<AccountPage />} />
+      <Route path="/accountInfo/edit-profile" element={<EditProfile />} />
       <Route path="/blog-news/blog/:id" element={<BlogDetails />} /> {/* Corrected route */}
       <Route
         path="/admin/studentform"

@@ -1,10 +1,12 @@
+
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import Modal from "../Modal";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import Cropper from "react-easy-crop";
+import { Cropper } from "react-advanced-cropper";
+import "react-advanced-cropper/dist/style.css";
 import { getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
 import { motion } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
@@ -36,13 +38,15 @@ const TeacherEnroll = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [cropCoordinates, setCropCoordinates] = useState(null);
+  const [cropWidth, setCropWidth] = useState(150);
+  const [cropHeight, setCropHeight] = useState(150);
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const fileInputRef = useRef(null);
+  const cropperRef = useRef(null);
 
   const location = useLocation();
-  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname,step);
+  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname, step);
 
   useEffect(() => {
     window.history.scrollRestoration = "manual";
@@ -86,16 +90,25 @@ const TeacherEnroll = () => {
     mode: "onChange",
   });
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onCropChange = useCallback((cropper) => {
+    const coords = cropper.getCoordinates();
+    setCropCoordinates(coords);
+    setCropWidth(coords.width);
+    setCropHeight(coords.height);
+    console.log("Crop coordinates:", coords);
   }, []);
 
   const handleCropSave = useCallback(async () => {
     try {
-      if (!imageToCrop || !croppedAreaPixels) {
+      if (!imageToCrop || !cropCoordinates) {
         throw new Error("Invalid crop parameters");
       }
-      const croppedImageBlob = await getCroppedImg(imageToCrop, croppedAreaPixels);
+      const croppedImageBlob = await getCroppedImg(imageToCrop, {
+        x: cropCoordinates.left,
+        y: cropCoordinates.top,
+        width: cropCoordinates.width,
+        height: cropCoordinates.height,
+      });
       const croppedImageFile = new File([croppedImageBlob], "profile.jpg", { type: "image/jpeg" });
 
       setValue("image", croppedImageFile, { shouldValidate: true });
@@ -114,11 +127,24 @@ const TeacherEnroll = () => {
         isSuccess: false,
       });
     }
-  }, [imageToCrop, croppedAreaPixels, setValue]);
+  }, [imageToCrop, cropCoordinates, setValue]);
 
   const customHandleImageChange = (e, onChange) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith("image/")) {
+        setModal({
+          isOpen: true,
+          title: "Invalid File",
+          message: "Please select a valid image file (e.g., JPG, PNG).",
+          isSuccess: false,
+        });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
         setImageToCrop(reader.result);
@@ -133,6 +159,9 @@ const TeacherEnroll = () => {
           message: "Failed to read the image file. Please try again.",
           isSuccess: false,
         });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -289,13 +318,28 @@ const TeacherEnroll = () => {
     }
   };
 
-  const handleImageError = (message) => {
-    setModal({
-      isOpen: true,
-      title: "Image Error",
-      message,
-      isSuccess: false,
-    });
+  const handleDimensionChange = (dimension, value) => {
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 50 || numValue > 1000) {
+      setModal({
+        isOpen: true,
+        title: "Invalid Input",
+        message: "Please enter a value between 50 and 1000 pixels.",
+        isSuccess: false,
+      });
+      return;
+    }
+    if (dimension === "width") {
+      setCropWidth(numValue);
+    } else {
+      setCropHeight(numValue);
+    }
+    if (cropperRef.current) {
+      cropperRef.current.setCoordinates({
+        width: dimension === "width" ? numValue : cropWidth,
+        height: dimension === "height" ? numValue : cropHeight,
+      });
+    }
   };
 
   return (
@@ -310,7 +354,7 @@ const TeacherEnroll = () => {
         className="w-[85vw] bg-white rounded-lg shadow-md p-4 md:p-6"
         variants={containerVariants}
         initial="hidden"
-        animate={controls}
+        animate="visible"
       >
         <motion.h1
           className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4 md:mb-6"
@@ -333,7 +377,6 @@ const TeacherEnroll = () => {
                   handleImageChange={customHandleImageChange}
                   imagePreview={imagePreview}
                   removeImage={removeImage}
-                  onImageError={handleImageError}
                   errors={errors}
                   fileInputRef={fileInputRef}
                   variants={fieldVariants}
@@ -384,7 +427,6 @@ const TeacherEnroll = () => {
                 handleImageChange={customHandleImageChange}
                 imagePreview={imagePreview}
                 removeImage={removeImage}
-                onImageError={handleImageError}
                 errors={errors}
                 fileInputRef={fileInputRef}
                 variants={fieldVariants}
@@ -430,20 +472,96 @@ const TeacherEnroll = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px] bg-opacity-100">
-                  <h2 className="text-lg font-semibold mb-4">Crop Image</h2>
-                  <div className="relative w-full h-[300px]">
+                <motion.div
+                  className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px] border-2 border-blue-500"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <motion.h2 className="text-lg font-semibold mb-4" variants={fieldVariants}>
+                    Crop Image
+                  </motion.h2>
+                  <motion.div className="relative w-full h-[300px] bg-gray-100 rounded-lg overflow-hidden" variants={fieldVariants}>
                     <Cropper
-                      image={imageToCrop}
-                      crop={crop}
-                      zoom={zoom}
-                      aspect={1}
-                      onCropChange={setCrop}
-                      onZoomChange={setZoom}
-                      onCropComplete={onCropComplete}
+                      ref={cropperRef}
+                      src={imageToCrop}
+                      onChange={onCropChange}
+                      stencilProps={{
+                        movable: true,
+                        resizable: true,
+                        minWidth: 50,
+                        minHeight: 50,
+                        maxWidth: 1000,
+                        maxHeight: 1000,
+                        handlers: true,
+                        lines: true,
+                        overlayClassName: "bg-black bg-opacity-50",
+                      }}
+                      className="cropper"
+                      style={{
+                        containerStyle: {
+                          width: "100%",
+                          height: "100%",
+                          background: "#333",
+                        },
+                        mediaStyle: {
+                          objectFit: "contain",
+                        },
+                        stencilStyle: {
+                          border: "2px dashed #3b82f6",
+                          boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+                          background: "rgba(59, 130, 246, 0.1)",
+                        },
+                      }}
                     />
-                  </div>
-                  <div className="mt-4 flex justify-end space-x-2">
+                  </motion.div>
+                  <motion.div className="mt-4 grid grid-cols-2 gap-4" variants={fieldVariants}>
+                    <div>
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                      <input
+                        type="number"
+                        value={cropWidth}
+                        onChange={(e) => handleDimensionChange("width", e.target.value)}
+                        min="50"
+                        max="1000"
+                        className="w-full p-2 border rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        aria-label="Crop width"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                      <input
+                        type="number"
+                        value={cropHeight}
+                        onChange={(e) => handleDimensionChange("height", e.target.value)}
+                        min="50"
+                        max="1000"
+                        className="w-full p-2 border rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        aria-label="Crop height"
+                      />
+                    </div>
+                  </motion.div>
+                  <motion.div className="mt-4" variants={fieldVariants}>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Zoom</label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="3"
+                      step="0.1"
+                      value={zoom}
+                      onChange={(e) => {
+                        const newZoom = Number(e.target.value);
+                        setZoom(newZoom);
+                        if (cropperRef.current) {
+                          cropperRef.current.setTransform({ scale: newZoom });
+                        }
+                      }}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      style={{ background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - 0.1) / 2.9) * 100}%, #d1d5db ${((zoom - 0.1) / 2.9) * 100}%, #d1d5db 100%)` }}
+                      aria-label="Adjust image zoom"
+                    />
+                  </motion.div>
+                  <motion.div className="mt-4 flex justify-end space-x-2" variants={containerVariants}>
                     <motion.button
                       type="button"
                       onClick={() => {
@@ -472,8 +590,8 @@ const TeacherEnroll = () => {
                     >
                       Save
                     </motion.button>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               </motion.div>
             </ErrorBoundary>
           )}
@@ -500,7 +618,8 @@ const TeacherEnroll = () => {
   );
 };
 
-const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, onImageError, errors, fileInputRef, variants }) => {
+// Reusable Components
+const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, errors, fileInputRef, variants }) => {
   return (
     <motion.div className="space-y-3" variants={variants}>
       <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
