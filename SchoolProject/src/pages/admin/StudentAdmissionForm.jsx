@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import Modal from "../Modal";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Cropper from "react-easy-crop";
-import { checkImageSize, getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
+import { getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
 import { motion } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
 
@@ -20,10 +20,23 @@ const StudentAdmissionForm = () => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const fileInputRef = useRef(null);
+  // Scroll to top on mount with fallback
+  useEffect(() => {
+    window.history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    handleScroll();
+    window.addEventListener("load", handleScroll);
+    return () => window.removeEventListener("load", handleScroll);
+  }, []);
 
-  // Use the animation hook
   const location = useLocation();
-  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname);
+  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname,step);
 
   const { control, handleSubmit, trigger, reset, formState: { errors }, setValue } = useForm({
     defaultValues: {
@@ -83,15 +96,20 @@ const StudentAdmissionForm = () => {
 
   const handleCropSave = useCallback(async () => {
     try {
-      const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
-      const file = new File([croppedImage], "profile.jpg", { type: "image/jpeg" });
-      const sizeValid = checkImageSize(file, handleImageError);
-      if (!sizeValid) {
-        throw new Error("Cropped image size exceeds limit");
+      if (!imageToCrop || !croppedAreaPixels) {
+        throw new Error("Invalid crop parameters");
       }
-      setValue("image", file, { shouldValidate: true });
-      setImagePreview(URL.createObjectURL(file));
+
+      const croppedImageBlob = await getCroppedImg(imageToCrop, croppedAreaPixels);
+      const croppedImageFile = new File([croppedImageBlob], "profile.jpg", { type: "image/jpeg" });
+
+      setValue("image", croppedImageFile, { shouldValidate: true });
+      setImagePreview(URL.createObjectURL(croppedImageFile));
       setCropModalOpen(false);
+      setImageToCrop(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (error) {
       console.error("Crop error:", error);
       setModal({
@@ -103,16 +121,42 @@ const StudentAdmissionForm = () => {
     }
   }, [imageToCrop, croppedAreaPixels, setValue]);
 
-  const customHandleImageChange = (e, onChange, onImageError, setImagePreview) => {
+  const customHandleImageChange = (e, onChange) => {
     const file = e.target.files[0];
     if (file) {
-      const sizeValid = checkImageSize(file, onImageError);
-      if (sizeValid) {
-        const imageUrl = URL.createObjectURL(file);
-        setImageToCrop(imageUrl);
-        setCropModalOpen(true);
-        onChange(file); // Update form state
+      // Validate file type only
+      if (!file.type.startsWith("image/")) {
+        setModal({
+          isOpen: true,
+          title: "Invalid File",
+          message: "Please select a valid image file (e.g., JPG, PNG).",
+          isSuccess: false,
+        });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
       }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImageToCrop(reader.result);
+        setCropModalOpen(true); // Open crop modal
+        onChange(file); // Temporarily update form value
+      };
+      reader.onerror = () => {
+        console.error("FileReader error");
+        setModal({
+          isOpen: true,
+          title: "Image Error",
+          message: "Failed to read the image file. Please try again.",
+          isSuccess: false,
+        });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -276,15 +320,9 @@ const StudentAdmissionForm = () => {
   const removeImage = () => {
     setValue("image", null, { shouldValidate: true });
     setImagePreview(null);
-  };
-
-  const handleImageError = (message) => {
-    setModal({
-      isOpen: true,
-      title: "Image Size Error",
-      message,
-      isSuccess: false,
-    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -322,10 +360,10 @@ const StudentAdmissionForm = () => {
                   handleImageChange={customHandleImageChange}
                   imagePreview={imagePreview}
                   removeImage={removeImage}
-                  onImageError={handleImageError}
                   setImagePreview={setImagePreview}
                   variants={fieldVariants}
                   errors={errors}
+                  fileInputRef={fileInputRef}
                 />
                 <Contact_Details control={control} variants={fieldVariants} errors={errors} />
               </motion.div>
@@ -347,8 +385,8 @@ const StudentAdmissionForm = () => {
                   className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
                   disabled={isSubmitting}
                   variants={buttonVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   Previous
                 </motion.button>
@@ -359,8 +397,8 @@ const StudentAdmissionForm = () => {
                 className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
                 disabled={isSubmitting}
                 variants={buttonVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover="hover"
+                whileTap="tap"
               >
                 {step === 2 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
               </motion.button>
@@ -374,10 +412,10 @@ const StudentAdmissionForm = () => {
                 handleImageChange={customHandleImageChange}
                 imagePreview={imagePreview}
                 removeImage={removeImage}
-                onImageError={handleImageError}
                 setImagePreview={setImagePreview}
                 variants={fieldVariants}
                 errors={errors}
+                fileInputRef={fileInputRef}
               />
             )}
             {step === 2 && <Contact_Details control={control} variants={fieldVariants} errors={errors} />}
@@ -392,8 +430,8 @@ const StudentAdmissionForm = () => {
                   className="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 text-xs"
                   disabled={isSubmitting}
                   variants={buttonVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   Previous
                 </motion.button>
@@ -404,8 +442,8 @@ const StudentAdmissionForm = () => {
                 className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
                 disabled={isSubmitting}
                 variants={buttonVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover="hover"
+                whileTap="tap"
               >
                 {step === 5 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
               </motion.button>
@@ -424,7 +462,7 @@ const StudentAdmissionForm = () => {
                 className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px]"
                 variants={containerVariants}
                 initial="hidden"
-                animate={controls}
+                animate="visible"
               >
                 <motion.h2 className="text-lg font-semibold mb-4" variants={fieldVariants}>
                   Crop Image
@@ -443,11 +481,18 @@ const StudentAdmissionForm = () => {
                 <motion.div className="mt-4 flex justify-end space-x-2" variants={containerVariants}>
                   <motion.button
                     type="button"
-                    onClick={() => setCropModalOpen(false)}
+                    onClick={() => {
+                      setCropModalOpen(false);
+                      setImageToCrop(null);
+                      setValue("image", null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+                    }}
                     className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
                     variants={buttonVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     Cancel
                   </motion.button>
@@ -456,8 +501,8 @@ const StudentAdmissionForm = () => {
                     onClick={handleCropSave}
                     className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
                     variants={buttonVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     Save
                   </motion.button>
@@ -467,7 +512,6 @@ const StudentAdmissionForm = () => {
           )}
         </form>
 
-        {/* Animated Feedback Modal */}
         {modal.isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -490,7 +534,7 @@ const StudentAdmissionForm = () => {
 };
 
 // Reusable Components
-const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, onImageError, setImagePreview, variants, errors }) => {
+const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, setImagePreview, variants, errors, fileInputRef }) => {
   return (
     <motion.div className="space-y-3" variants={variants}>
       <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
@@ -513,12 +557,13 @@ const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage
         label="Photo"
         name="image"
         control={control}
-        handleImageChange={(e, onChange) => handleImageChange(e, onChange, onImageError, setImagePreview)}
+        handleImageChange={handleImageChange}
         imagePreview={imagePreview}
         required
         removeImage={removeImage}
         variants={variants}
         errors={errors}
+        fileInputRef={fileInputRef}
       />
     </motion.div>
   );
@@ -647,48 +692,48 @@ const Field = ({ label, name, control, type, required, validate, autoComplete, v
   </motion.div>
 );
 
-const ImageField = ({ label, name, control, handleImageChange, imagePreview, required, removeImage, variants, errors }) => (
-  <motion.div variants={variants}>
-    <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <Controller
-      name={name}
-      control={control}
-      rules={{ required: required ? `${label} is required` : false }}
-      render={({ field: { onChange, value, ...field } }) => (
-        <div>
-          <input
-            {...field}
-            type="file"
-            id={name}
-            accept="image/*"
-            onChange={(e) => handleImageChange(e, onChange)}
-            className="mt-1 block w-full p-2 text-sm md:text-sm border border-gray-300 rounded-lg shadow-sm transition-all file-input"
-          />
-          {imagePreview && (
-            <div className="mt-2">
-              <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
-              <motion.button
-                type="button"
-                onClick={removeImage}
-                className="text-red-500 text-xs hover:underline mt-1"
-                variants={buttonVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Remove
-              </motion.button>
-            </div>
-          )}
-        </div>
-      )}
-    />
-    {errors[name] && (
-      <p className="mt-1 text-xs md:text-sm text-red-500">{errors[name].message}</p>
-    )}
-  </motion.div>
-);
+const ImageField = ({ label, name, control, handleImageChange, imagePreview, required, removeImage, errors, fileInputRef, variants }) => {
+  return (
+    <motion.div variants={variants}>
+      <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <Controller
+        name={name}
+        control={control}
+        rules={{ required: required ? `${label} is required` : false }}
+        render={({ field: { onChange, value, ...field } }) => (
+          <div>
+            <input
+              {...field}
+              type="file"
+              id={name}
+              accept="image/*"
+              onChange={(e) => handleImageChange(e, onChange)}
+              className="mt-1 block w-full p-2 text-xs md:text-sm border border-gray-300 rounded-lg shadow-sm transition-all file-input"
+              ref={fileInputRef}
+            />
+            {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name].message}</p>}
+            {imagePreview && (
+              <div className="mt-2">
+                <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
+                <motion.button
+                  type="button"
+                  onClick={removeImage}
+                  className="text-red-500 text-xs hover:underline mt-1"
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  Remove
+                </motion.button>
+              </div>
+            )}
+          </div>
+        )}
+      />
+    </motion.div>
+  );
+};
 
 const SelectField = ({ label, name, control, options, required, variants, errors }) => (
   <motion.div variants={variants}>
@@ -805,11 +850,12 @@ const PasswordField = ({ control, label, name, required, autoComplete, variants,
             </button>
           </div>
         )}
-    />
-    {errors[name.split(".")[0]]?.[name.split(".")[1]] && (
-      <p className="mt-1 text-xs md:text-sm text-red-500">{errors[name.split(".")[0]][name.split(".")[1]].message}</p>
-    )}
-  </motion.div>
-);
-}
+      />
+      {errors[name.split(".")[0]]?.[name.split(".")[1]] && (
+        <p className="mt-1 text-xs md:text-sm text-red-500">{errors[name.split(".")[0]][name.split(".")[1]].message}</p>
+      )}
+    </motion.div>
+  );
+};
+
 export default StudentAdmissionForm;

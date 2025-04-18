@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { motion } from "framer-motion";
-import { usePageAnimation } from "../usePageAnimation"; // Import the custom hook
+import { usePageAnimation } from "../usePageAnimation";
 import Modal from "../Modal";
-import "./FeesSubmission.css"; // Optional external CSS if needed
+import "./FeesSubmission.css";
 import axios from "axios";
 
 const FeeSubmissionForm = () => {
@@ -17,11 +17,10 @@ const FeeSubmissionForm = () => {
   });
 
   const [modal, setModal] = useState({ isOpen: false, title: "", message: "", isSuccess: false });
-  const [isSubmitting, setIsSubmitting] = useState(false); // Added for loading state
-  const [slipData, setSlipData] = useState(null); // Store slip data for printing
-  const printRef = useRef(); // Reference to the printable area
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [slipData, setSlipData] = useState(null);
+  const printRef = useRef();
 
-  // Use the custom animation hook
   const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation();
 
   const onSubmit = async (data) => {
@@ -31,7 +30,7 @@ const FeeSubmissionForm = () => {
       payment_mode: data.payment_mode,
       student: { studentId: data.studentId },
     };
-    setIsSubmitting(true); // Show loading state
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem("authToken");
       const response = await axios.post("http://localhost:9090/api/admin/feesSubmission", feesData, {
@@ -40,13 +39,12 @@ const FeeSubmissionForm = () => {
         },
       });
 
-      // Set slipData for printable slip
       setSlipData({
         studentId: data.studentId,
         amount: data.amount,
         fee_type: data.fee_type.join(", "),
         payment_mode: data.payment_mode,
-        paymentId: response.data.paymentId || "N/A", // Adjust based on API response
+        paymentId: response.data.paymentId || "N/A",
       });
 
       setModal({
@@ -64,13 +62,13 @@ const FeeSubmissionForm = () => {
         isSuccess: false,
       });
     } finally {
-      setIsSubmitting(false); // Hide loading state
+      setIsSubmitting(false);
     }
   };
 
   const closeModal = () => {
     setModal({ ...modal, isOpen: false });
-    setSlipData(null); // Clear slip data on modal close
+    setSlipData(null);
   };
 
   return (
@@ -209,8 +207,8 @@ const FeeSubmissionForm = () => {
             disabled={isSubmitting}
             className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
             variants={buttonVariants}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover="hover"
+            whileTap="tap"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center">

@@ -1,13 +1,33 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import Modal from "../Modal";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Cropper from "react-easy-crop";
-import { checkImageSize, getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
+import { getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
 import { motion } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
+
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-red-500 p-4">
+          <h2>Error Rendering Component</h2>
+          <p>{this.state.error?.message || "Something went wrong."}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const TeacherEnroll = () => {
   const [step, setStep] = useState(1);
@@ -21,9 +41,21 @@ const TeacherEnroll = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Use the animation hook
   const location = useLocation();
-  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname);
+  const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname,step);
+
+  useEffect(() => {
+    window.history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    handleScroll();
+    window.addEventListener("load", handleScroll);
+    return () => window.removeEventListener("load", handleScroll);
+  }, []);
 
   const { control, handleSubmit, trigger, reset, formState: { errors }, setValue } = useForm({
     defaultValues: {
@@ -63,15 +95,13 @@ const TeacherEnroll = () => {
       if (!imageToCrop || !croppedAreaPixels) {
         throw new Error("Invalid crop parameters");
       }
-      const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
-      const file = new File([croppedImage], "profile.jpg", { type: "image/jpeg" });
-      const sizeValid = checkImageSize(file, handleImageError);
-      if (!sizeValid) {
-        throw new Error("Cropped image size exceeds limit");
-      }
-      setValue("image", file, { shouldValidate: true });
-      setImagePreview(URL.createObjectURL(file));
+      const croppedImageBlob = await getCroppedImg(imageToCrop, croppedAreaPixels);
+      const croppedImageFile = new File([croppedImageBlob], "profile.jpg", { type: "image/jpeg" });
+
+      setValue("image", croppedImageFile, { shouldValidate: true });
+      setImagePreview(URL.createObjectURL(croppedImageFile));
       setCropModalOpen(false);
+      setImageToCrop(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -80,7 +110,7 @@ const TeacherEnroll = () => {
       setModal({
         isOpen: true,
         title: "Crop Error",
-        message: error.message || "Failed to crop or validate the image. Please try again.",
+        message: error.message || "Failed to crop the image. Please try again.",
         isSuccess: false,
       });
     }
@@ -89,13 +119,22 @@ const TeacherEnroll = () => {
   const customHandleImageChange = (e, onChange) => {
     const file = e.target.files[0];
     if (file) {
-      const sizeValid = checkImageSize(file, handleImageError);
-      if (sizeValid) {
-        const imageUrl = URL.createObjectURL(file);
-        setImageToCrop(imageUrl);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImageToCrop(reader.result);
         setCropModalOpen(true);
         onChange(file);
-      }
+      };
+      reader.onerror = () => {
+        console.error("FileReader error");
+        setModal({
+          isOpen: true,
+          title: "Image Error",
+          message: "Failed to read the image file. Please try again.",
+          isSuccess: false,
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -318,8 +357,8 @@ const TeacherEnroll = () => {
                   className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
                   disabled={isSubmitting}
                   variants={buttonVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   Previous
                 </motion.button>
@@ -330,8 +369,8 @@ const TeacherEnroll = () => {
                 className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
                 disabled={isSubmitting}
                 variants={buttonVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover="hover"
+                whileTap="tap"
               >
                 {step === 2 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
               </motion.button>
@@ -362,8 +401,8 @@ const TeacherEnroll = () => {
                   className="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 text-xs"
                   disabled={isSubmitting}
                   variants={buttonVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   Previous
                 </motion.button>
@@ -374,66 +413,69 @@ const TeacherEnroll = () => {
                 className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
                 disabled={isSubmitting}
                 variants={buttonVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover="hover"
+                whileTap="tap"
               >
                 {step === 4 ? (isSubmitting ? "Submitting..." : "Submit") : "Next"}
               </motion.button>
             </motion.div>
           </motion.div>
 
-          {cropModalOpen && (
-            <motion.div
-              className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
+          {cropModalOpen && imageToCrop && (
+            <ErrorBoundary>
               <motion.div
-                className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px]"
-                variants={containerVariants}
-                initial="hidden"
-                animate={controls}
+                className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <motion.h2 className="text-lg font-semibold mb-4" variants={fieldVariants}>
-                  Crop Image
-                </motion.h2>
-                <motion.div className="relative w-full h-[300px]" variants={fieldVariants}>
-                  <Cropper
-                    image={imageToCrop}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={onCropComplete}
-                  />
-                </motion.div>
-                <motion.div className="mt-4 flex justify-end space-x-2" variants={containerVariants}>
-                  <motion.button
-                    type="button"
-                    onClick={() => setCropModalOpen(false)}
-                    className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
-                    variants={buttonVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    onClick={handleCropSave}
-                    className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
-                    variants={buttonVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Save
-                  </motion.button>
-                </motion.div>
+                <div className="bg-white rounded-lg p-4 w-[90vw] max-w-[500px] bg-opacity-100">
+                  <h2 className="text-lg font-semibold mb-4">Crop Image</h2>
+                  <div className="relative w-full h-[300px]">
+                    <Cropper
+                      image={imageToCrop}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={1}
+                      onCropChange={setCrop}
+                      onZoomChange={setZoom}
+                      onCropComplete={onCropComplete}
+                    />
+                  </div>
+                  <div className="mt-4 flex justify-end space-x-2">
+                    <motion.button
+                      type="button"
+                      onClick={() => {
+                        setCropModalOpen(false);
+                        setImageToCrop(null);
+                        setValue("image", null);
+                        setImagePreview(null);
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = "";
+                        }
+                      }}
+                      className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={handleCropSave}
+                      className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      Save
+                    </motion.button>
+                  </div>
+                </div>
               </motion.div>
-            </motion.div>
+            </ErrorBoundary>
           )}
         </form>
 
@@ -638,9 +680,8 @@ const ImageField = ({ label, name, control, handleImageChange, imagePreview, req
                   type="button"
                   onClick={removeImage}
                   className="text-red-500 text-xs hover:underline mt-1"
-                  variants={buttonVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   Remove
                 </motion.button>

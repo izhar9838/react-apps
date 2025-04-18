@@ -3,14 +3,14 @@ import { useForm, Controller } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { usePageAnimation } from '../usePageAnimation'; // Adjust the import path as needed
+import { usePageAnimation } from '../usePageAnimation';
 import './EventUploadForm.css';
 
 const EventUploadForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [step, setStep] = useState(1); // Multi-step state for small screens
+  const [step, setStep] = useState(1);
 
   const { control, handleSubmit, reset, watch, formState: { errors }, trigger } = useForm({
     defaultValues: {
@@ -31,7 +31,6 @@ const EventUploadForm = () => {
 
   const registration = watch('registration');
 
-  // Use the animation hook
   const location = useLocation();
   const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname);
 
@@ -67,7 +66,7 @@ const EventUploadForm = () => {
       setSuccess('Event uploaded successfully!');
       reset();
       setImagePreview(null);
-      setStep(1); // Reset to first step on success
+      setStep(1);
     } catch (err) {
       setError('Failed to upload event. Please try again.');
       console.error('Error uploading event:', err);
@@ -152,8 +151,8 @@ const EventUploadForm = () => {
                   onClick={nextStep}
                   className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm font-medium mt-4"
                   variants={buttonVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover="hover"
+                  whileTap="tap"
                 >
                   Next
                 </motion.button>
@@ -175,8 +174,8 @@ const EventUploadForm = () => {
                     onClick={prevStep}
                     className="w-full bg-gray-400 text-white py-2 px-4 rounded-lg hover:bg-gray-500 text-sm font-medium mt-4"
                     variants={buttonVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     Back
                   </motion.button>
@@ -185,8 +184,8 @@ const EventUploadForm = () => {
                     onClick={nextStep}
                     className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 text-sm font-medium mt-4"
                     variants={buttonVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     Submit
                   </motion.button>
@@ -204,8 +203,8 @@ const EventUploadForm = () => {
               type="submit"
               className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm font-semibold shadow-md transition-all"
               variants={buttonVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover="hover"
+              whileTap="tap"
             >
               Upload Event
             </motion.button>

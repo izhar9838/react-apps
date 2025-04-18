@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
-import Modal from "../Modal"; // Assuming Modal is available
+import Modal from "../Modal";
 import { usePageAnimation } from "../usePageAnimation";
 
 const CreateTimetable = ({ onTimetableAdded }) => {
@@ -28,7 +28,6 @@ const CreateTimetable = ({ onTimetableAdded }) => {
     isSuccess: false,
   });
 
-  // Use the animation hook
   const location = useLocation();
   const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname);
 
@@ -41,7 +40,7 @@ const CreateTimetable = ({ onTimetableAdded }) => {
 
       onTimetableAdded();
       reset({
-        className: data.className, // Keep the selected class
+        className: data.className,
         period: "",
         subject: "",
         teacher: "",
@@ -175,8 +174,8 @@ const CreateTimetable = ({ onTimetableAdded }) => {
             type="submit"
             className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             variants={buttonVariants}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover="hover"
+            whileTap="tap"
           >
             Add Entry
           </motion.button>

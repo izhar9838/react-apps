@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
 import Cropper from "react-easy-crop";
 import { checkImageSize, fileToBase64, validateEmail, getCroppedImg } from "./ImageUtil";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"; // Import icons
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
 
 function AdminAdd() {
@@ -18,7 +18,7 @@ function AdminAdd() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [imageError, setImageError] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     control,
@@ -91,23 +91,20 @@ function AdminAdd() {
         role: data.role,
       };
 
-      // Retrieve authToken from localStorage (or another storage mechanism)
       const authToken = localStorage.getItem("authToken");
 
-      // Make the POST request using axios
       const response = await axios.post("http://localhost:9090/api/admin/add-admin", formData, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`, // Attach authToken
+          Authorization: `Bearer ${authToken}`,
         },
       });
 
-      // Check if the response is successful
       if (response.status === 200 || response.status === 201) {
         alert("Admin added successfully!");
         reset();
         setImageSrc(null);
-        navigate("/admin-list");
+        navigate("admin/admin-list");
       } else {
         throw new Error("Failed to add admin");
       }
@@ -117,6 +114,7 @@ function AdminAdd() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <motion.section
       className="bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] w-full min-h-[92vh] flex items-center justify-center px-4 sm:px-6 lg:px-8"
@@ -208,7 +206,7 @@ function AdminAdd() {
                   <input
                     id="password"
                     {...field}
-                    type={showPassword ? "text" : "password"} // Toggle type
+                    type={showPassword ? "text" : "password"}
                     className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     placeholder="Enter password"
                   />
@@ -303,7 +301,7 @@ function AdminAdd() {
                   />
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => {
                       setShowCropper(false);
@@ -311,16 +309,22 @@ function AdminAdd() {
                       setValue("profileImage", null);
                     }}
                     className="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     onClick={handleCrop}
                     className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     Crop
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -333,8 +337,8 @@ function AdminAdd() {
               disabled={isSubmitting}
               className="py-2 px-6 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
               variants={buttonVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover="hover"
+              whileTap="tap"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">

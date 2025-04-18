@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -11,8 +12,17 @@ const HallOfFame = () => {
   const { pathname } = useLocation();
 
   // Use the page animation hook
-  const { formRef, controls, sectionVariants, headerVariants, containerVariants, cardVariants } =
-    usePageAnimation(pathname);
+  const {
+    formRef,
+    controls,
+    sectionVariants,
+    headerVariants,
+    containerVariants,
+    cardVariants,
+  } = usePageAnimation(pathname);
+
+  // Additional ref for the grid container to ensure animation trigger
+  const gridRef = useRef(null);
 
   // Fetch data from the API
   const fetchHallOfFameData = async () => {
@@ -34,10 +44,12 @@ const HallOfFame = () => {
     fetchHallOfFameData();
   }, []);
 
-  // Optional: Function to refresh data (can be passed to CreateHallOfFame)
-  const refreshData = () => {
-    fetchHallOfFameData();
-  };
+  // Force animation on initial load or route change
+  useEffect(() => {
+    if (hallOfFameData.length > 0 || error || !loading) {
+      controls.start("visible").catch((err) => console.error("Animation error:", err));
+    }
+  }, [hallOfFameData, error, loading, controls]);
 
   return (
     <motion.div
@@ -74,7 +86,7 @@ const HallOfFame = () => {
           </div>
         ) : (
           <motion.div
-            ref={formRef}
+            ref={gridRef || formRef} // Use gridRef, fallback to formRef
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 md:gap-8"
             variants={containerVariants}
             initial="hidden"

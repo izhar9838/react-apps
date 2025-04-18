@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
@@ -23,7 +24,6 @@ const CreateHallOfFame = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Use the animation hook
   const location = useLocation();
   const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname);
 
@@ -43,10 +43,9 @@ const CreateHallOfFame = () => {
     mode: "onChange",
   });
 
-  // Define checkImageSize function to enforce 2MB limit
   const checkImageSize = (file, onError) => {
     const maxSizeMB = 2;
-    const maxSizeBytes = maxSizeMB * 1024 * 1024; // 2MB in bytes
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
     if (file.size > maxSizeBytes) {
       onError(`Cropped image size exceeds ${maxSizeMB}MB limit. Please try cropping a smaller area or use a different image.`);
       return false;
@@ -66,7 +65,6 @@ const CreateHallOfFame = () => {
       const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
       const file = new File([croppedImage], "halloffame.jpg", { type: "image/jpeg" });
 
-      // Check file size after cropping
       const sizeValid = checkImageSize(file, handleImageError);
       if (!sizeValid) {
         throw new Error("Cropped image size exceeds 2MB limit");
@@ -244,8 +242,8 @@ const CreateHallOfFame = () => {
                         onClick={removeImage}
                         className="text-red-500 text-xs hover:underline ml-4"
                         variants={buttonVariants}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover="hover"
+                        whileTap="tap"
                       >
                         Remove
                       </motion.button>
@@ -264,8 +262,8 @@ const CreateHallOfFame = () => {
               type="submit"
               className="bg-green-500 text-white px-4 py-3 rounded-md hover:bg-green-600 transition duration-300 text-sm"
               variants={buttonVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover="hover"
+              whileTap="tap"
             >
               Add Entry
             </motion.button>
@@ -273,7 +271,6 @@ const CreateHallOfFame = () => {
         </form>
       </motion.div>
 
-      {/* Animated Feedback Modal */}
       {modalState.isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -291,7 +288,6 @@ const CreateHallOfFame = () => {
         </motion.div>
       )}
 
-      {/* Animated Crop Modal */}
       {cropModalOpen && (
         <motion.div
           className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
@@ -326,8 +322,8 @@ const CreateHallOfFame = () => {
                 onClick={() => setCropModalOpen(false)}
                 className="bg-gray-500 text-white px-3 py-1.5 rounded-md hover:bg-gray-600 text-sm"
                 variants={buttonVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover="hover"
+                whileTap="tap"
               >
                 Cancel
               </motion.button>
@@ -336,8 +332,8 @@ const CreateHallOfFame = () => {
                 onClick={handleCropSave}
                 className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
                 variants={buttonVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover="hover"
+                whileTap="tap"
               >
                 Save
               </motion.button>

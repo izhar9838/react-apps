@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -16,9 +17,14 @@ const BlogList = () => {
   const { formRef, controls, sectionVariants, headerVariants, containerVariants, cardVariants } =
     usePageAnimation(pathname);
 
+  // Additional ref for the grid container to ensure animation trigger
+  const gridRef = useRef(null);
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:9090/api/public/getBlogs'); // Added Axios request
         const validatedBlogs = response.data.map(blog => {
           let image = null;
           if (blog.image) {
@@ -41,7 +47,9 @@ const BlogList = () => {
           return { ...blog, image };
         });
         setBlogs(validatedBlogs);
+        setError(null);
       } catch (err) {
+        console.error('Error fetching blogs:', err);
         setError('Failed to fetch blogs. Please try again later.');
       } finally {
         setLoading(false);
@@ -49,6 +57,13 @@ const BlogList = () => {
     };
     fetchBlogs();
   }, []);
+
+  // Force animation on initial load or route change
+  useEffect(() => {
+    if (blogs.length > 0 || error || !loading) {
+      controls.start('visible').catch((err) => console.error('Animation error:', err));
+    }
+  }, [blogs, error, loading, controls]);
 
   const handleCardClick = (blogId) => {
     navigate(`/blog-news/blog/${blogId}`);
@@ -74,12 +89,32 @@ const BlogList = () => {
         </motion.h2>
         <div className="flex-grow overflow-y-auto">
           {loading ? (
-            <div className="text-center py-6 sm:py-8 md:py-10">Loading...</div>
+            <div className="text-center py-6 sm:py-8 md:py-10">
+              <svg
+                className="animate-spin h-6 w-6 mx-auto text-gray-600"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
+              </svg>
+              Loading...
+            </div>
           ) : error ? (
             <div className="text-center py-6 sm:py-8 md:py-10 text-red-600">{error}</div>
+          ) : blogs.length === 0 ? (
+            <div className="text-center py-6 sm:py-8 md:py-10 text-gray-600">
+              No blog posts found.
+            </div>
           ) : (
             <motion.div
-              ref={formRef}
+              ref={gridRef || formRef} // Use gridRef, fallback to formRef
               className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6"
               variants={containerVariants}
               initial="hidden"
