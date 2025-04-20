@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
-import Cropper from "react-easy-crop";
-import { checkImageSize, fileToBase64, validateEmail, getCroppedImg } from "./ImageUtil";
+import { Cropper } from "react-advanced-cropper";
+import "react-advanced-cropper/dist/style.css";
+import { fileToBase64, validateEmail, getCroppedImg } from "./ImageUtil";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
 
@@ -13,12 +14,15 @@ function AdminAdd() {
   const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation("/admin-add");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [cropCoordinates, setCropCoordinates] = useState(null);
+  const [cropWidth, setCropWidth] = useState(150);
+  const [cropHeight, setCropHeight] = useState(150);
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [imageError, setImageError] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const cropperRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const {
     control,
@@ -37,15 +41,25 @@ function AdminAdd() {
   });
 
   const togglePasswordVisibility = () => {
+    setShowCropper(false);
     setShowPassword((prev) => !prev);
   };
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onCropChange = useCallback((cropper) => {
+    const coords = cropper.getCoordinates();
+    setCropCoordinates(coords);
+    setCropWidth(coords.width);
+    setCropHeight(coords.height);
   }, []);
 
   const handleImageChange = (file) => {
     if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setImageError("Please select a valid image file (e.g., JPG, PNG).");
+      if (fileInputRef.current) fileInputRef.current.value = null;
+      return;
+    }
 
     setImageError(null);
     const reader = new FileReader();
@@ -53,27 +67,82 @@ function AdminAdd() {
       setImageSrc(reader.result);
       setShowCropper(true);
     };
+    reader.onerror = () => {
+      setImageError("Failed to read the image file.");
+      if (fileInputRef.current) fileInputRef.current.value = null;
+    };
     reader.readAsDataURL(file);
   };
 
   const handleCrop = async () => {
     try {
-      const croppedImageBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-      const sizeValid = checkImageSize(croppedImageBlob, (error) => setImageError(error));
-      if (!sizeValid) {
-        setImageSrc(null);
-        setShowCropper(false);
-        setValue("profileImage", null);
-        return;
+      if (!imageSrc || !cropCoordinates) {
+        throw new Error("Invalid crop parameters");
       }
+      const croppedImageBlob = await getCroppedImg(imageSrc, {
+        x: cropCoordinates.left,
+        y: cropCoordinates.top,
+        width: cropCoordinates.width,
+        height: cropCoordinates.height,
+      });
 
       setValue("profileImage", croppedImageBlob);
       setShowCropper(false);
       setImageSrc(URL.createObjectURL(croppedImageBlob));
     } catch (error) {
-      setImageError("Failed to crop image");
+      setImageError(error.message || "Failed to crop image");
     }
   };
+
+  const handleWidthChange = (value) => {
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 50 || numValue > 400) {
+      setImageError("Width must be between 50 and 400 pixels.");
+      return;
+    }
+    setCropWidth(numValue);
+    if (cropperRef.current) {
+      cropperRef.current.setCoordinates((prev) => ({
+        ...prev,
+        width: numValue,
+      }));
+    }
+  };
+
+  const handleHeightChange = (value) => {
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 50 || numValue > 400) {
+      setImageError("Height must be between 50 and 400 pixels.");
+      return;
+    }
+    setCropHeight(numValue);
+    if (cropperRef.current) {
+      cropperRef.current.setCoordinates((prev) => ({
+        ...prev,
+        height: numValue,
+      }));
+    }
+  };
+
+  // Initialize cropper with image dimensions
+  useEffect(() => {
+    if (showCropper && imageSrc && cropperRef.current) {
+      const image = new Image();
+      image.src = imageSrc;
+      image.onload = () => {
+        const minDimension = Math.min(image.width, image.height, 400);
+        const initialSize = Math.min(150, minDimension * 0.8); // 80% of smallest dimension
+        setCropWidth(initialSize);
+        setCropHeight(initialSize);
+        cropperRef.current.setCoordinates({
+          width: initialSize,
+          height: initialSize,
+          left: (image.width - initialSize) / 2,
+          top: (image.height - initialSize) / 2,
+        });
+      };
+    }
+  }, [showCropper, imageSrc]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -104,6 +173,7 @@ function AdminAdd() {
         alert("Admin added successfully!");
         reset();
         setImageSrc(null);
+        if (fileInputRef.current) fileInputRef.current.value = null;
         navigate("admin/admin-list");
       } else {
         throw new Error("Failed to add admin");
@@ -127,7 +197,7 @@ function AdminAdd() {
         className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-lg"
         variants={containerVariants}
         initial="hidden"
-        animate={controls}
+        animate="visible"
       >
         <motion.h2
           className="text-xl sm:text-2xl font-medium text-gray-800 mb-4 text-center"
@@ -251,6 +321,7 @@ function AdminAdd() {
                     }
                   }}
                   className="mt-1 block w-full p-2 text-sm md:text-sm border border-gray-300 rounded-lg shadow-sm transition-all file-input"
+                  ref={fileInputRef}
                 />
               )}
             />
@@ -285,28 +356,123 @@ function AdminAdd() {
           />
 
           {/* Image Cropper Modal */}
-          {showCropper && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-4 rounded-lg max-w-lg w-full">
-                <h3 className="text-lg font-medium mb-4">Crop Image</h3>
-                <div className="relative w-full h-64">
+          {showCropper && imageSrc && (
+            <motion.div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="bg-white p-6 rounded-lg max-w-md w-full border-2 border-blue-500 shadow-xl"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <motion.h3 className="text-lg font-medium mb-4 text-gray-900" variants={fieldVariants}>
+                  Crop Profile Image
+                </motion.h3>
+                <motion.div className="relative w-full h-80 bg-gray-100 rounded-lg overflow-hidden" variants={fieldVariants}>
                   <Cropper
-                    image={imageSrc}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={onCropComplete}
+                    ref={cropperRef}
+                    src={imageSrc}
+                    onChange={onCropChange}
+                    stencilProps={{
+                      movable: true,
+                      resizable: true,
+                      minWidth: 50,
+                      minHeight: 50,
+                      maxWidth: 400,
+                      maxHeight: 400,
+                      grid: true,
+                      handlers: {
+                        east: true,
+                        west: true,
+                        north: true,
+                        south: true,
+                        northEast: true,
+                        northWest: true,
+                        southEast: true,
+                        southWest: true,
+                      },
+                      lines: true,
+                      movableX: true,
+                      movableY: true,
+                      overlayClassName: "bg-black bg-opacity-50",
+                    }}
+                    className="cropper"
+                    style={{
+                      containerStyle: {
+                        width: "100%",
+                        height: "100%",
+                        background: "#333",
+                      },
+                      mediaStyle: {
+                        objectFit: "contain",
+                      },
+                      stencilStyle: {
+                        border: "2px dashed #3b82f6",
+                        boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+                        background: "rgba(59, 130, 246, 0.1)",
+                      },
+                    }}
                   />
-                </div>
-                <div className="mt-4 flex justify-end space-x-2">
+                </motion.div>
+                <motion.div className="mt-4 grid grid-cols-2 gap-4" variants={fieldVariants}>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                    <input
+                      type="number"
+                      value={cropWidth}
+                      onChange={(e) => handleWidthChange(e.target.value)}
+                      min="50"
+                      max="400"
+                      className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      aria-label="Crop width"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                    <input
+                      type="number"
+                      value={cropHeight}
+                      onChange={(e) => handleHeightChange(e.target.value)}
+                      min="50"
+                      max="400"
+                      className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      aria-label="Crop height"
+                    />
+                  </div>
+                </motion.div>
+                <motion.div className="mt-4" variants={fieldVariants}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Zoom</label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="3"
+                    step="0.1"
+                    value={zoom}
+                    onChange={(e) => {
+                      const newZoom = Number(e.target.value);
+                      setZoom(newZoom);
+                      if (cropperRef.current) {
+                        cropperRef.current.setTransform({ scale: newZoom });
+                      }
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    style={{ background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - 0.5) / 2.5) * 100}%, #d1d5db ${((zoom - 0.5) / 2.5) * 100}%, #d1d5db 100%)` }}
+                    aria-label="Adjust image zoom"
+                  />
+                </motion.div>
+                <motion.div className="mt-4 flex justify-end space-x-2" variants={fieldVariants}>
                   <motion.button
                     type="button"
                     onClick={() => {
                       setShowCropper(false);
                       setImageSrc(null);
                       setValue("profileImage", null);
+                      if (fileInputRef.current) fileInputRef.current.value = null;
                     }}
                     className="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-600"
                     variants={buttonVariants}
@@ -325,13 +491,13 @@ function AdminAdd() {
                   >
                     Crop
                   </motion.button>
-                </div>
-              </div>
-            </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* Submit Button */}
-          <div className="flex justify-start">
+          <motion.div className="flex justify-start" variants={fieldVariants}>
             <motion.button
               type="submit"
               disabled={isSubmitting}
@@ -352,7 +518,7 @@ function AdminAdd() {
                 "Add Admin"
               )}
             </motion.button>
-          </div>
+          </motion.div>
         </form>
       </motion.div>
     </motion.section>

@@ -22,7 +22,7 @@ const AccountPage = () => {
         const response = await axios.get("http://localhost:9090/api/public/accountInfo", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("API Response:", response.data); // Debug API response
+
         setUser(response.data);
         setLoading(false);
       } catch (error) {
@@ -92,8 +92,6 @@ const AccountPage = () => {
       profileImageSrc = `data:image/jpeg;base64,${user.image}`;
     }
   }
-  console.log("Profile Image Source:", profileImageSrc); // Debug image source
-
   return (
     <motion.div
       className="min-h-screen bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] py-12 px-4 sm:px-6 lg:px-8"
@@ -190,7 +188,7 @@ const AccountPage = () => {
               initial="hidden"
               animate="visible"
               whileHover={{ scale: 1.05 }}
-              href="/change-password"
+              href="/accountInfo/change-password"
               className="flex items-center justify-center px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200"
             >
               <FaKey className="mr-2" /> Change Password

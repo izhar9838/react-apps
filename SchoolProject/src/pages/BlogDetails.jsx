@@ -1,12 +1,18 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async'; // For SEO meta tags
-import DOMPurify from 'dompurify'; // For sanitizing HTML
-import { usePageAnimation } from './usePageAnimation'; // Adjust the import path as needed
-import './BlogDetail.css'; // Optional: For custom styling
+import DOMPurify from 'dompurify';
+import { usePageAnimation } from './usePageAnimation';
+import './BlogDetail.css';
+
+// Configure DOMPurify for server-side rendering
+let purify = DOMPurify;
+if (typeof window === 'undefined') {
+  const { JSDOM } = require('jsdom');
+  const { window } = new JSDOM('');
+  purify = DOMPurify(window);
+}
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -15,14 +21,11 @@ const BlogDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Use the page animation hook
   const { formRef, controls, sectionVariants, headerVariants, containerVariants, cardVariants } =
     usePageAnimation(pathname);
 
-  // Additional ref for the content container to ensure animation trigger
   const contentRef = useRef(null);
 
-  // Fetch blog details
   const fetchBlog = async () => {
     if (!id || isNaN(id)) {
       setError('Invalid blog ID');
@@ -51,14 +54,12 @@ const BlogDetail = () => {
     fetchBlog();
   }, [id]);
 
-  // Force animation on initial load or data fetch completion
   useEffect(() => {
     if (blog || error || !loading) {
       controls.start('visible').catch((err) => console.error('Animation error:', err));
     }
   }, [blog, error, loading, controls]);
 
-  // Handle image load error
   const handleImageError = (e) => {
     e.target.src = 'https://via.placeholder.com/800x400?text=No+Image+Available';
   };
@@ -70,22 +71,6 @@ const BlogDetail = () => {
       initial="hidden"
       animate={controls}
     >
-      {/* SEO Meta Tags */}
-      <Helmet>
-        <title>{blog ? blog.title : 'Blog Post'} | Blog Platform</title>
-        <meta
-          name="description"
-          content={blog ? blog.content?.substring(0, 160) : 'Read detailed blog posts on various topics.'}
-        />
-        <meta name="keywords" content="blog, article, news, updates" />
-        <meta property="og:title" content={blog ? blog.title : 'Blog Post'} />
-        <meta
-          property="og:description"
-          content={blog ? blog.content?.substring(0, 160) : 'Read detailed blog posts on various topics.'}
-        />
-        <meta property="og:image" content={blog?.image || 'https://via.placeholder.com/800x400'} />
-      </Helmet>
-
       <div className="max-w-4xl mx-auto">
         {loading && (
           <div className="text-center py-8" role="status" aria-live="polite">
@@ -123,16 +108,16 @@ const BlogDetail = () => {
         )}
         {!loading && !error && blog && (
           <motion.div
-            ref={contentRef || formRef} // Use contentRef, fallback to formRef
+            ref={contentRef || formRef}
             className="bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8 max-w-3xl mx-auto"
-            variants={cardVariants} // Use cardVariants for content container
+            variants={cardVariants}
             initial="hidden"
             animate={controls}
           >
             {blog.image && (
               <motion.img
                 src={blog.image}
-                alt={blog.title}
+                alt={blog.title || 'Blog image'}
                 className="w-full h-48 sm:h-64 md:h-80 object-cover rounded-lg mb-4 sm:mb-6"
                 onError={handleImageError}
                 variants={headerVariants}
@@ -148,11 +133,13 @@ const BlogDetail = () => {
               className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base font-medium"
               variants={headerVariants}
             >
-              By {blog.author} | {new Date(blog.createdAt || Date.now()).toLocaleDateString()}
+              By {blog.author || 'Unknown'} | {new Date(blog.createdAt || Date.now()).toLocaleDateString()}
             </motion.p>
             <motion.div
               className="prose prose-sm sm:prose-base prose-gray max-w-none"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }}
+              dangerouslySetInnerHTML={{
+                __html: blog.content ? purify.sanitize(blog.content) : '',
+              }}
               variants={containerVariants}
             />
           </motion.div>

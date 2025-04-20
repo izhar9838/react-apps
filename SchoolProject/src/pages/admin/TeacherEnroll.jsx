@@ -95,7 +95,6 @@ const TeacherEnroll = () => {
     setCropCoordinates(coords);
     setCropWidth(coords.width);
     setCropHeight(coords.height);
-    console.log("Crop coordinates:", coords);
   }, []);
 
   const handleCropSave = useCallback(async () => {

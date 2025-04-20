@@ -1,7 +1,8 @@
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate, Navigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../store/authSlice";
 import axios from "axios";
 import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
@@ -29,10 +30,12 @@ const modalVariants = {
   hidden: { opacity: 0, scale: 0.8 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
 };
+
 const validateEmail = (value) => {
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
   return emailRegex.test(value) || "Invalid email address";
 };
+
 const EditProfile = () => {
   const [modal, setModal] = useState({ isOpen: false, title: "", message: "", isSuccess: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +49,7 @@ const EditProfile = () => {
   const fileInputRef = useRef(null);
   const cropperRef = useRef(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { control, handleSubmit, reset, formState: { errors }, setValue } = useForm({
     defaultValues: {
       firstName: "",
@@ -56,11 +60,13 @@ const EditProfile = () => {
     },
     mode: "onChange",
   });
+
   // Check if user is logged in
   const token = localStorage.getItem("authToken");
   if (!token) {
     return <Navigate to="/login" replace />;
   }
+
   // Fetch profile data on mount
   useEffect(() => {
     const fetchProfile = async () => {
@@ -69,7 +75,7 @@ const EditProfile = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { fullName, email, phoneNumber, image } = response.data;
-        const [firstName,lastName]=fullName.split("  ");
+        const [firstName, lastName] = fullName.split(" ");
         reset({ firstName, lastName, email, phoneNumber });
         if (image) {
           setImagePreview(`data:image/jpeg;base64,${image}`);
@@ -92,7 +98,7 @@ const EditProfile = () => {
     setCropCoordinates(coords);
     setCropWidth(coords.width);
     setCropHeight(coords.height);
-    console.log("Crop coordinates:", coords);
+
   }, []);
 
   const handleCropSave = useCallback(async () => {
@@ -170,15 +176,16 @@ const EditProfile = () => {
       setIsSubmitting(true);
       try {
         const imageBase64 = data.image ? await fileToBase64(data.image) : null;
-        const fullName = `${data.firstName} ${data.lastName}`.trim();
+
         const profileData = {
-          fullName,
+          firstName: data.firstName,
+          lastName: data.lastName,
           email: data.email,
           phoneNumber: data.phoneNumber,
-          image: imageBase64,
+          profileImage: imageBase64,
         };
         const response = await axios.put(
-          "http://localhost:9090/api/user/updateProfile",
+          "http://localhost:9090/api/public/updateProfile",
           profileData,
           {
             headers: {
@@ -187,13 +194,16 @@ const EditProfile = () => {
             },
           }
         );
+
+        const user = response.data;
+        dispatch(loginSuccess({ token, user }));
+
         setModal({
           isOpen: true,
           title: "Success",
           message: response.data.message || "Profile updated successfully!",
           isSuccess: true,
         });
-        setTimeout(() => navigate("/account"), 2000);
       } catch (error) {
         console.error("Submission error:", error);
         setModal({
@@ -210,9 +220,7 @@ const EditProfile = () => {
 
   const closeModal = () => {
     setModal({ ...modal, isOpen: false });
-    if (modal.isSuccess) {
-      navigate("/account");
-    }
+    setTimeout(() => navigate("/accountInfo"), 300); // Navigate to /accountInfo after animation
   };
 
   const removeImage = () => {
@@ -248,7 +256,7 @@ const EditProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] flex items-center justify-center p-4">
       <motion.div
         className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6"
         variants={containerVariants}

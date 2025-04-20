@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import Cropper from 'react-easy-crop';
-import 'react-easy-crop/react-easy-crop.css';
+import { Cropper } from 'react-advanced-cropper';
+import 'react-advanced-cropper/dist/style.css';
 import { getCroppedImg, fileToBase64 } from '../admin/ImageUtil';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,15 +14,17 @@ const BlogForm = () => {
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm();
   const [imagePreview, setImagePreview] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [cropCoordinates, setCropCoordinates] = useState(null);
+  const [cropWidth, setCropWidth] = useState(300);
+  const [cropHeight, setCropHeight] = useState(200);
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [imageError, setImageError] = useState(null);
   const [submitError, setSubmitError] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const fileInputRef = useRef(null);
+  const cropperRef = useRef(null);
 
   const location = useLocation();
   const { formRef, controls, sectionVariants, containerVariants, cardVariants } =
@@ -98,6 +100,12 @@ const BlogForm = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (!file.type.startsWith('image/')) {
+      setImageError('Please select a valid image file (e.g., JPG, PNG).');
+      if (fileInputRef.current) fileInputRef.current.value = null;
+      return;
+    }
+
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
@@ -107,16 +115,28 @@ const BlogForm = () => {
     };
     reader.onerror = () => {
       setImageError('Failed to read the image file.');
+      if (fileInputRef.current) fileInputRef.current.value = null;
     };
   };
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onCropChange = useCallback((cropper) => {
+    const coords = cropper.getCoordinates();
+    setCropCoordinates(coords);
+    setCropWidth(coords.width);
+    setCropHeight(coords.height);
   }, []);
 
   const handleCrop = useCallback(async () => {
     try {
-      const croppedImageBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+      if (!imageSrc || !cropCoordinates) {
+        throw new Error('Invalid crop parameters');
+      }
+      const croppedImageBlob = await getCroppedImg(imageSrc, {
+        x: cropCoordinates.left,
+        y: cropCoordinates.top,
+        width: cropCoordinates.width,
+        height: cropCoordinates.height,
+      });
       const maxSizeInMB = 2;
       const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
       if (croppedImageBlob.size > maxSizeInBytes) {
@@ -133,12 +153,13 @@ const BlogForm = () => {
       setImagePreview(croppedImageBase64);
       setValue('image', croppedImageBase64);
       setShowCropper(false);
+      setImageSrc(null);
       setImageError(null);
     } catch (error) {
       console.error('Error cropping or converting image:', error);
-      setImageError('Failed to crop or convert image. Please try again.');
+      setImageError(error.message || 'Failed to crop or convert image. Please try again.');
     }
-  }, [imageSrc, croppedAreaPixels, setValue]);
+  }, [imageSrc, cropCoordinates, setValue]);
 
   const handleCancelCrop = () => {
     setShowCropper(false);
@@ -146,6 +167,25 @@ const BlogForm = () => {
     setImagePreview(null);
     setValue('image', null);
     if (fileInputRef.current) fileInputRef.current.value = null;
+  };
+
+  const handleDimensionChange = (dimension, value) => {
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 50 || numValue > 1000) {
+      setImageError('Please enter a value between 50 and 1000 pixels.');
+      return;
+    }
+    if (dimension === 'width') {
+      setCropWidth(numValue);
+    } else {
+      setCropHeight(numValue);
+    }
+    if (cropperRef.current) {
+      cropperRef.current.setCoordinates({
+        width: dimension === 'width' ? numValue : cropWidth,
+        height: dimension === 'height' ? numValue : cropHeight,
+      });
+    }
   };
 
   const closeSuccessModal = () => {
@@ -194,6 +234,9 @@ const BlogForm = () => {
             {errors.title?.type === 'minLength' && (
               <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
             )}
+            {errors.title?.type === 'required' && (
+              <p className="mt-1 text-sm text-red-600">Title is required</p>
+            )}
           </motion.div>
 
           {/* Author */}
@@ -213,6 +256,9 @@ const BlogForm = () => {
             {errors.author?.type === 'minLength' && (
               <p className="mt-1 text-sm text-red-600">{errors.author.message}</p>
             )}
+            {errors.author?.type === 'required' && (
+              <p className="mt-1 text-sm text-red-600">Author is required</p>
+            )}
           </motion.div>
 
           {/* Category */}
@@ -230,6 +276,9 @@ const BlogForm = () => {
               <option value="tech">Tech</option>
               <option value="lifestyle">Lifestyle</option>
             </select>
+            {errors.category?.type === 'required' && (
+              <p className="mt-1 text-sm text-red-600">Category is required</p>
+            )}
           </motion.div>
 
           {/* Content */}
@@ -249,6 +298,9 @@ const BlogForm = () => {
             {errors.content?.type === 'minLength' && (
               <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
             )}
+            {errors.content?.type === 'required' && (
+              <p className="mt-1 text-sm text-red-600">Content is required</p>
+            )}
           </motion.div>
 
           {/* Image Upload */}
@@ -265,6 +317,9 @@ const BlogForm = () => {
               ref={fileInputRef}
             />
             {imageError && <p className="mt-1 text-sm text-red-600">{imageError}</p>}
+            {errors.image?.type === 'required' && (
+              <p className="mt-1 text-sm text-red-600">Featured Image is required</p>
+            )}
             {imagePreview && (
               <motion.div variants={cardVariants} className="mt-4">
                 <img src={imagePreview} alt="Preview" className="max-w-full h-auto rounded-md max-h-48 object-cover" />
@@ -291,7 +346,7 @@ const BlogForm = () => {
 
         {/* Cropper Modal */}
         <AnimatePresence>
-          {showCropper && (
+          {showCropper && imageSrc && (
             <motion.div
               className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
               initial={{ opacity: 0 }}
@@ -300,25 +355,95 @@ const BlogForm = () => {
               transition={{ duration: 0.3 }}
             >
               <motion.div
-                className="bg-white rounded-lg p-6 w-full max-w-lg"
+                className="bg-white rounded-lg p-6 w-full max-w-lg border-2 border-blue-500"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
                 exit={{ opacity: 0, y: -20 }}
               >
-                <motion.h3 variants={cardVariants} className="text-lg font-semibold mb-4">
+                <motion.h3 variants={cardVariants} className="text-lg font-semibold mb-4 text-gray-900">
                   Crop Image
                 </motion.h3>
-                <div className="relative w-full h-64">
+                <motion.div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden" variants={cardVariants}>
                   <Cropper
-                    image={imageSrc}
-                    crop={crop}
-                    zoom={zoom}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={onCropComplete}
+                    ref={cropperRef}
+                    src={imageSrc}
+                    onChange={onCropChange}
+                    stencilProps={{
+                      movable: true,
+                      resizable: true,
+                      minWidth: 50,
+                      minHeight: 50,
+                      maxWidth: 1000,
+                      maxHeight: 1000,
+                      handlers: true,
+                      lines: true,
+                      overlayClassName: "bg-black bg-opacity-50",
+                    }}
+                    className="cropper"
+                    style={{
+                      containerStyle: {
+                        width: "100%",
+                        height: "100%",
+                        background: "#333",
+                      },
+                      mediaStyle: {
+                        objectFit: "contain",
+                      },
+                      stencilStyle: {
+                        border: "2px dashed #3b82f6",
+                        boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+                        background: "rgba(59, 130, 246, 0.1)",
+                      },
+                    }}
                   />
-                </div>
+                </motion.div>
+                <motion.div className="mt-4 grid grid-cols-2 gap-4" variants={cardVariants}>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                    <input
+                      type="number"
+                      value={cropWidth}
+                      onChange={(e) => handleDimensionChange('width', e.target.value)}
+                      min="50"
+                      max="1000"
+                      className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      aria-label="Crop width"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                    <input
+                      type="number"
+                      value={cropHeight}
+                      onChange={(e) => handleDimensionChange('height', e.target.value)}
+                      min="50"
+                      max="1000"
+                      className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      aria-label="Crop height"
+                    />
+                  </div>
+                </motion.div>
+                <motion.div className="mt-4" variants={cardVariants}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Zoom</label>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="3"
+                    step="0.1"
+                    value={zoom}
+                    onChange={(e) => {
+                      const newZoom = Number(e.target.value);
+                      setZoom(newZoom);
+                      if (cropperRef.current) {
+                        cropperRef.current.setTransform({ scale: newZoom });
+                      }
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    style={{ background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - 0.1) / 2.9) * 100}%, #d1d5db ${((zoom - 0.1) / 2.9) * 100}%, #d1d5db 100%)` }}
+                    aria-label="Adjust image zoom"
+                  />
+                </motion.div>
                 <motion.div variants={cardVariants} className="mt-4 flex justify-end space-x-2">
                   <motion.button
                     onClick={handleCancelCrop}
