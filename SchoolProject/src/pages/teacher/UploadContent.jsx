@@ -61,6 +61,7 @@ function UploadContent() {
       const payload = {
         title: data.title,
         description: data.description,
+        mimeType: data.file[0].type,
         notes: base64File, // Base64 string
         classLevel: data.classLevel.value, // Class ID
       };
