@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { FaUserCircle, FaEdit, FaKey } from "react-icons/fa";
-import { useLocation,Navigate } from "react-router-dom";
+import { FaUserCircle, FaEdit, FaKey, FaExclamationCircle } from "react-icons/fa";
+import { useLocation, Navigate } from "react-router-dom";
 import { usePageAnimation } from "../usePageAnimation";
-
 
 const AccountPage = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const location = useLocation();
 
   // Use the provided animation hook
@@ -22,11 +22,10 @@ const AccountPage = () => {
         const response = await axios.get("http://localhost:9090/api/public/accountInfo", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         setUser(response.data);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching account details:", error);
+        setError("Failed to load Account Info. Please check if the server is running or try again later.");
         setLoading(false);
       }
     };
@@ -37,7 +36,6 @@ const AccountPage = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        // Delay to ensure inView detection stabilizes
         setTimeout(() => {
           controls.start("visible");
         }, 100);
@@ -45,10 +43,9 @@ const AccountPage = () => {
     };
 
     const handleFocus = () => {
-      // Additional trigger for focus events
       controls.start("visible");
     };
-    
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("focus", handleFocus);
     return () => {
@@ -56,6 +53,12 @@ const AccountPage = () => {
       window.removeEventListener("focus", handleFocus);
     };
   }, [controls]);
+
+  // Check if user is logged in
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (loading) {
     return (
@@ -69,21 +72,37 @@ const AccountPage = () => {
           variants={cardVariants}
           initial="hidden"
           animate="visible"
-          className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"
+          className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
         ></motion.div>
       </motion.div>
     );
   }
 
- // Check if user is logged in
- const token = localStorage.getItem("authToken");
- if (!token) {
-   return <Navigate to="/login" replace />;
- }
+  if (error) {
+    return (
+      <motion.div
+        className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)]"
+        variants={sectionVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full text-center"
+        >
+          <FaExclamationCircle className="text-red-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
+          <p className="text-gray-600">{error}</p>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   // Handle user.image as a base64 string or URL
   let profileImageSrc = "https://via.placeholder.com/150";
-  if (user.image) {
+  if (user?.image) {
     if (user.image.startsWith("data:image/")) {
       profileImageSrc = user.image;
     } else if (user.image.startsWith("http://") || user.image.startsWith("https://")) {
@@ -92,6 +111,7 @@ const AccountPage = () => {
       profileImageSrc = `data:image/jpeg;base64,${user.image}`;
     }
   }
+
   return (
     <motion.div
       className="min-h-screen bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)] py-12 px-4 sm:px-6 lg:px-8"
@@ -117,7 +137,6 @@ const AccountPage = () => {
               alt="Profile"
               className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-md object-cover"
               onError={(e) => {
-                console.error("Image failed to load:", profileImageSrc);
                 e.target.src = "https://via.placeholder.com/150";
               }}
             />
@@ -168,7 +187,7 @@ const AccountPage = () => {
               animate="visible"
             >
               <h2 className="text-lg font-semibold text-gray-800">Email</h2>
-              <p className="text-gray-600 ">{user.email || "N/A"}</p>
+              <p className="text-gray-600">{user.email || "N/A"}</p>
             </motion.div>
           </div>
 
