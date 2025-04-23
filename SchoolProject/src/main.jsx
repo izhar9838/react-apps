@@ -38,6 +38,8 @@ import ChangePassword from './pages/login/ChangePassword.jsx';
 import UploadContent from './pages/teacher/UploadContent.jsx';
 import StudentDashboard from './pages/student/Studentdashboard.jsx';
 import StudentProtected from './pages/student/StudentProtected.jsx';
+import StudentProfile from './pages/student/StudentProfile.jsx';
+import NotesDisplay from './pages/student/NotesDisplay.jsx';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -153,10 +155,24 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
-      <Route path="/student/student-dashboard" element={
-        <StudentProtected>
-          <StudentDashboard />
-        </StudentProtected>} />
+      <Route 
+        path="/student/student-dashboard" element={
+          <StudentProtected>
+            <StudentDashboard />
+          </StudentProtected>
+      } />
+      <Route 
+        path="/student/student-profile" element={
+          <StudentProtected>
+            <StudentProfile />
+          </StudentProtected>
+      } />
+      <Route 
+        path="/student/notes" element={
+          <StudentProtected>
+            <NotesDisplay />
+          </StudentProtected>
+      } />
       <Route path="/login" element={<LoginCard />} errorElement={<ErrorPage />} />
       <Route path="login/loginForm" element={<LoginForm />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
