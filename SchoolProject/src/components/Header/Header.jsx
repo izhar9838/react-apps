@@ -361,6 +361,19 @@ function Header() {
                   </button>
                 </li>
               )}
+              {authStatus && authRole === 'student' && (
+                <li className="nav-li px-2 py-2 w-full text-center">
+                  <button
+                    onClick={() => {
+                      navigate('student/student-dashboard');
+                      setIsOpen(false);
+                    }}
+                    className="cursor-pointer nav-button font-medium"
+                  >
+                    Student
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         )}

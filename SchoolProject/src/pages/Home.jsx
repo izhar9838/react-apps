@@ -6,6 +6,7 @@ import { usePageAnimation } from "./usePageAnimation";
 import HallOfFame from '../assets/admin-rel/otherfunction/HallOfFame.jpg';
 import TimeTable from '../assets/admin-rel/otherfunction/timetable.png';
 import BlogNews from '../assets/teacher-rel/Blog:News.jpg';
+import './Home.css';
 
 function Home() {
   const navigate = useNavigate();
@@ -72,13 +73,13 @@ function Home() {
       {userRole === "admin" && authStatus && (
         <motion.section
           ref={adminRef}
-          className="container mx-auto py-10 w-full px-4 sm:px-6"
+          className="container mx-auto py-10 w-full px-0 sm:px-0 md:px-4"
           variants={adminVariants.sectionVariants}
           initial="hidden"
           animate={adminControls}
         >
           <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto"
+            className="home-grid"
             variants={adminVariants.containerVariants}
           >
             <motion.button
@@ -88,9 +89,9 @@ function Home() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 w-full max-w-[280px] mx-auto">
-                <h3 className="text-lg font-bold mb-3 text-gray-800">Admissions</h3>
-                <p className="text-gray-700 text-sm">
+              <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 w-48 h-48 flex flex-col justify-center items-center">
+                <h3 className="text-sm font-bold mb-2 text-gray-800 text-center">Admissions</h3>
+                <p className="text-gray-700 text-xs text-center">
                   Learn about our admission process and requirements.
                 </p>
               </div>
@@ -101,9 +102,9 @@ function Home() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 w-full max-w-[280px] mx-auto">
-                <h3 className="text-lg font-bold mb-3">Calendar</h3>
-                <p className="text-gray-700 text-sm">
+              <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 w-48 h-48 flex flex-col justify-center items-center">
+                <h3 className="text-sm font-bold mb-2 text-center">Calendar</h3>
+                <p className="text-gray-700 text-xs text-center">
                   Stay updated with important school events and dates.
                 </p>
               </div>
@@ -114,9 +115,9 @@ function Home() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 w-full max-w-[280px] mx-auto">
-                <h3 className="text-lg font-bold mb-3">News</h3>
-                <p className="text-gray-700 text-sm">
+              <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300 w-48 h-48 flex flex-col justify-center items-center">
+                <h3 className="text-sm font-bold mb-2 text-center">News</h3>
+                <p className="text-gray-700 text-xs text-center">
                   Read the latest news and announcements.
                 </p>
               </div>
@@ -136,13 +137,13 @@ function Home() {
         Latest News
       </motion.h2>
       <motion.section
-        className="py-10 w-full container mx-auto px-4 sm:px-6"
+        className="py-10 w-full container mx-auto px-0 sm:px-0 md:px-4"
         variants={newsVariants.sectionVariants}
         initial="hidden"
         animate={newsControls}
       >
         <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto"
+          className="home-grid"
           variants={newsVariants.containerVariants}
         >
           <motion.button
@@ -155,16 +156,16 @@ function Home() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="bg-white p-4 rounded-lg shadow-lg h-full flex flex-col justify-between hover:shadow-xl transition duration-300 w-full max-w-[280px] mx-auto">
-              <div>
+            <div className="bg-white p-4 rounded-lg shadow-lg h-48 w-48 flex flex-col justify-between hover:shadow-xl transition duration-300">
+              <div className="flex flex-col items-center">
                 <img
                   src={TimeTable}
                   alt="School Time Table"
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-gray-300 object-cover mx-auto mb-3"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-gray-300 object-cover mb-2"
                   loading="lazy"
                 />
-                <h3 className="text-base sm:text-lg font-medium mb-3 text-gray-800 text-center">School Time Table</h3>
-                <p className="text-gray-700 text-sm flex-grow text-center">
+                <h3 className="text-sm font-medium mb-2 text-gray-800 text-center">School Time Table</h3>
+                <p className="text-gray-700 text-xs text-center flex-grow">
                   Get the Latest Time Table of School
                 </p>
               </div>
@@ -180,16 +181,16 @@ function Home() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="bg-white p-4 rounded-lg shadow-lg h-full flex flex-col justify-between hover:shadow-xl transition duration-300 w-full max-w-[280px] mx-auto">
-              <div>
+            <div className="bg-white p-4 rounded-lg shadow-lg h-48 w-48 flex flex-col justify-between hover:shadow-xl transition duration-300">
+              <div className="flex flex-col items-center">
                 <img
                   src={HallOfFame}
                   alt="Hall of Fame"
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-gray-300 object-cover mx-auto mb-3"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-gray-300 object-cover mb-2"
                   loading="lazy"
                 />
-                <h3 className="text-base sm:text-lg font-medium mb-3 text-gray-800 text-center">Hall of Fame</h3>
-                <p className="text-gray-700 text-sm flex-grow text-center">
+                <h3 className="text-sm font-medium mb-2 text-gray-800 text-center">Hall of Fame</h3>
+                <p className="text-gray-700 text-xs text-center flex-grow">
                   Top Students who scored highest in exams & sports
                 </p>
               </div>
@@ -205,16 +206,16 @@ function Home() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="bg-white p-4 rounded-lg shadow-lg h-full flex flex-col justify-between hover:shadow-xl transition duration-300 w-full max-w-[280px] mx-auto">
-              <div>
+            <div className="bg-white p-4 rounded-lg shadow-lg h-48 w-48 flex flex-col justify-between hover:shadow-xl transition duration-300">
+              <div className="flex flex-col items-center">
                 <img
                   src={BlogNews}
                   alt="Blogs News"
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-gray-300 object-cover mx-auto mb-3"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-gray-300 object-cover mb-2"
                   loading="lazy"
                 />
-                <h3 className="text-base sm:text-lg font-medium mb-3 text-gray-800 text-center">Blogs News</h3>
-                <p className="text-gray-700 text-sm flex-grow text-center">
+                <h3 className="text-sm font-medium mb-2 text-gray-800 text-center">Blogs News</h3>
+                <p className="text-gray-700 text-xs text-center flex-grow">
                   Read the latest blogs and news articles.
                 </p>
               </div>
