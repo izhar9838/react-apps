@@ -82,7 +82,7 @@ const OtherFunctions = () => {
                   <Sections />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Sections Manage</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Sections Manage</h3>
                 </div>
               </div>
             </motion.div>
@@ -100,7 +100,7 @@ const OtherFunctions = () => {
                   <CreateTimeTable />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Create Time Table</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Create Time Table</h3>
                 </div>
               </div>
             </motion.div>
@@ -118,7 +118,7 @@ const OtherFunctions = () => {
                   <AddEvents />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Add Events</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Add Events</h3>
                 </div>
               </div>
             </motion.div>
@@ -136,7 +136,7 @@ const OtherFunctions = () => {
                   <HallOfFame />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Hall of Fame</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Hall of Fame</h3>
                 </div>
               </div>
             </motion.div>
@@ -154,7 +154,7 @@ const OtherFunctions = () => {
                   <AdminPng />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Add Admin</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Add Admin</h3>
                 </div>
               </div>
             </motion.div>

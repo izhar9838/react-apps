@@ -6,30 +6,23 @@ import { usePageAnimation } from '../usePageAnimation';
 import UploadMarksImg from '../../assets/teacher-rel/upload.png';
 import BlogImg from '../../assets/teacher-rel/blog.png';
 import MailImg from '../../assets/teacher-rel/email.png';
+import UploadContentImg from '../../assets/teacher-rel/upload-file.png';
 
 // SVG Icons as Components
-const UploadMarksIcon = () => (
-  <img 
-    src={UploadMarksImg} 
-    alt="Upload Marks Icon" 
-    className="h-12 w-12" 
-  />
+const UploadMarksIcon = ({ className }) => (
+  <img src={UploadMarksImg} alt="Upload Marks Icon" className={className} />
 );
 
-const BlogIcon = () => (
-  <img 
-    src={BlogImg} 
-    alt="Blog News" 
-    className="h-12 w-12" 
-  />
+const BlogIcon = ({ className }) => (
+  <img src={BlogImg} alt="Blog News" className={className} />
 );
 
-const MailIcon = () => (
-  <img 
-    src={MailImg} 
-    alt="Announcements Icon" 
-    className="h-12 w-12" 
-  />
+const MailIcon = ({ className }) => (
+  <img src={MailImg} alt="Announcements Icon" className={className} />
+);
+
+const UploadContentIcon = ({ className }) => (
+  <img src={UploadContentImg} alt="Upload Content Icon" className={className} />
 );
 
 const TeacherDashboard = () => {
@@ -88,20 +81,20 @@ const TeacherDashboard = () => {
         className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 dashboard-content"
       >
         {/* Cards Grid */}
-        <div className="grid grid-cols-2 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5 justify-center">
           {/* Upload Marks Card */}
           <motion.div
             variants={cardVariants}
             whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer card-margin"
+            className="bg-white rounded-lg shadow-md cursor-pointer card-margin"
             onClick={() => navigate('/teacher_dashboard/upload-marks')}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-full bg-blue-100 mb-4">
-                <UploadMarksIcon />
+                <UploadMarksIcon className="icon-size" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-800">Upload Marks</h3>
+                <h3 className="text-base font-medium text-gray-800 card-title">Upload Marks</h3>
               </div>
             </div>
           </motion.div>
@@ -110,15 +103,15 @@ const TeacherDashboard = () => {
           <motion.div
             variants={cardVariants}
             whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer card-margin"
+            className="bg-white rounded-lg shadow-md cursor-pointer card-margin"
             onClick={() => navigate('/teacher-dashboard/create-blog')}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-full bg-green-100 mb-4">
-                <BlogIcon />
+                <BlogIcon className="icon-size" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-800">Blog News</h3>
+                <h3 className="text-base font-medium text-gray-800 card-title">Blog News</h3>
               </div>
             </div>
           </motion.div>
@@ -127,15 +120,32 @@ const TeacherDashboard = () => {
           <motion.div
             variants={cardVariants}
             whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer card-margin"
+            className="bg-white rounded-lg shadow-md cursor-pointer card-margin"
             onClick={() => navigate('/teacher/announcements')}
           >
             <div className="flex flex-col items-center text-center">
               <div className="p-3 rounded-full bg-yellow-100 mb-4">
-                <MailIcon />
+                <MailIcon className="icon-size" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-800">Parent Mail/Call</h3>
+                <h3 className="text-base font-medium text-gray-800 card-title">Parent Mail/Call</h3>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Upload Content Card */}
+          <motion.div
+            variants={cardVariants}
+            whileHover={{ scale: 1.05 }}
+            className="bg-white rounded-lg shadow-md cursor-pointer card-margin"
+            onClick={() => navigate('/teacher-dashboard/upload-content')}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 rounded-full bg-purple-100 mb-4">
+                <UploadContentIcon className="icon-size" />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-gray-800 card-title">Upload Content</h3>
               </div>
             </div>
           </motion.div>

@@ -168,7 +168,7 @@ const AccountPage = () => {
               animate="visible"
             >
               <h2 className="text-lg font-semibold text-gray-800">Email</h2>
-              <p className="text-gray-600">{user.email || "N/A"}</p>
+              <p className="text-gray-600 ">{user.email || "N/A"}</p>
             </motion.div>
           </div>
 

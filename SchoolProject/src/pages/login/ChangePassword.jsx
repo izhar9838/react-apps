@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate, Navigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from '../../store/authSlice';
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import { FaCheckCircle, FaExclamationCircle, FaEye, FaEyeSlash } from "react-icons/fa";
 
-// Animation variants (same as EditProfile)
+// Animation variants (unchanged)
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -26,13 +28,13 @@ const modalVariants = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
 };
 
-// Password strength validation
+// Password strength validation (unchanged)
 const validatePasswordStrength = (value) => {
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
   return passwordRegex.test(value) || "Password must be at least 8 characters long and include letters and numbers";
 };
 
-// Confirm password validation
+// Confirm password validation (unchanged)
 const validateConfirmPassword = (value, newPassword) => {
   return value === newPassword || "Passwords do not match";
 };
@@ -49,11 +51,9 @@ const ChangePassword = () => {
     },
     mode: "onChange",
   });
-
-  // Watch newPassword for confirmPassword validation
+  const dispatch = useDispatch();
   const newPassword = watch("newPassword");
 
-  // Check if user is logged in
   const token = localStorage.getItem("authToken");
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -68,7 +68,7 @@ const ChangePassword = () => {
           newPassword: data.newPassword,
         };
 
-        const response = await axios.put(
+        const response = await axios.patch(
           "http://localhost:9090/api/public/change-password",
           payload,
           {
@@ -85,6 +85,10 @@ const ChangePassword = () => {
           message: response.data.message || "Password changed successfully!",
           isSuccess: true,
         });
+        setTimeout(() => {
+          dispatch(logout());
+          navigate("/login");
+        }, 2000);
       } catch (error) {
         console.error("Password change error:", error);
         setModal({
@@ -101,7 +105,7 @@ const ChangePassword = () => {
 
   const closeModal = () => {
     setModal({ ...modal, isOpen: false });
-    setTimeout(() => navigate("/accountInfo"), 300); // Navigate after animation
+    setTimeout(() => navigate("/accountInfo"), 300);
   };
 
   return (
@@ -119,8 +123,7 @@ const ChangePassword = () => {
           Change Password
         </motion.h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Form Fields */}
-          <motion.div className="grid grid-cols-1 gap-4" variants={containerVariants}>
+          <motion.div className="flex flex-col space-y-4" variants={containerVariants}>
             <Field
               label="Current Password"
               name="currentPassword"
@@ -152,7 +155,6 @@ const ChangePassword = () => {
             />
           </motion.div>
 
-          {/* Buttons */}
           <motion.div className="flex justify-end space-x-3" variants={containerVariants}>
             <motion.button
               type="button"
@@ -178,7 +180,6 @@ const ChangePassword = () => {
           </motion.div>
         </form>
 
-        {/* Feedback Modal */}
         <AnimatePresence>
           {modal.isOpen && (
             <motion.div
@@ -226,32 +227,45 @@ const ChangePassword = () => {
   );
 };
 
-// Reusable Field Component (same as EditProfile)
-const Field = ({ label, name, control, type, required, validate, variants, errors }) => (
-  <motion.div variants={variants}>
-    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <Controller
-      name={name}
-      control={control}
-      rules={{ required: required ? `${label} is required` : false, validate }}
-      render={({ field }) => (
-        <input
-          {...field}
-          type={type}
-          id={name}
-          autoComplete="off"
-          className={`w-full p-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-            errors[name] ? "border-red-500" : "border-gray-300"
-          }`}
+// Updated Field Component with Show/Hide Password (unchanged)
+const Field = ({ label, name, control, type, required, validate, variants, errors }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <motion.div variants={variants}>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="relative">
+        <Controller
+          name={name}
+          control={control}
+          rules={{ required: required ? `${label} is required` : false, validate }}
+          render={({ field }) => (
+            <input
+              {...field}
+              type={showPassword ? "text" : "password"}
+              id={name}
+              autoComplete="off"
+              className={`w-full p-3 pr-10 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                errors[name] ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+          )}
         />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+        >
+          {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+        </button>
+      </div>
+      {errors[name] && (
+        <p className="mt-1 text-sm text-red-500">{errors[name].message}</p>
       )}
-    />
-    {errors[name] && (
-      <p className="mt-1 text-sm text-red-500">{errors[name].message}</p>
-    )}
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 export default ChangePassword;

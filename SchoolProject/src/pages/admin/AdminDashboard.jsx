@@ -106,7 +106,7 @@ const AdminDashboard = () => {
                   <StudentIcon />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Student Enrolled</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Student Enrolled</h3>
                 </div>
               </div>
             </motion.div>
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
                   <TeacherIcon />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Teacher Enrolled</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Teacher Enrolled</h3>
                 </div>
               </div>
             </motion.div>
@@ -148,7 +148,7 @@ const AdminDashboard = () => {
                   <FeesIcon />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Fees Submission</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Fees Submission</h3>
                 </div>
               </div>
             </motion.div>
@@ -169,7 +169,7 @@ const AdminDashboard = () => {
                   <FunctionIcon />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-800">Other Functions</h3>
+                  <h3 className="text-[16px] font-medium text-gray-800">Other Functions</h3>
                 </div>
               </div>
             </motion.div>

@@ -1,13 +1,33 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
 import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 import { fileToBase64, validateEmail, getCroppedImg } from "./ImageUtil";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import axios from "axios";
+
+// Modal animation variants (from ChangePassword)
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+};
+
+// Phone number validation
+const validatePhoneNumber = (value) => {
+  const phoneRegex = /^\+?[\d\s\-()]{7,20}$/;
+  const digitsOnly = value.replace(/[\D]/g, "");
+  if (!phoneRegex.test(value)) {
+    return "Phone number must be 7-15 digits and may include +, -, (), or spaces";
+  }
+  if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+    return "Phone number must contain 7-15 digits";
+  }
+  return true;
+};
 
 function AdminAdd() {
   const navigate = useNavigate();
@@ -21,6 +41,7 @@ function AdminAdd() {
   const [imageError, setImageError] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [modal, setModal] = useState({ isOpen: false, title: "", message: "", isSuccess: false });
   const cropperRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -34,6 +55,7 @@ function AdminAdd() {
     defaultValues: {
       username: "",
       email: "",
+      phoneNumber: "",
       password: "",
       profileImage: null,
       role: "admin",
@@ -124,14 +146,13 @@ function AdminAdd() {
     }
   };
 
-  // Initialize cropper with image dimensions
   useEffect(() => {
     if (showCropper && imageSrc && cropperRef.current) {
       const image = new Image();
       image.src = imageSrc;
       image.onload = () => {
         const minDimension = Math.min(image.width, image.height, 400);
-        const initialSize = Math.min(150, minDimension * 0.8); // 80% of smallest dimension
+        const initialSize = Math.min(150, minDimension * 0.8);
         setCropWidth(initialSize);
         setCropHeight(initialSize);
         cropperRef.current.setCoordinates({
@@ -155,6 +176,7 @@ function AdminAdd() {
       const formData = {
         username: data.username,
         email: data.email,
+        phoneNumber: data.phoneNumber,
         password: data.password,
         profileImage: profileImageBase64,
         role: data.role,
@@ -169,19 +191,34 @@ function AdminAdd() {
         },
       });
 
-      if (response.status === 200 || response.status === 201) {
-        alert("Admin added successfully!");
+      setModal({
+        isOpen: true,
+        title: "Success",
+        message: "Admin added successfully!",
+        isSuccess: true,
+      });
+      setTimeout(() => {
         reset();
         setImageSrc(null);
         if (fileInputRef.current) fileInputRef.current.value = null;
-        navigate("admin/admin-list");
-      } else {
-        throw new Error("Failed to add admin");
-      }
+        navigate("/admin");
+      }, 2000);
     } catch (error) {
-      alert("Error adding admin: " + (error.response?.data?.message || error.message));
+      setModal({
+        isOpen: true,
+        title: "Error",
+        message: error.response?.data?.message || "Failed to add admin. Please try again.",
+        isSuccess: false,
+      });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const closeModal = () => {
+    setModal({ ...modal, isOpen: false });
+    if (!modal.isSuccess) {
+      setTimeout(() => navigate("/admin-add"), 300);
     }
   };
 
@@ -256,6 +293,33 @@ function AdminAdd() {
             )}
           </motion.div>
 
+          {/* Phone Number */}
+          <motion.div variants={fieldVariants}>
+            <label htmlFor="phoneNumber" className="block text-md font-medium text-gray-600">
+              Phone Number
+            </label>
+            <Controller
+              name="phoneNumber"
+              control={control}
+              rules={{
+                required: "Phone number is required",
+                validate: validatePhoneNumber,
+              }}
+              render={({ field }) => (
+                <input
+                  id="phoneNumber"
+                  {...field}
+                  type="tel"
+                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  placeholder="Enter phone number (e.g., +1234567890)"
+                />
+              )}
+            />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.phoneNumber.message}</p>
+            )}
+          </motion.div>
+
           {/* Password */}
           <motion.div variants={fieldVariants}>
             <label htmlFor="password" className="block text-md font-medium text-gray-600">
@@ -304,6 +368,7 @@ function AdminAdd() {
             <label htmlFor="profileImage" className="block text-md font-medium text-gray-600">
               Profile Image
             </label>
+
             <Controller
               name="profileImage"
               control={control}
@@ -519,6 +584,50 @@ function AdminAdd() {
               )}
             </motion.button>
           </motion.div>
+
+          {/* Feedback Modal */}
+          <AnimatePresence>
+            {modal.isOpen && (
+              <motion.div
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  className="bg-white rounded-2xl p-6 w-[90vw] max-w-md"
+                  variants={modalVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                >
+                  <div className="flex items-center mb-4">
+                    {modal.isSuccess ? (
+                      <FaCheckCircle className="text-green-500 text-2xl mr-2" />
+                    ) : (
+                      <FaExclamationCircle className="text-red-500 text-2xl mr-2" />
+                    )}
+                    <h2 className="text-lg font-semibold text-gray-800">{modal.title}</h2>
+                  </div>
+                  <p className="text-gray-600 mb-6">{modal.message}</p>
+                  <div className="flex justify-end">
+                    <motion.button
+                      onClick={closeModal}
+                      className={`px-4 py-2 rounded-lg text-white ${
+                        modal.isSuccess ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
+                      }`}
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      Close
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </form>
       </motion.div>
     </motion.section>

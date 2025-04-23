@@ -35,6 +35,7 @@ import AccountPage from './pages/login/AccountPage.jsx';
 import AdminAdd from './pages/admin/AdminAdd.jsx';
 import EditProfile from './pages/login/EditProfile.jsx';
 import ChangePassword from './pages/login/ChangePassword.jsx';
+import UploadContent from './pages/teacher/UploadContent.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -92,6 +93,14 @@ const router = createBrowserRouter(
         element={
           <TeacherProtectedRoute>
             <TeacherDashboard />
+          </TeacherProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher-dashboard/upload-content"
+        element={
+          <TeacherProtectedRoute>
+            <UploadContent/>
           </TeacherProtectedRoute>
         }
       />

@@ -14,7 +14,6 @@ function LoginCard() {
   const location = useLocation();
   const authStatus = useSelector((state) => state.auth?.isAuthenticated);
 
-  // Use the provided animation hook
   const { formRef, controls, sectionVariants, containerVariants, cardVariants } =
     usePageAnimation(location.pathname);
 
@@ -26,30 +25,28 @@ function LoginCard() {
         initial="hidden"
         animate="visible"
       >
-        {/* Main Content */}
         <motion.div
           ref={formRef}
           variants={containerVariants}
           initial="hidden"
           animate={controls}
-          className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 login-content"
+          className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-center"
         >
-          {/* Cards Grid */}
-          <div className="grid grid-cols-3 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 h-full place-content-center items-center justify-center">
+          <div className="grid-container">
             {/* Student Login Card */}
             <motion.div
               variants={cardVariants}
               initial="hidden"
               animate="visible"
               whileHover={{ scale: 1.05 }}
-              className="bg-white rounded-lg shadow-md p-4 card-margin"
+              className="bg-white rounded-lg shadow-md p-4 card-margin flex items-center justify-center"
             >
               <button
                 onClick={() => {
                   const loginData = { role: 'student' };
                   navigate('loginForm', { state: { loginData }, replace: true });
                 }}
-                className="flex flex-col items-center text-center w-full"
+                className="flex flex-col items-center text-center w-full h-full justify-center"
               >
                 <img src={studentCard} alt="Student Login" className="card_image mb-3" />
                 <p className="text-base font-medium text-gray-800 card-text">Students Login</p>
@@ -62,14 +59,14 @@ function LoginCard() {
               initial="hidden"
               animate="visible"
               whileHover={{ scale: 1.05 }}
-              className="bg-white rounded-lg shadow-md p-4 card-margin"
+              className="bg-white rounded-lg shadow-md p-4 card-margin flex items-center justify-center"
             >
               <button
                 onClick={() => {
                   const loginData = { role: 'teacher' };
                   navigate('loginForm', { state: { loginData }, replace: true });
                 }}
-                className="flex flex-col items-center text-center w-full"
+                className="flex flex-col items-center text-center w-full h-full justify-center"
               >
                 <img src={teacherCard} alt="Teacher Login" className="card_image mb-3" />
                 <p className="text-base font-medium text-gray-800 card-text">Teachers Login</p>
@@ -82,14 +79,14 @@ function LoginCard() {
               initial="hidden"
               animate="visible"
               whileHover={{ scale: 1.05 }}
-              className="bg-white rounded-lg shadow-md p-4 card-margin"
+              className="bg-white rounded-lg shadow-md p-4 card-margin flex items-center justify-center"
             >
               <button
                 onClick={() => {
                   const loginData = { role: 'admin' };
                   navigate('loginForm', { state: { loginData }, replace: true });
                 }}
-                className="flex flex-col items-center text-center w-full"
+                className="flex flex-col items-center text-center w-full h-full justify-center"
               >
                 <img src={adminCard} alt="Admin Login" className="card_image mb-3" />
                 <p className="text-base font-medium text-gray-800 card-text">Admin Login</p>

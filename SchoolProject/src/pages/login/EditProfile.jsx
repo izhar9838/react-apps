@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaCamera, FaTrash, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { fileToBase64, getCroppedImg } from "../admin/ImageUtil";
 
-// Animation variants
+// Animation variants (unchanged)
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -50,7 +50,13 @@ const EditProfile = () => {
   const cropperRef = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { control, handleSubmit, reset, formState: { errors }, setValue } = useForm({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+  } = useForm({
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -61,13 +67,13 @@ const EditProfile = () => {
     mode: "onChange",
   });
 
-  // Check if user is logged in
+  // Check if user is logged in (unchanged)
   const token = localStorage.getItem("authToken");
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // Fetch profile data on mount
+  // Fetch profile data on mount (unchanged)
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -75,8 +81,11 @@ const EditProfile = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { fullName, email, phoneNumber, image } = response.data;
-        const [firstName, lastName] = fullName.split(" ");
-        reset({ firstName, lastName, email, phoneNumber });
+        const [firstName, lastName] = fullName ? fullName.split(" ") : ["", ""];
+        setValue("firstName", firstName || "", { shouldValidate: true });
+        setValue("lastName", lastName || "", { shouldValidate: true });
+        setValue("email", email || "", { shouldValidate: true });
+        setValue("phoneNumber", phoneNumber || "", { shouldValidate: true });
         if (image) {
           setImagePreview(`data:image/jpeg;base64,${image}`);
         }
@@ -85,20 +94,19 @@ const EditProfile = () => {
         setModal({
           isOpen: true,
           title: "Error",
-          message: "Failed to load profile data. Please try again.",
+          message: "Failed to load profile data. Please try again or contact support.",
           isSuccess: false,
         });
       }
     };
     fetchProfile();
-  }, [reset, token]);
+  }, [setValue, token]);
 
   const onCropChange = useCallback((cropper) => {
     const coords = cropper.getCoordinates();
     setCropCoordinates(coords);
     setCropWidth(coords.width);
     setCropHeight(coords.height);
-
   }, []);
 
   const handleCropSave = useCallback(async () => {
@@ -106,7 +114,6 @@ const EditProfile = () => {
       if (!imageToCrop || !cropCoordinates) {
         throw new Error("Invalid crop parameters");
       }
-
       const croppedImageBlob = await getCroppedImg(imageToCrop, {
         x: cropCoordinates.left,
         y: cropCoordinates.top,
@@ -114,7 +121,6 @@ const EditProfile = () => {
         height: cropCoordinates.height,
       });
       const croppedImageFile = new File([croppedImageBlob], "profile.jpg", { type: "image/jpeg" });
-
       setValue("image", croppedImageFile, { shouldValidate: true });
       setImagePreview(URL.createObjectURL(croppedImageFile));
       setCropModalOpen(false);
@@ -136,7 +142,6 @@ const EditProfile = () => {
   const customHandleImageChange = (e, onChange) => {
     const file = e.target.files[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setModal({
         isOpen: true,
@@ -149,7 +154,6 @@ const EditProfile = () => {
       }
       return;
     }
-
     const reader = new FileReader();
     reader.onload = () => {
       setImageToCrop(reader.result);
@@ -176,7 +180,6 @@ const EditProfile = () => {
       setIsSubmitting(true);
       try {
         const imageBase64 = data.image ? await fileToBase64(data.image) : null;
-
         const profileData = {
           firstName: data.firstName,
           lastName: data.lastName,
@@ -194,10 +197,8 @@ const EditProfile = () => {
             },
           }
         );
-
         const user = response.data;
         dispatch(loginSuccess({ token, user }));
-
         setModal({
           isOpen: true,
           title: "Success",
@@ -220,7 +221,7 @@ const EditProfile = () => {
 
   const closeModal = () => {
     setModal({ ...modal, isOpen: false });
-    setTimeout(() => navigate("/accountInfo"), 300); // Navigate to /accountInfo after animation
+    setTimeout(() => navigate("/accountInfo"), 300);
   };
 
   const removeImage = () => {
@@ -270,7 +271,7 @@ const EditProfile = () => {
           Edit Profile
         </motion.h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Avatar Section */}
+          {/* Avatar Section (unchanged) */}
           <motion.div className="flex justify-center mb-6" variants={fieldVariants}>
             <div className="relative group">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
@@ -312,8 +313,8 @@ const EditProfile = () => {
             <p className="text-red-500 text-sm text-center">{errors.image.message}</p>
           )}
 
-          {/* Form Fields */}
-          <motion.div className="grid grid-cols-1 gap-4" variants={containerVariants}>
+          {/* Form Fields - Changed to vertical layout */}
+          <motion.div className="flex flex-col space-y-4" variants={containerVariants}>
             <Field
               label="First Name"
               name="firstName"
@@ -353,11 +354,11 @@ const EditProfile = () => {
             />
           </motion.div>
 
-          {/* Buttons */}
+          {/* Buttons (unchanged) */}
           <motion.div className="flex justify-end space-x-3" variants={containerVariants}>
             <motion.button
               type="button"
-              onClick={() => navigate("/account")}
+              onClick={() => navigate("/accountInfo")}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
               disabled={isSubmitting}
               variants={buttonVariants}
@@ -379,7 +380,7 @@ const EditProfile = () => {
           </motion.div>
         </form>
 
-        {/* Crop Modal */}
+        {/* Crop Modal (unchanged) */}
         <AnimatePresence>
           {cropModalOpen && (
             <motion.div
@@ -511,7 +512,7 @@ const EditProfile = () => {
           )}
         </AnimatePresence>
 
-        {/* Feedback Modal */}
+        {/* Feedback Modal (unchanged) */}
         <AnimatePresence>
           {modal.isOpen && (
             <motion.div
@@ -559,7 +560,7 @@ const EditProfile = () => {
   );
 };
 
-// Reusable Field Component
+// Reusable Field Component (unchanged)
 const Field = ({ label, name, control, type, required, validate, variants, errors }) => (
   <motion.div variants={variants}>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
@@ -581,9 +582,7 @@ const Field = ({ label, name, control, type, required, validate, variants, error
         />
       )}
     />
-    {errors[name] && (
-      <p className="mt-1 text-sm text-red-500">{errors[name].message}</p>
-    )}
+    {errors[name] && <p className="mt-1 text-sm text-red-500">{errors[name].message}</p>}
   </motion.div>
 );
 

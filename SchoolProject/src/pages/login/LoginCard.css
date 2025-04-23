@@ -1,89 +1,106 @@
 .card_image {
   width: 80px;
   height: auto;
+  max-height: 80px; /* Prevent image from stretching card */
 }
 
-.login-content {
-  padding-left: 1rem;
-  padding-right: 1rem;
+/* Center the grid container */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  place-content: center;
+  width: 100%;
+  max-width: 720px; /* Fits three cards (180px) + gaps (2 × 16px) */
+  margin: 0 auto; /* Center horizontally */
 }
 
+/* Card styling */
 .card-margin {
   margin: 0.5rem;
-}
-
-/* Center the grid */
-.grid {
-  display: grid;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  width: 180px; /* Fixed width */
+  height: 180px; /* Equal to width for square cards */
+  box-sizing: border-box; /* Include padding in dimensions */
+  overflow: hidden; /* Prevent content from stretching card */
 }
 
 /* Extra small screens (max-width: 480px) */
 @media (max-width: 480px) {
-  .login-content {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+  .grid-container {
+    grid-template-columns: repeat(1, minmax(140px, 1fr));
+    max-width: 180px; /* Center single card */
+  }
+
+  .card_image {
+    width: 48px;
+    max-height: 48px;
+  }
+
+  .card-text {
+    font-size: 0.75rem; /* Smaller text for small screens */
+    font-weight: 400;
+    line-height: 1.2; /* Improve readability */
   }
 
   .card-margin {
     margin: 0.25rem;
-  }
-
-  .xs\:grid-cols-1 {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-
-  .card_image {
-    width: 50px;
-  }
-
-  .card-text {
-    font-size: 0.875rem;
-    font-weight: 400;
+    width: 140px; /* Smaller square size */
+    height: 140px; /* Equal to width */
+    padding: 0.5rem; /* Adjust padding to fit content */
   }
 }
 
 /* Small screens (min-width: 481px and max-width: 640px) */
 @media (min-width: 481px) and (max-width: 640px) {
-  .login-content {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .grid-container {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+    max-width: 380px; /* Fits two cards (150px) + gap (16px) */
+  }
+
+  .card_image {
+    width: 56px;
+    max-height: 56px;
+  }
+
+  .card-text {
+    font-size: 0.8125rem; /* Slightly smaller text */
+    font-weight: 400;
+    line-height: 1.2;
   }
 
   .card-margin {
     margin: 0.5rem;
-  }
-
-  .sm\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .card_image {
-    width: 60px;
-  }
-
-  .card-text {
-    font-size: 0.9375rem;
-    font-weight: 400;
+    width: 150px; /* Square size */
+    height: 150px; /* Equal to width */
+    padding: 0.75rem;
   }
 }
 
 /* Larger screens (min-width: 641px) */
 @media (min-width: 641px) {
-  .card-margin {
-    margin: 0.5rem;
-  }
-
-  .lg\:grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .grid-container {
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    max-width: 720px; /* Fits three cards + gaps */
   }
 
   .card_image {
     width: 80px;
+    max-height: 80px;
   }
 
   .card-text {
-    font-size: 1rem;
+    font-size: 0.875rem; /* Adjusted for consistency */
     font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .card-margin {
+    margin: 0.5rem;
+    width: 180px;
+    height: 180px;
+    padding: 1rem;
   }
 }
