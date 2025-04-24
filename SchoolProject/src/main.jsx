@@ -40,6 +40,7 @@ import StudentDashboard from './pages/student/Studentdashboard.jsx';
 import StudentProtected from './pages/student/StudentProtected.jsx';
 import StudentProfile from './pages/student/StudentProfile.jsx';
 import NotesDisplay from './pages/student/NotesDisplay.jsx';
+import StudentSchedule from './pages/student/StudentSchdule.jsx';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -115,6 +116,22 @@ const router = createBrowserRouter(
           </TeacherProtectedRoute>
         }
       />
+            <Route
+        path="/teacher_dashboard"
+        element={
+          <TeacherProtectedRoute>
+            <TeacherDashboard />
+          </TeacherProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher_dashboard/upload-marks"
+        element={
+          <TeacherProtectedRoute>
+            <UploadMarksSelection />
+          </TeacherProtectedRoute>
+        }
+      />
       <Route
         path="/admin/create-time-table"
         element={
@@ -173,6 +190,12 @@ const router = createBrowserRouter(
             <NotesDisplay />
           </StudentProtected>
       } />
+       <Route 
+        path="/student/schedule" element={
+          <StudentProtected>
+            <StudentSchedule />
+          </StudentProtected>
+      } />
       <Route path="/login" element={<LoginCard />} errorElement={<ErrorPage />} />
       <Route path="login/loginForm" element={<LoginForm />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -184,22 +207,7 @@ const router = createBrowserRouter(
           </TokenProtectedRoute>
         }
       />
-      <Route
-        path="/teacher_dashboard"
-        element={
-          <TeacherProtectedRoute>
-            <TeacherDashboard />
-          </TeacherProtectedRoute>
-        }
-      />
-      <Route
-        path="/teacher_dashboard/upload-marks"
-        element={
-          <TeacherProtectedRoute>
-            <UploadMarksSelection />
-          </TeacherProtectedRoute>
-        }
-      />
+
       <Route
         path="*"
         element={<ErrorPage error={{ status: 404, statusText: "This Page Doesn't exist" }} />}
