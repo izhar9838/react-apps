@@ -32,6 +32,9 @@ function Header() {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  
+  
+
   // Optimize image for small screens using canvas
   useEffect(() => {
     if (userProfileImage && isSmallScreen && !imageError && !optimizedImage) {
@@ -152,6 +155,7 @@ function Header() {
                   </button>
                 </li>
               ))}
+              
             {authStatus && authRole === 'admin' && (
               <li className="nav-li">
                 <button
@@ -162,6 +166,7 @@ function Header() {
                 </button>
               </li>
             )}
+            
             {authStatus && authRole === 'teacher' && (
               <li className="nav-li px-2 py-2">
                 <button
@@ -175,6 +180,20 @@ function Header() {
                 </button>
               </li>
             )}
+            {authStatus && authRole === 'student' && (
+              <li className="nav-li px-2 py-2">
+                <button
+                  onClick={() => {
+                    navigate('student/student-dashboard');
+                    setIsOpen(false);
+                  }}
+                  className="cursor-pointer nav-button w-full h-full font-medium"
+                >
+                  Student
+                </button>
+              </li>
+            )}
+            
           </ul>
 
           <div className="md:hidden flex items-center space-x-1.5 flex-none pr-4">

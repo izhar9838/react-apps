@@ -1,0 +1,18 @@
+/* Ensure pure black text for specific elements */
+.text-black {
+    color: #000000 !important;
+  }
+  
+  /* Responsive layout for Contact and Academic Details */
+  @media (max-width: 640px) {
+    .contact-academic-container {
+      flex-direction: column !important;
+      gap: 50px !important;
+    }
+  }
+  
+  /* Ensure table text is pure black */
+  table th,
+  table td {
+    color: #000000 !important;
+  }

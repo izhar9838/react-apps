@@ -192,7 +192,7 @@ const StudentDashboard = () => {
             {/* Profile Card */}
             <motion.div
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg cursor-pointer transition-shadow card-margin"
-              onClick={() => navigate("/student/profile")}
+              onClick={() => navigate("/student/student-profile")}
               variants={cardVariants}
               initial="hidden"
               animate="rest"

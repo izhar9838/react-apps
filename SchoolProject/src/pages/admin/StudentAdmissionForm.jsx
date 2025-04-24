@@ -178,7 +178,7 @@ const StudentAdmissionForm = () => {
       try {
         const feesDetailsArray = [{
           amount: parseInt(data.fees_details.amount, 10),
-          fee_type: data.fees_details.fee_type.join(", "),
+          fee_type: data.fees_details.fee_type,
           payment_mode: data.fees_details.payment_mode,
         }];
         const imageBase64 = data.image ? await fileToBase64(data.image) : null;
@@ -458,12 +458,12 @@ const StudentAdmissionForm = () => {
             {step === 3 && <Academic_Info control={control} classes={classes} variants={fieldVariants} errors={errors} />}
             {step === 4 && <FeesDetails control={control} variants={fieldVariants} errors={errors} />}
             {step === 5 && <User_Password control={control} variants={fieldVariants} errors={errors} />}
-            <motion.div className="flex justify-between mt-4" variants={containerVariants}>
+            <motion.div className="flex  justify-between gap-[80px]  mt-4 p-2" variants={containerVariants}>
               {step > 1 && (
                 <motion.button
                   type="button"
                   onClick={prevStep}
-                  className="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 text-xs"
+                  className="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 text-xs"
                   disabled={isSubmitting}
                   variants={buttonVariants}
                   whileHover="hover"

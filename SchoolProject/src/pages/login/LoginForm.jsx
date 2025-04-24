@@ -58,7 +58,7 @@ const LoginForm = () => {
         navigate('/admin', { replace: true });
       } else if (user.role === 'teacher') {
         navigate('/', { replace: true });
-      } else {
+      } else if(user.role === 'student') {
         navigate("/", { replace: true });
       }
     } catch (error) {
