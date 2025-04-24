@@ -387,10 +387,10 @@ const StudentAdmissionForm = () => {
         >
           All fields marked with <span className="text-red-500">*</span> are required.
         </motion.p>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <motion.div className="hidden md:block space-y-4" variants={containerVariants}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
+          <motion.div className="hidden md:block space-y-4  " variants={containerVariants}>
             {step === 1 && (
-              <motion.div className="grid md:grid-cols-2 gap-4" variants={containerVariants}>
+              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <PersonalDetails
                   control={control}
                   handleImageChange={customHandleImageChange}
@@ -405,7 +405,7 @@ const StudentAdmissionForm = () => {
               </motion.div>
             )}
             {step === 2 && (
-              <motion.div className="grid md:grid-cols-2 gap-4" variants={containerVariants}>
+              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <motion.div className="space-y-4" variants={containerVariants}>
                   <Academic_Info control={control} classes={classes} variants={fieldVariants} errors={errors} />
                   <FeesDetails control={control} variants={fieldVariants} errors={errors} />

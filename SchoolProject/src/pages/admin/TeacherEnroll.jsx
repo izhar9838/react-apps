@@ -370,7 +370,7 @@ const TeacherEnroll = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <motion.div className="hidden md:block space-y-4" variants={containerVariants}>
             {step === 1 && (
-              <motion.div className="grid md:grid-cols-2 gap-4" variants={containerVariants}>
+              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <PersonalDetails
                   control={control}
                   handleImageChange={customHandleImageChange}
@@ -384,7 +384,7 @@ const TeacherEnroll = () => {
               </motion.div>
             )}
             {step === 2 && (
-              <motion.div className="grid md:grid-cols-2 gap-4" variants={containerVariants}>
+              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <motion.div className="space-y-4" variants={containerVariants}>
                   <Professional_Details control={control} errors={errors} variants={fieldVariants} />
                 </motion.div>
