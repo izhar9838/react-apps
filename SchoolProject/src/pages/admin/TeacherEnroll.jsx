@@ -10,6 +10,7 @@ import "react-advanced-cropper/dist/style.css";
 import { getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
 import { motion } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
+import useUsernameCheck from "./ImageUtil"; 
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
@@ -47,7 +48,13 @@ const TeacherEnroll = () => {
 
   const location = useLocation();
   const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname, step);
-
+  // Username validation state
+    const [usernameStatus, setUsernameStatus] = useState({
+      exists: false,
+      message: "",
+      isChecking: false,
+    });
+  
   useEffect(() => {
     window.history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
@@ -253,6 +260,17 @@ const TeacherEnroll = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       try {
+                // Check username before submission
+                if (usernameStatus.exists) {
+                  setModal({
+                    isOpen: true,
+                    title: "Invalid Username",
+                    message: "This username already exists. Please choose a different username.",
+                    isSuccess: false,
+                  });
+                  return;
+                }
+        
         if (!data.image) {
           throw new Error("Please upload an image");
         }
@@ -290,6 +308,7 @@ const TeacherEnroll = () => {
         reset();
         setStep(1);
         setImagePreview(null);
+        setUsernameStatus({ exists: false, message: "", isChecking: false });
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -706,25 +725,56 @@ const Professional_Details = ({ control, errors, variants }) => {
   );
 };
 
-const User_Password = ({ control, errors, variants }) => {
+const User_Password = ({ control, variants, errors, usernameStatus, setUsernameStatus }) => {
+  // Use the custom hook for username validation
+  const { watch } = control;
+  const username = watch("userPass.username");
+  const { usernameStatus: hookUsernameStatus } = useUsernameCheck(username);
+
+  // Sync hook's usernameStatus with component's usernameStatus
+  useEffect(() => {
+    setUsernameStatus(hookUsernameStatus);
+  }, [hookUsernameStatus, setUsernameStatus]);
+
   return (
     <motion.div className="space-y-3" variants={variants}>
       <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
         Username Password
       </motion.h2>
-      <Field label="Username" name="userPass.username" control={control} type="text" required autoComplete="off" errors={errors} variants={variants} />
+      <motion.div variants={variants}>
+        <Field
+          label="Username"
+          name="userPass.username"
+          control={control}
+          type="text"
+          required
+          autoComplete="off"
+          variants={variants}
+          errors={errors}
+        />
+        {usernameStatus.message && (
+          <p
+            className={`mt-1 text-xs md:text-sm ${
+              usernameStatus.exists ? "text-red-500" : "text-green-500"
+            }`}
+          >
+            {usernameStatus.isChecking ? "Checking..." : usernameStatus.message}
+          </p>
+        )}
+      </motion.div>
       <PasswordField
         label="Password"
         name="userPass.password"
         control={control}
         required
         autoComplete="new-password"
-        errors={errors}
         variants={variants}
+        errors={errors}
       />
     </motion.div>
   );
 };
+
 
 const Field = ({ label, name, control, type, required, validate, autoComplete, errors, variants }) => {
   const getErrorMessage = () => {
@@ -855,21 +905,12 @@ const SelectField = ({ label, name, control, options, required, errors, variants
   );
 };
 
-const PasswordField = ({ label, name, control, required, autoComplete, errors, variants }) => {
+// PasswordField (unchanged)
+const PasswordField = ({ control, label, name, required, autoComplete, variants, errors }) => {
   const [showPassword, setShowPassword] = useState(false);
-
-  const getErrorMessage = () => {
-    if (!errors) return null;
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".");
-      return errors[parent]?.[child]?.message;
-    }
-    return errors[name]?.message;
-  };
-
   return (
     <motion.div variants={variants}>
-      <label htmlFor={name.replace(".", "-")} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <Controller
@@ -883,25 +924,28 @@ const PasswordField = ({ label, name, control, required, autoComplete, errors, v
               type={showPassword ? "text" : "password"}
               id={name.replace(".", "-")}
               autoComplete={autoComplete || "new-password"}
-              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm pr-8 ${
-                getErrorMessage() ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
+                errors[name.split(".")[0]]?.[name.split(".")[1]] ? "border-red-500" : "border-gray-300"
+              } pr-8 md:pr-10`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-2"
+              className="absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3"
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <FaEyeSlash className="text-gray-500 h-4 w-4" />
+                <FaEyeSlash className="text-gray-500 h-4 w-4 md:h-5 md:w-5" />
               ) : (
-                <FaEye className="text-gray-500 h-4 w-4" />
+                <FaEye className="text-gray-500 h-4 w-4 md:h-5 md:w-5" />
               )}
             </button>
-            {getErrorMessage() && <p className="text-red-500 text-xs mt-1">{getErrorMessage()}</p>}
           </div>
         )}
       />
+      {errors[name.split(".")[0]]?.[name.split(".")[1]] && (
+        <p className="mt-1 text-xs md:text-sm text-red-500">{errors[name.split(".")[0]][name.split(".")[1]].message}</p>
+      )}
     </motion.div>
   );
 };

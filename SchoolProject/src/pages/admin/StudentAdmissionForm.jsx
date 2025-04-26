@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
@@ -10,6 +9,7 @@ import "react-advanced-cropper/dist/style.css";
 import { getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
 import { motion } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
+import useUsernameCheck from "./ImageUtil"; 
 
 const StudentAdmissionForm = () => {
   const [step, setStep] = useState(1);
@@ -25,6 +25,13 @@ const StudentAdmissionForm = () => {
   const [zoom, setZoom] = useState(1);
   const fileInputRef = useRef(null);
   const cropperRef = useRef(null);
+
+  // Username validation state
+  const [usernameStatus, setUsernameStatus] = useState({
+    exists: false,
+    message: "",
+    isChecking: false,
+  });
 
   // Scroll to top on mount with fallback
   useEffect(() => {
@@ -176,6 +183,17 @@ const StudentAdmissionForm = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       try {
+        // Check username before submission
+        if (usernameStatus.exists) {
+          setModal({
+            isOpen: true,
+            title: "Invalid Username",
+            message: "This username already exists. Please choose a different username.",
+            isSuccess: false,
+          });
+          return;
+        }
+
         const feesDetailsArray = [{
           amount: parseInt(data.fees_details.amount, 10),
           fee_type: data.fees_details.fee_type,
@@ -214,6 +232,7 @@ const StudentAdmissionForm = () => {
         reset();
         setStep(1);
         setImagePreview(null);
+        setUsernameStatus({ exists: false, message: "", isChecking: false });
       } catch (error) {
         console.error("Submission error:", error);
         setModal({
@@ -388,9 +407,9 @@ const StudentAdmissionForm = () => {
           All fields marked with <span className="text-red-500">*</span> are required.
         </motion.p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
-          <motion.div className="hidden md:block space-y-4  " variants={containerVariants}>
+          <motion.div className="hidden md:block space-y-4" variants={containerVariants}>
             {step === 1 && (
-              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
+              <motion.div className="flex justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <PersonalDetails
                   control={control}
                   handleImageChange={customHandleImageChange}
@@ -405,12 +424,18 @@ const StudentAdmissionForm = () => {
               </motion.div>
             )}
             {step === 2 && (
-              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
+              <motion.div className="flex justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <motion.div className="space-y-4" variants={containerVariants}>
                   <Academic_Info control={control} classes={classes} variants={fieldVariants} errors={errors} />
                   <FeesDetails control={control} variants={fieldVariants} errors={errors} />
                 </motion.div>
-                <User_Password control={control} variants={fieldVariants} errors={errors} />
+                <User_Password
+                  control={control}
+                  variants={fieldVariants}
+                  errors={errors}
+                  usernameStatus={usernameStatus}
+                  setUsernameStatus={setUsernameStatus}
+                />
               </motion.div>
             )}
             <motion.div className="flex justify-between mt-4" variants={containerVariants}>
@@ -431,7 +456,7 @@ const StudentAdmissionForm = () => {
                 type="button"
                 onClick={() => nextStep(true)}
                 className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
-                disabled={isSubmitting}
+                disabled={isSubmitting || usernameStatus.exists}
                 variants={buttonVariants}
                 whileHover="hover"
                 whileTap="tap"
@@ -457,8 +482,16 @@ const StudentAdmissionForm = () => {
             {step === 2 && <Contact_Details control={control} variants={fieldVariants} errors={errors} />}
             {step === 3 && <Academic_Info control={control} classes={classes} variants={fieldVariants} errors={errors} />}
             {step === 4 && <FeesDetails control={control} variants={fieldVariants} errors={errors} />}
-            {step === 5 && <User_Password control={control} variants={fieldVariants} errors={errors} />}
-            <motion.div className="flex  justify-between gap-[80px]  mt-4 p-2" variants={containerVariants}>
+            {step === 5 && (
+              <User_Password
+                control={control}
+                variants={fieldVariants}
+                errors={errors}
+                usernameStatus={usernameStatus}
+                setUsernameStatus={setUsernameStatus}
+              />
+            )}
+            <motion.div className="flex justify-between gap-[80px] mt-4 p-2" variants={containerVariants}>
               {step > 1 && (
                 <motion.button
                   type="button"
@@ -476,7 +509,7 @@ const StudentAdmissionForm = () => {
                 type="button"
                 onClick={() => nextStep(false)}
                 className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
-                disabled={isSubmitting}
+                disabled={isSubmitting || usernameStatus.exists}
                 variants={buttonVariants}
                 whileHover="hover"
                 whileTap="tap"
@@ -638,7 +671,7 @@ const StudentAdmissionForm = () => {
   );
 };
 
-// Reusable Components (unchanged)
+// Reusable Components
 const PersonalDetails = ({ control, handleImageChange, imagePreview, removeImage, setImagePreview, variants, errors, fileInputRef }) => {
   return (
     <motion.div className="space-y-3" variants={variants}>
@@ -749,13 +782,43 @@ const FeesDetails = ({ control, variants, errors }) => {
   );
 };
 
-const User_Password = ({ control, variants, errors }) => {
+const User_Password = ({ control, variants, errors, usernameStatus, setUsernameStatus }) => {
+  // Use the custom hook for username validation
+  const { watch } = control;
+  const username = watch("userPass.username");
+  const { usernameStatus: hookUsernameStatus } = useUsernameCheck(username);
+
+  // Sync hook's usernameStatus with component's usernameStatus
+  useEffect(() => {
+    setUsernameStatus(hookUsernameStatus);
+  }, [hookUsernameStatus, setUsernameStatus]);
+
   return (
     <motion.div className="space-y-3" variants={variants}>
       <motion.h2 className="text-lg md:text-xl text-gray-700 font-medium" variants={variants}>
         Username Password
       </motion.h2>
-      <Field label="Username" name="userPass.username" control={control} type="text" required autoComplete="off" variants={variants} errors={errors} />
+      <motion.div variants={variants}>
+        <Field
+          label="Username"
+          name="userPass.username"
+          control={control}
+          type="text"
+          required
+          autoComplete="off"
+          variants={variants}
+          errors={errors}
+        />
+        {usernameStatus.message && (
+          <p
+            className={`mt-1 text-xs md:text-sm ${
+              usernameStatus.exists ? "text-red-500" : "text-green-500"
+            }`}
+          >
+            {usernameStatus.isChecking ? "Checking..." : usernameStatus.message}
+          </p>
+        )}
+      </motion.div>
       <PasswordField
         label="Password"
         name="userPass.password"
@@ -765,6 +828,51 @@ const User_Password = ({ control, variants, errors }) => {
         variants={variants}
         errors={errors}
       />
+    </motion.div>
+  );
+};
+
+// PasswordField (unchanged)
+const PasswordField = ({ control, label, name, required, autoComplete, variants, errors }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  return (
+    <motion.div variants={variants}>
+      <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <Controller
+        name={name}
+        control={control}
+        rules={{ required: required ? `${label} is required` : false }}
+        render={({ field }) => (
+          <div className="relative">
+            <input
+              {...field}
+              type={showPassword ? "text" : "password"}
+              id={name.replace(".", "-")}
+              autoComplete={autoComplete || "new-password"}
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
+                errors[name.split(".")[0]]?.[name.split(".")[1]] ? "border-red-500" : "border-gray-300"
+              } pr-8 md:pr-10`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <FaEyeSlash className="text-gray-500 h-4 w-4 md:h-5 md:w-5" />
+              ) : (
+                <FaEye className="text-gray-500 h-4 w-4 md:h-5 md:w-5" />
+              )}
+            </button>
+          </div>
+        )}
+      />
+      {errors[name.split(".")[0]]?.[name.split(".")[1]] && (
+        <p className="mt-1 text-xs md:text-sm text-red-500">{errors[name.split(".")[0]][name.split(".")[1]].message}</p>
+      )}
     </motion.div>
   );
 };
@@ -919,48 +1027,5 @@ const CheckboxGroup = ({ label, name, control, options, required, variants, erro
     )}
   </motion.div>
 );
-
-const PasswordField = ({ control, label, name, required, autoComplete, variants, errors }) => {
-  const [showPassword, setShowPassword] = useState(false);
-  return (
-    <motion.div variants={variants}>
-      <label htmlFor={name} className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <Controller
-        name={name}
-        control={control}
-        rules={{ required: required ? `${label} is required` : false }}
-        render={({ field }) => (
-          <div className="relative">
-            <input
-              {...field}
-              type={showPassword ? "text" : "password"}
-              id={name.replace(".", "-")}
-              autoComplete={autoComplete || "new-password"}
-              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
-                errors[name.split(".")[0]]?.[name.split(".")[1]] ? "border-red-500" : "border-gray-300"
-              } pr-8`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-2"
-            >
-              {showPassword ? (
-                <FaEyeSlash className="text-gray-500 h-4 w-4" />
-              ) : (
-                <FaEye className="text-gray-500 h-4 w-4" />
-              )}
-            </button>
-          </div>
-        )}
-      />
-      {errors[name.split(".")[0]]?.[name.split(".")[1]] && (
-        <p className="mt-1 text-xs md:text-sm text-red-500">{errors[name.split(".")[0]][name.split(".")[1]].message}</p>
-      )}
-    </motion.div>
-  );
-};
 
 export default StudentAdmissionForm;

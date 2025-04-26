@@ -1,4 +1,6 @@
-// src/utils/imageUtils.js
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import debounce from "lodash.debounce";
 
 // Function to check if an image file is within the size limit (2MB)
 export const checkImageSize = (file, errorCallback) => {
@@ -94,3 +96,55 @@ export const fileToBase64 = (file) => {
     reader.onerror = (error) => reject(error);
   });
 };
+const useUsernameCheck = (username,debounceMs = 500) => {
+  const [usernameStatus, setUsernameStatus] = useState({
+    exists: false,
+    message: "",
+    isChecking: false,
+  });
+
+  const checkUsername = useCallback(
+    debounce(async (usernameToCheck) => {
+      if (usernameToCheck.trim() === "") {
+        setUsernameStatus({ exists: false, message: "", isChecking: false });
+        return;
+      }
+
+      try {
+        setUsernameStatus((prev) => ({ ...prev, isChecking: true }));
+        const token = localStorage.getItem("authToken");
+        const response = await axios.post(
+          "http://localhost:9090/api/admin/check-username",
+          { username: usernameToCheck },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setUsernameStatus({
+          exists: response.data.exists,
+          message: response.data.message,
+          isChecking: false,
+        });
+      } catch (error) {
+        console.error("Error checking username:", error);
+        setUsernameStatus({
+          exists: false,
+          message: "Error checking username availability",
+          isChecking: false,
+        });
+      }
+    }, debounceMs ),
+    [debounceMs]
+  );
+
+  useEffect(() => {
+    checkUsername(username);
+    return () => checkUsername.cancel();
+  }, [username, checkUsername]);
+
+  return { usernameStatus, setUsernameStatus };
+};
+
+export default useUsernameCheck;

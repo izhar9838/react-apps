@@ -109,7 +109,7 @@ const StudentProfile = () => {
     studentId,
     firstName,
     lastName,
-    dob,
+    DOB,
     gender,
     admissionId,
     admissionDate,
@@ -218,7 +218,7 @@ const StudentProfile = () => {
             <motion.div variants={cardVariants} initial="hidden" animate="visible">
               <h2 className="text-lg font-bold text-black">Date of Birth</h2>
               <p className="text-black font-medium">
-                {dob ? new Date(dob).toLocaleDateString() : 'N/A'}
+                {DOB ? new Date(DOB).toLocaleDateString() : 'N/A'}
               </p>
             </motion.div>
             <motion.div variants={cardVariants} initial="hidden" animate="visible">
@@ -293,62 +293,62 @@ const StudentProfile = () => {
 
         {/* Fees Details Table */}
         <motion.div
-          className="p-6 sm:p-8 border-t border-gray-200"
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <h3 className="text-lg font-bold text-black mb-4">Fees Details</h3>
-          {fees_details && fees_details.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 border-b text-left text-sm font-bold text-black">
-                      Amount
-                    </th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-bold text-black">
-                      Fee Types
-                    </th>
-                    <th className="py-2 px-4 border-b text-left text-sm font-bold text-black">
-                      Payment Mode
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fees_details.map((fee, index) => (
-                    <motion.tr
-                      key={index}
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="hover:bg-gray-50"
-                    >
-                      <td className="py-2 px-4 border-b text-sm text-black font-medium">
-                      &#8377; {fee.amount}
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-black font-medium">
-                        {fee.fee_type?.join(', ') || 'N/A'}
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-black font-medium">
-                        {fee.payment_mode || 'N/A'}
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <motion.p
-              className="text-black font-medium"
+  className="p-6 sm:p-8 border-t border-gray-200"
+  variants={cardVariants}
+  initial="hidden"
+  animate="visible"
+>
+  <h3 className="text-lg font-bold text-black mb-4">Fees Details</h3>
+  {fees_details && fees_details.length > 0 ? (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="py-2 px-4 border-b text-center text-sm font-bold text-black">
+              Amount
+            </th>
+            <th className="py-2 px-4 border-b text-center text-sm font-bold text-black">
+              Fee Types
+            </th>
+            <th className="py-2 px-4 border-b text-center text-sm font-bold text-black">
+              Payment Mode
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {fees_details.map((fee, index) => (
+            <motion.tr
+              key={index}
               variants={cardVariants}
               initial="hidden"
               animate="visible"
+              className="hover:bg-gray-50"
             >
-              No fees details available
-            </motion.p>
-          )}
-        </motion.div>
+              <td className="py-2 px-4 border-b text-sm text-black font-medium text-center">
+                ₹ {fee.amount}
+              </td>
+              <td className="py-2 px-4 border-b text-sm text-black font-medium text-center">
+                {fee.fee_type?.join(', ') || 'N/A'}
+              </td>
+              <td className="py-2 px-4 border-b text-sm text-black font-medium text-center">
+                {fee.payment_mode || 'N/A'}
+              </td>
+            </motion.tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    <motion.p
+      className="text-black font-medium"
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      No fees details available
+    </motion.p>
+  )}
+</motion.div>
       </motion.div>
     </motion.div>
   );

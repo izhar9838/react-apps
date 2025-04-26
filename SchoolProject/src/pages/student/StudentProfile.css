@@ -15,4 +15,6 @@
   table th,
   table td {
     color: #000000 !important;
+    text-align: center !important;
   }
+  /* Center text in table headers and cells */

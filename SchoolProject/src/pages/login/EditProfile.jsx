@@ -81,6 +81,8 @@ const EditProfile = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { fullName, email, phoneNumber, image } = response.data;
+        console.log(fullName);
+
         const [firstName, lastName] = fullName ? fullName.split(" ") : ["", ""];
         setValue("firstName", firstName || "", { shouldValidate: true });
         setValue("lastName", lastName || "", { shouldValidate: true });
@@ -179,7 +181,20 @@ const EditProfile = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       try {
-        const imageBase64 = data.image ? await fileToBase64(data.image) : null;
+        let imageBase64;
+        if (data.image) {
+          // New image uploaded
+          imageBase64 = await fileToBase64(data.image);
+        } else if (imagePreview) {
+          // No new image, use existing image from preview
+          imageBase64 = imagePreview.startsWith('data:image')
+            ? imagePreview.split(',')[1]
+            : imagePreview; // In case imagePreview is already a base64 string
+        } else {
+          // No image at all
+          imageBase64 = null;
+        }
+
         const profileData = {
           firstName: data.firstName,
           lastName: data.lastName,
@@ -187,6 +202,8 @@ const EditProfile = () => {
           phoneNumber: data.phoneNumber,
           profileImage: imageBase64,
         };
+        console.log("Profile Data:", profileData);
+
         const response = await axios.put(
           "http://localhost:9090/api/public/updateProfile",
           profileData,
@@ -271,7 +288,7 @@ const EditProfile = () => {
           Edit Profile
         </motion.h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Avatar Section (unchanged) */}
+          {/* Avatar Section */}
           <motion.div className="flex justify-center mb-6" variants={fieldVariants}>
             <div className="relative group">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
@@ -313,7 +330,7 @@ const EditProfile = () => {
             <p className="text-red-500 text-sm text-center">{errors.image.message}</p>
           )}
 
-          {/* Form Fields - Changed to vertical layout */}
+          {/* Form Fields */}
           <motion.div className="flex flex-col space-y-4" variants={containerVariants}>
             <Field
               label="First Name"
@@ -354,7 +371,7 @@ const EditProfile = () => {
             />
           </motion.div>
 
-          {/* Buttons (unchanged) */}
+          {/* Buttons */}
           <motion.div className="flex justify-end space-x-3" variants={containerVariants}>
             <motion.button
               type="button"
@@ -380,7 +397,7 @@ const EditProfile = () => {
           </motion.div>
         </form>
 
-        {/* Crop Modal (unchanged) */}
+        {/* Crop Modal */}
         <AnimatePresence>
           {cropModalOpen && (
             <motion.div
@@ -512,7 +529,7 @@ const EditProfile = () => {
           )}
         </AnimatePresence>
 
-        {/* Feedback Modal (unchanged) */}
+        {/* Feedback Modal */}
         <AnimatePresence>
           {modal.isOpen && (
             <motion.div
@@ -560,7 +577,7 @@ const EditProfile = () => {
   );
 };
 
-// Reusable Field Component (unchanged)
+// Reusable Field Component
 const Field = ({ label, name, control, type, required, validate, variants, errors }) => (
   <motion.div variants={variants}>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">

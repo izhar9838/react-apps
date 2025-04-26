@@ -4,7 +4,7 @@ import axios from "axios";
 import Select from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
-import { fileToBase64 } from "../admin/ImageUtil"// Import fileToBase64
+import { fileToBase64 } from "../admin/ImageUtil"; // Import fileToBase64
 
 // Modal animation variants
 const modalVariants = {
@@ -32,7 +32,7 @@ function UploadContent() {
         // Expecting response.data to be an array of objects with id, name, description
         const classOptions = response.data.map((cls) => ({
           value: cls.id,
-          label: cls.name,
+          label: cls.name, // e.g., "7th", "6th", "5th"
         }));
         setClasses(classOptions);
       } catch (error) {
@@ -63,8 +63,9 @@ function UploadContent() {
         description: data.description,
         mimeType: data.file[0].type,
         notes: base64File, // Base64 string
-        classLevel: data.classLevel.value, // Class ID
+        classLevel: data.classLevel.label, // Send class name (e.g., "7th") instead of ID
       };
+      console.log(payload);
 
       await axios.post("http://localhost:9090/api/teacher/upload-notes", payload, {
         headers: {

@@ -5,6 +5,17 @@ import { motion } from 'framer-motion';
 import { FaExclamationCircle } from 'react-icons/fa';
 import { usePageAnimation } from '../usePageAnimation'; // Adjust the import path as needed
 
+// Animation variants (consistent with NotesDisplay)
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3, staggerChildren: 0.1 } },
+};
+
 const StudentSchedule = () => {
   const [timetableData, setTimetableData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +29,6 @@ const StudentSchedule = () => {
     const fetchTimetable = async () => {
       const token = localStorage.getItem('authToken');
       try {
-        // Ensure loading state is shown for at least 1 second
         const startTime = Date.now();
         const response = await axios.get(
           `http://localhost:9090/api/student/schedule`,
@@ -89,8 +99,11 @@ const StudentSchedule = () => {
           variants={cardVariants}
           initial="hidden"
           animate="visible"
-          className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
-        ></motion.div>
+          className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-center"
+        >
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading</h2>
+          <p className="text-gray-600">Fetching your timetable...</p>
+        </motion.div>
       </motion.div>
     );
   }
@@ -107,12 +120,14 @@ const StudentSchedule = () => {
           variants={cardVariants}
           initial="hidden"
           animate="visible"
-          className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full text-center"
+          className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-center"
         >
-          <FaExclamationCircle className="text-red-500 text-4xl mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
+          <FaExclamationCircle className="text-gray-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            {error ? 'Error' : 'No Timetable Available'}
+          </h2>
           <p className="text-gray-600">
-            {error || 'No timetable data found.'}
+            {error || 'No timetable data found for your class.'}
           </p>
         </motion.div>
       </motion.div>
@@ -168,13 +183,13 @@ const StudentSchedule = () => {
             <table className="min-w-full bg-white border border-gray-200">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="py-2 px-4 border-b text-left text-gray-800 font-semibold">
+                  <th className="py-2 px-4 border-b text-center text-gray-800 font-semibold">
                     Period
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-gray-800 font-semibold">
+                  <th className="py-2 px-4 border-b text-center text-gray-800 font-semibold">
                     Subject
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-gray-800 font-semibold">
+                  <th className="py-2 px-4 border-b text-center text-gray-800 font-semibold">
                     Teacher
                   </th>
                 </tr>
@@ -189,11 +204,11 @@ const StudentSchedule = () => {
                     animate="visible"
                     transition={{ delay: index * 0.1 }}
                   >
-                    <td className="py-2 px-4 border-b text-gray-600">{period}</td>
-                    <td className="py-2 px-4 border-b text-gray-600">
+                    <td className="py-2 px-4 border-b text-gray-600 text-center">{period}</td>
+                    <td className="py-2 px-4 border-b text-gray-600 text-center">
                       {details.map(detail => detail.subject).join(', ')}
                     </td>
-                    <td className="py-2 px-4 border-b text-gray-600">
+                    <td className="py-2 px-4 border-b text-gray-600 text-center">
                       {details.map(detail => detail.teacher).join(', ')}
                     </td>
                   </motion.tr>

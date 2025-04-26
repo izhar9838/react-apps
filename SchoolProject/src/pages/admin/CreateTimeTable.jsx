@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import Modal from "../Modal";
 import { usePageAnimation } from "../usePageAnimation";
 
-const CreateTimetable = ({ onTimetableAdded }) => {
+const CreateTimetable = () => {
   const {
     register,
     handleSubmit,
@@ -38,7 +38,6 @@ const CreateTimetable = ({ onTimetableAdded }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      onTimetableAdded();
       reset({
         className: data.className,
         period: "",

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
@@ -23,6 +22,14 @@ const NotesDisplay = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // MIME type mapping for simplified extensions to full MIME types
+  const mimeTypeMap = {
+    pdf: 'application/pdf',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    txt: 'text/plain',
+  };
+
   useEffect(() => {
     const fetchNotes = async () => {
       const token = localStorage.getItem('authToken');
@@ -31,6 +38,8 @@ const NotesDisplay = () => {
         const response = await axios.get('http://localhost:9090/api/student/getNotes', {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log('API Response:', response.data);
+
         setNotes(response.data);
         // Set classLevel from the first note, if available
         if (response.data.length > 0) {
@@ -54,23 +63,8 @@ const NotesDisplay = () => {
 
   // Handle download using file-saver
   const handleDownload = (note) => {
-    let fileExtension = '.bin'; // Default fallback
-    let mimeType = note.mimeType;
-
-    // Map mimeType to file extension
-    switch (note.mimeType) {
-      case 'application/pdf':
-        fileExtension = '.pdf';
-        break;
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        fileExtension = '.docx';
-        break;
-      case 'text/plain':
-        fileExtension = '.txt';
-        break;
-      default:
-        console.warn('Unknown mimeType:', note.mimeType);
-    }
+    let fileExtension = note.mimeType; // Use simplified MIME type as extension (e.g., "pdf")
+    let fullMimeType = mimeTypeMap[note.mimeType.toLowerCase()] || 'application/octet-stream'; // Map to full MIME type
 
     // Extract base64 data (remove data URI prefix if present)
     let base64Data = note.notes;
@@ -85,16 +79,16 @@ const NotesDisplay = () => {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: mimeType });
+    const blob = new Blob([byteArray], { type: fullMimeType });
 
     // Use file-saver to trigger download
-    saveAs(blob, `${note.title}${fileExtension}`);
+    saveAs(blob, `${note.title}.${fileExtension}`);
   };
 
   if (loading) {
     return (
       <motion.div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100"
+        className="min-h-screen flex justify-center bg-gradient-to-br from-purple-100 to-blue-100 py-8 px-4 sm:px-6 lg:px-8"
         variants={sectionVariants}
         initial="hidden"
         animate="visible"
@@ -112,7 +106,7 @@ const NotesDisplay = () => {
   if (error) {
     return (
       <motion.div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100"
+        className="min-h-screen flex justify-center bg-gradient-to-br from-purple-100 to-blue-100 py-8 px-4 sm:px-6 lg:px-8"
         variants={sectionVariants}
         initial="hidden"
         animate="visible"
@@ -134,7 +128,7 @@ const NotesDisplay = () => {
   if (notes.length === 0) {
     return (
       <motion.div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100"
+        className="min-h-screen flex justify-center bg-gradient-to-br from-purple-100 to-blue-100 py-8 px-4 sm:px-6 lg:px-8"
         variants={sectionVariants}
         initial="hidden"
         animate="visible"
@@ -157,7 +151,7 @@ const NotesDisplay = () => {
 
   return (
     <motion.div
-      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 py-8 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen flex justify-center bg-gradient-to-br from-purple-100 to-blue-100 py-8 px-4 sm:px-6 lg:px-8"
       variants={sectionVariants}
       initial="hidden"
       animate="visible"
@@ -198,7 +192,7 @@ const NotesDisplay = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <p className="text-gray-500 text-sm">
-                    File Type: {note.mimeType.split('/')[1].toUpperCase()}
+                    File Type: {note.mimeType.toUpperCase()}
                   </p>
                   <button
                     onClick={() => handleDownload(note)}

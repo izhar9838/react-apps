@@ -1,44 +1,112 @@
-/* Timetable.css */
 table {
-    border: 1px solid #e5e7eb;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+th,
+td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  vertical-align: top;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  min-height: 48px; /* Ensure cells are tall enough */
+}
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  background-color: white;
+  z-index: 10;
+  min-width: 100px;
+  font-weight: bold;
+}
+
+@media (min-width: 1024px) {
+  /* Large screens */
+  th,
+  td {
+    font-size: 1rem;
+    padding: 1rem;
+    min-width: 120px;
   }
-  
-  th, td {
-    border: 1px solid #e5e7eb;
+
+  .sticky-col {
+    min-width: 120px;
   }
-  
-  @media (max-width: 640px) {
-    table {
-      font-size: 0.75rem;
-    }
-    
-    th, td {
-      padding: 0.5rem;
-    }
+}
+
+@media (max-width: 768px) {
+  /* Medium screens */
+  th,
+  td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    min-width: 80px;
   }
-  
-  /* Sticky time column styling */
-  th.sticky,
-  td.sticky {
-    position: sticky;
-    left: 0;
-    min-width: 100px;
+
+  .sticky-col {
+    min-width: 80px;
   }
-  td .flex-col {
-    gap: 4px; /* Adds space between subject and teacher */
+}
+
+@media (max-width: 640px) {
+  /* Small screens */
+  th,
+  td {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    min-width: 60px;
   }
-  
-  td .font-semibold {
-    color: #1a202c; /* Darker color for subject */
+
+  .sticky-col {
+    min-width: 70px;
   }
-  
-  td .text-gray-600 {
-    font-size: 0.875rem; /* Slightly smaller text for teacher */
-  }
-  /* Ensure table doesn't overflow on small screens */
-  @media (max-width: 768px) {
-    th.sticky,
-    td.sticky {
-      min-width: 80px;
-    }
-  }
+}
+
+.table-head {
+  background-color: #f3f4f6;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.table-cell {
+  font-size: 0.875rem;
+  padding: 0.5rem;
+}
+
+.cell-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.subject {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.teacher {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+/* Dynamic table height */
+.timetable-container {
+  max-height: none; /* No height restriction */
+  height: auto; /* Take height needed */
+  display: block; /* Ensure visibility */
+  overflow-x: auto; /* Horizontal scrolling if needed */
+  overflow-y: visible; /* Disable vertical scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+}
+
+/* Ensure visibility */
+.timetable-container, table, th, td {
+  visibility: visible !important;
+  opacity: 1 !important;
+}

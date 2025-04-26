@@ -6,11 +6,12 @@ import { usePageAnimation } from "../usePageAnimation";
 import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 import { fileToBase64, validateEmail, getCroppedImg } from "./ImageUtil";
+import useUsernameCheck from "./ImageUtil"; // Import the useUsernameCheck hook
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import axios from "axios";
 
-// Modal animation variants (from ChangePassword)
+// Modal animation variants
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.8 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
@@ -51,6 +52,7 @@ function AdminAdd() {
     formState: { errors },
     reset,
     setValue,
+    watch,
   } = useForm({
     defaultValues: {
       username: "",
@@ -61,6 +63,9 @@ function AdminAdd() {
       role: "admin",
     },
   });
+
+  const username = watch("username"); // Watch username field for changes
+  const { usernameStatus } = useUsernameCheck(username, 500); // Use the hook with 500ms debounce
 
   const togglePasswordVisibility = () => {
     setShowCropper(false);
@@ -166,6 +171,16 @@ function AdminAdd() {
   }, [showCropper, imageSrc]);
 
   const onSubmit = async (data) => {
+    if (usernameStatus.exists) {
+      setModal({
+        isOpen: true,
+        title: "Error",
+        message: "Username is already taken. Please choose another.",
+        isSuccess: false,
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       let profileImageBase64 = null;
@@ -251,7 +266,13 @@ function AdminAdd() {
             <Controller
               name="username"
               control={control}
-              rules={{ required: "Username is required" }}
+              rules={{
+                required: "Username is required",
+                minLength: {
+                  value: 3,
+                  message: "Username must be at least 3 characters",
+                },
+              }}
               render={({ field }) => (
                 <input
                   id="username"
@@ -263,6 +284,15 @@ function AdminAdd() {
             />
             {errors.username && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.username.message}</p>
+            )}
+            {usernameStatus.isChecking && (
+              <p className="text-gray-500 text-xs sm:text-sm mt-1">Checking username...</p>
+            )}
+            {!usernameStatus.isChecking && usernameStatus.exists && (
+              <p className="text-red-500 text-xs sm:text-sm mt-1">{usernameStatus.message}</p>
+            )}
+            {!usernameStatus.isChecking && !usernameStatus.exists && usernameStatus.message && (
+              <p className="text-green-500 text-xs sm:text-sm mt-1">{usernameStatus.message}</p>
             )}
           </motion.div>
 
@@ -368,7 +398,6 @@ function AdminAdd() {
             <label htmlFor="profileImage" className="block text-md font-medium text-gray-600">
               Profile Image
             </label>
-
             <Controller
               name="profileImage"
               control={control}
@@ -412,11 +441,7 @@ function AdminAdd() {
             name="role"
             control={control}
             render={({ field }) => (
-              <input
-                type="hidden"
-                {...field}
-                value="admin"
-              />
+              <input type="hidden" {...field} value="admin" />
             )}
           />
 
@@ -526,7 +551,9 @@ function AdminAdd() {
                       }
                     }}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    style={{ background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - 0.5) / 2.5) * 100}%, #d1d5db ${((zoom - 0.5) / 2.5) * 100}%, #d1d5db 100%)` }}
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((zoom - 0.5) / 2.5) * 100}%, #d1d5db ${((zoom - 0.5) / 2.5) * 100}%, #d1d5db 100%)`,
+                    }}
                     aria-label="Adjust image zoom"
                   />
                 </motion.div>
@@ -565,7 +592,7 @@ function AdminAdd() {
           <motion.div className="flex justify-start" variants={fieldVariants}>
             <motion.button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || usernameStatus.isChecking || usernameStatus.exists}
               className="py-2 px-6 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 text-sm sm:text-base"
               variants={buttonVariants}
               whileHover="hover"

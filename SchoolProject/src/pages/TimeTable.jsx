@@ -2,113 +2,147 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { usePageAnimation } from "./usePageAnimation"; // Adjust the import path as needed
-import './Timetable.css'; // External CSS file
+import { FaExclamationCircle } from "react-icons/fa";
+import './Timetable.css';
 
 const Timetable = () => {
   const [timetables, setTimetables] = useState([]);
   const [periods, setPeriods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { pathname } = useLocation();
 
-  // Use the page animation hook
-  const { formRef, controls, sectionVariants, headerVariants, containerVariants, cardVariants } =
-    usePageAnimation(pathname);
-      // Scroll to top on mount with fallback
-      useEffect(() => {
-        window.history.scrollRestoration = "manual"; // Disable browser scroll restoration
-        window.scrollTo(0, 0); // Initial scroll to top
-        const handleScroll = () => {
-          if (window.scrollY > 0) {
-            window.scrollTo(0, 0); // Fallback if scroll position persists
-          }
-        };
-        handleScroll(); // Immediate check
-        window.addEventListener("load", handleScroll); // Ensure on page load
-        return () => window.removeEventListener("load", handleScroll);
-      }, []);
-
+  // Scroll to top on mount
   useEffect(() => {
-    axios
-      .get("http://localhost:9090/api/public/getTimeTable")
-      .then((response) => {
-        setTimetables(response.data);
-        const uniquePeriods = [...new Set(response.data.map(item => item.period))];
-        setPeriods(uniquePeriods);
-      })
-      .catch((error) => console.error(error));
+    window.history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    const handleScroll = () => {
+      if (window.scrollY > 0) window.scrollTo(0, 0);
+    };
+    handleScroll();
+    window.addEventListener("load", handleScroll);
+    return () => window.removeEventListener("load", handleScroll);
   }, []);
 
-  const classes = ["Nursery", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
+  // Fetch timetable data
+  useEffect(() => {
+    const fetchTimetable = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:9090/api/public/getTimeTable");
+        console.log("API Response:", response.data);
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          // Normalize data
+          const normalizedData = response.data.map(item => ({
+            ...item,
+            className: (item.className || item.class || "")?.trim()?.toLowerCase() || "",
+            period: item.period?.trim() || "",
+            subject: item.subject?.trim() || "",
+            teacher: item.teacher?.trim() || "",
+          }));
+          console.log("Normalized Timetables:", normalizedData);
+          setTimetables(normalizedData);
+          const uniquePeriods = [...new Set(normalizedData.map(item => item.period))]
+            .filter(p => p)
+            .sort((a, b) => a.localeCompare(b));
+          console.log("Unique Periods:", uniquePeriods);
+          setPeriods(uniquePeriods);
+        } else {
+          setError("No timetable data available.");
+        }
+      } catch (error) {
+        console.error("Error fetching timetable:", error);
+        setError("Failed to fetch timetable. Please check if the server is running or try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTimetable();
+  }, []);
+
+  const classes = [
+    "Nursery", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
+  ];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)]">
+        <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading</h2>
+          <p className="text-gray-600">Fetching timetable...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error or empty data state
+  if (error || periods.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)]">
+        <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-center">
+          <FaExclamationCircle className="text-gray-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            {error ? "Error" : "No Timetable Available"}
+          </h2>
+          <p className="text-gray-600">
+            {error || "No timetable data found for any class."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <motion.div
-      className="min-h-screen flex justify-center p-4 bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)]"
-      variants={sectionVariants}
-      initial="hidden"
-      animate={controls}
-    >
+    <div className="min-h-screen flex justify-center p-4 bg-[linear-gradient(135deg,_#e0cff2,_#d7e2f5)]">
       <div className="w-full max-w-7xl my-4">
         <motion.h2
           className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800"
-          variants={headerVariants}
+          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+          initial="hidden"
+          animate="visible"
         >
           School Timetable
         </motion.h2>
         <motion.p
           className="text-xs sm:text-sm text-red-600 mb-4 text-center"
-          variants={headerVariants}
+          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+          initial="hidden"
+          animate="visible"
         >
           Note: Timetable data is managed and inserted by the admin.
         </motion.p>
-        <motion.div
-          ref={formRef}
-          className="overflow-x-auto shadow-lg rounded-lg"
-          variants={containerVariants}
-          initial="hidden"
-          animate={controls}
-        >
-          <table className="w-full bg-white border-collapse">
+        <div className="overflow-x-auto shadow-lg rounded-lg timetable-container">
+          <table className="timetable w-full bg-white border-collapse">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border p-2 sm:p-3 text-left text-xs sm:text-sm md:text-base font-semibold sticky left-0 bg-gray-200 z-10">
-                  Time
-                </th>
+              <tr className="table-head">
+                <th className="sticky-col">Time</th>
                 {classes.map((className) => (
-                  <th
-                    key={className}
-                    className="border p-2 sm:p-3 text-xs sm:text-sm md:text-base font-semibold"
-                  >
+                  <th key={className} className="table-head">
                     {className}
                   </th>
                 ))}
               </tr>
             </thead>
-            <motion.tbody variants={containerVariants}>
+            <tbody>
               {periods.map((period) => (
-                <motion.tr
-                  key={period}
-                  className="hover:bg-gray-50"
-                  variants={cardVariants}
-                >
-                  <td className="border p-2 sm:p-3 text-xs sm:text-sm md:text-base sticky left-0 bg-white z-10">
-                    {period}
-                  </td>
+                <tr key={period} className="hover:bg-gray-50">
+                  <td className="sticky-col">{period}</td>
                   {classes.map((className) => {
                     const entry = timetables.find(
-                      (t) => t.className === className && t.period === period
+                      (t) => t.className === className.toLowerCase() && t.period === period
                     );
+                    console.log(`Checking: className=${className.toLowerCase()}, period=${period}, entry=`, entry); // Debug
                     return (
-                      <td
-                        key={`${className}-${period}`}
-                        className="border p-2 sm:p-3 text-xs sm:text-sm md:text-base"
-                      >
+                      <td key={`${className}-${period}`} className="table-cell">
                         {entry ? (
-                          <div className="flex flex-col items-center">
-                            <span className="font-semibold">
-                              {entry.subject.toUpperCase()}
+                          <div className="cell-content">
+                            <span className="subject">
+                              {(entry.subject || "N/A").toUpperCase()}
                             </span>
-                            <span className="text-gray-600">
-                              {entry.teacher}
+                            <span className="teacher">
+                              {entry.teacher || "Unknown"}
                             </span>
                           </div>
                         ) : (
@@ -117,13 +151,13 @@ const Timetable = () => {
                       </td>
                     );
                   })}
-                </motion.tr>
+                </tr>
               ))}
-            </motion.tbody>
+            </tbody>
           </table>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
