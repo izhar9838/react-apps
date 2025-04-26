@@ -256,7 +256,7 @@ const Field = ({ label, name, control, type, required, validate, variants, error
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+          className="absolute inset-y-0 right-0  max-w-10 max-h-10 flex items-center pr-3 text-gray-500 hover:text-gray-700"
         >
           {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
         </button>

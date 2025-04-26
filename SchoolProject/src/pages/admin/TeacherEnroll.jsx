@@ -931,7 +931,7 @@ const PasswordField = ({ control, label, name, required, autoComplete, variants,
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-2 md:pr-3"
+              className="absolute inset-y-0 right-0 max-w-10 max-h-10 flex items-center pr-2 md:pr-3"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (

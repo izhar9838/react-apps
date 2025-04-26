@@ -350,48 +350,49 @@ function AdminAdd() {
             )}
           </motion.div>
 
-          {/* Password */}
-          <motion.div variants={fieldVariants}>
-            <label htmlFor="password" className="block text-md font-medium text-gray-600">
-              Password
-            </label>
-            <div className="relative">
-              <Controller
-                name="password"
-                control={control}
-                rules={{
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                }}
-                render={({ field }) => (
-                  <input
-                    id="password"
-                    {...field}
-                    type={showPassword ? "text" : "password"}
-                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                    placeholder="Enter password"
-                  />
-                )}
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? (
-                  <AiOutlineEyeInvisible className="h-5 w-5" />
-                ) : (
-                  <AiOutlineEye className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.password.message}</p>
-            )}
-          </motion.div>
+         {/* Password */}
+<motion.div variants={fieldVariants}>
+  <label htmlFor="password" className="block text-md font-medium text-gray-600">
+    Password
+  </label>
+  <div className="relative w-full">
+    <Controller
+      name="password"
+      control={control}
+      rules={{
+        required: "Password is required",
+        minLength: {
+          value: 6,
+          message: "Password must be at least 6 characters",
+        },
+      }}
+      render={({ field }) => (
+        <input
+          id="password"
+          {...field}
+          type={showPassword ? "text" : "password"}
+          className="w-full p-2 pr-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+          placeholder="Enter password"
+        />
+      )}
+    />
+    <button
+      type="button"
+      onClick={togglePasswordVisibility}
+      className="absolute inset-y-0 right-0  max-w-10 max-h-10 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+      style={{ zIndex: 10 }} // Ensure the icon is above other elements
+    >
+      {showPassword ? (
+        <AiOutlineEyeInvisible className="h-5 w-5" />
+      ) : (
+        <AiOutlineEye className="h-5 w-5" />
+      )}
+    </button>
+  </div>
+  {errors.password && (
+    <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.password.message}</p>
+  )}
+</motion.div>
 
           {/* Profile Image */}
           <motion.div variants={fieldVariants}>
