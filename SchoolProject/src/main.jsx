@@ -41,6 +41,7 @@ import StudentProtected from './pages/student/StudentProtected.jsx';
 import StudentProfile from './pages/student/StudentProfile.jsx';
 import NotesDisplay from './pages/student/NotesDisplay.jsx';
 import StudentSchedule from './pages/student/StudentSchdule.jsx';
+import AnnouncementForm from './pages/admin/AnnouncementForm.jsx';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -81,6 +82,14 @@ const router = createBrowserRouter(
         element={
           <ProtectedRoute>
             <CreateHallOfFame />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/other-Functions/announcement"
+        element={
+          <ProtectedRoute>
+            <AnnouncementForm />
           </ProtectedRoute>
         }
       />

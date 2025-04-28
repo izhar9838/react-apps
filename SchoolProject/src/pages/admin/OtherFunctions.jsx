@@ -8,6 +8,7 @@ import TimeTableImg from "../../assets/admin-rel/otherfunction/timetable.png";
 import EventsImg from "../../assets/admin-rel/otherfunction/events.png";
 import HallOfFameImg from "../../assets/admin-rel/otherfunction/HallOfFame.jpg";
 import AdminImg from "../../assets/icons/admin.png";
+import AnnouncementImg from "../../assets/icons/announcment.png";
 
 // SVG Icons as Components
 const Sections = () => (
@@ -28,6 +29,9 @@ const HallOfFame = () => (
 
 const AdminPng = () => (
   <img src={AdminImg} alt="Add Admin" className="h-14 w-14" />
+);
+const Announcement = () => (
+  <img src={AnnouncementImg} alt="Add Admin" className="h-14 w-14" />
 );
 
 const OtherFunctions = () => {
@@ -155,6 +159,23 @@ const OtherFunctions = () => {
                 </div>
                 <div>
                   <h3 className="text-[16px] font-medium text-gray-800">Add Admin</h3>
+                </div>
+              </div>
+            </motion.div>
+            {/* Add Annoucement */}
+            <motion.div
+              className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow card-margin"
+              onClick={() => navigate("/admin/other-Functions/announcement")}
+              variants={cardVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="p-3 rounded-full bg-yellow-100 mb-4">
+                  <Announcement/>
+                </div>
+                <div>
+                  <h3 className="text-[16px] font-medium text-gray-800">Announcement</h3>
                 </div>
               </div>
             </motion.div>

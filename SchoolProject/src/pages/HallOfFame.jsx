@@ -1,3 +1,4 @@
+  
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
@@ -60,7 +61,7 @@ const HallOfFame = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
         <motion.h1
-          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-gray-800 mb-6 sm:mb-8 md:mb-10"
+          className="text-2xl sm:text-xl md:text-2xl lg:text-3xl font-semibold text-center text-gray-800 mb-6 sm:mb-8 md:mb-10"
           variants={headerVariants}
         >
           Hall of Fame

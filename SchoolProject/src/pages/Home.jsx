@@ -6,6 +6,7 @@ import { usePageAnimation } from "./usePageAnimation";
 import HallOfFame from '../assets/admin-rel/otherfunction/HallOfFame.jpg';
 import TimeTable from '../assets/admin-rel/otherfunction/timetable.png';
 import BlogNews from '../assets/teacher-rel/Blog:News.jpg';
+import Announcment from '../assets/icons/announcment.png';
 import './Home.css';
 
 function Home() {
@@ -217,6 +218,31 @@ function Home() {
                 <h3 className="text-sm font-medium mb-2 text-gray-800 text-center">Blogs News</h3>
                 <p className="text-gray-700 text-xs text-center flex-grow">
                   Read the latest blogs and news articles.
+                </p>
+              </div>
+            </div>
+          </motion.button>
+          <motion.button
+            className="cursor-pointer"
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate("/blog-news");
+            }}
+            variants={newsVariants.cardVariants}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <div className="bg-white p-4 rounded-lg shadow-lg h-48 w-48 flex flex-col justify-between hover:shadow-xl transition duration-300">
+              <div className="flex flex-col items-center">
+                <img
+                  src={Announcment}
+                  alt="Blogs News"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border border-gray-300 object-cover mb-2"
+                  loading="lazy"
+                />
+                <h3 className="text-sm font-medium mb-2 text-gray-800 text-center">Announcement</h3>
+                <p className="text-gray-700 text-xs text-center flex-grow">
+                  Get the Announcement of School.
                 </p>
               </div>
             </div>

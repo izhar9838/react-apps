@@ -1,3 +1,5 @@
+// File: AnnouncementForm.jsx
+// Description: This component is used to create a new school announcement.
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
