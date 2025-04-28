@@ -135,7 +135,15 @@ const StudentSchedule = () => {
   }
 
   // Group timetable data by period for better display
-  const periods = [...new Set(timetableData.map(item => item.period))].sort();
+  const periods = [...new Set(timetableData.map(item => item.period))].sort((a, b) => {
+    // Parse start time from period (e.g., "9:00-9:45" -> "9:00")
+    const getStartTime = (period) => {
+      const [start] = period.split('-').map(s => s.trim());
+      const [hours, minutes] = start.split(':').map(Number);
+      return hours * 60 + minutes; // Convert to minutes for comparison
+    };
+    return getStartTime(a) - getStartTime(b);
+  });
   const subjectsByPeriod = periods.map(period => ({
     period,
     details: timetableData.filter(item => item.period === period),

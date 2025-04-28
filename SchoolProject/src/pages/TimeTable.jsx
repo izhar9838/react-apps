@@ -42,9 +42,19 @@ const Timetable = () => {
           }));
           console.log("Normalized Timetables:", normalizedData);
           setTimetables(normalizedData);
+
+          // Get unique periods and sort chronologically
           const uniquePeriods = [...new Set(normalizedData.map(item => item.period))]
             .filter(p => p)
-            .sort((a, b) => a.localeCompare(b));
+            .sort((a, b) => {
+              // Parse start time from period (e.g., "9:00-9:45" -> "9:00")
+              const getStartTime = (period) => {
+                const [start] = period.split('-').map(s => s.trim());
+                const [hours, minutes] = start.split(':').map(Number);
+                return hours * 60 + minutes; // Convert to minutes for comparison
+              };
+              return getStartTime(a) - getStartTime(b);
+            });
           console.log("Unique Periods:", uniquePeriods);
           setPeriods(uniquePeriods);
         } else {

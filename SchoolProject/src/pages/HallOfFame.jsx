@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { FaExclamationCircle } from "react-icons/fa";
 import { usePageAnimation } from "./usePageAnimation"; // Adjust the import path as needed
 
 const HallOfFame = () => {
@@ -73,17 +73,40 @@ const HallOfFame = () => {
         </motion.p>
 
         {loading ? (
-          <div className="text-center text-gray-600 text-sm sm:text-base">
+          <motion.div
+            className="text-center text-gray-600 text-sm sm:text-base"
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+          >
             Loading...
-          </div>
+          </motion.div>
         ) : error ? (
-          <div className="text-center text-red-500 text-sm sm:text-base">
-            {error}
-          </div>
+          <motion.div
+            className="flex items-center justify-center"
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full text-center">
+              <FaExclamationCircle className="text-red-500 text-4xl mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
+              <p className="text-gray-600">{error}</p>
+            </div>
+          </motion.div>
         ) : hallOfFameData.length === 0 ? (
-          <div className="text-center text-gray-600 text-sm sm:text-base">
-            No Hall of Fame entries found.
-          </div>
+          <motion.div
+            className="flex items-center justify-center"
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full text-center">
+              <FaExclamationCircle className="text-gray-500 text-4xl mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">No Records Found</h2>
+              <p className="text-gray-600">No Hall of Fame entries found.</p>
+            </div>
+          </motion.div>
         ) : (
           <motion.div
             ref={gridRef || formRef} // Use gridRef, fallback to formRef

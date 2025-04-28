@@ -148,3 +148,21 @@ const useUsernameCheck = (username,debounceMs = 500) => {
 };
 
 export default useUsernameCheck;
+export const validateUsername = (username) => {
+  if (!username) {
+    return 'Username is required.';
+  }
+
+  // Check for spaces
+  if (/\s/.test(username)) {
+    return 'Username cannot contain spaces.';
+  }
+
+  // Check if username matches the required pattern
+  const usernameRegex = /^[a-z][a-z0-9_$@]*$/;
+  if (!usernameRegex.test(username)) {
+    return 'Username must start with a lowercase letter and can only contain lowercase letters, numbers, underscores (_), $, or @.';
+  }
+
+  return true;
+};

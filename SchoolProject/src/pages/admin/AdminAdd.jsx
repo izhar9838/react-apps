@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePageAnimation } from "../usePageAnimation";
 import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
-import { fileToBase64, validateEmail, getCroppedImg } from "./ImageUtil";
+import { fileToBase64, validateEmail, getCroppedImg, validateUsername } from "./ImageUtil";
 import useUsernameCheck from "./ImageUtil"; // Import the useUsernameCheck hook
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
@@ -53,6 +53,7 @@ function AdminAdd() {
     reset,
     setValue,
     watch,
+    trigger,
   } = useForm({
     defaultValues: {
       username: "",
@@ -62,10 +63,16 @@ function AdminAdd() {
       profileImage: null,
       role: "admin",
     },
+    mode: "onChange", // Trigger validation on every change
   });
 
   const username = watch("username"); // Watch username field for changes
   const { usernameStatus } = useUsernameCheck(username, 500); // Use the hook with 500ms debounce
+
+  // Debug errors.username
+  useEffect(() => {
+    console.log("Username errors:", errors.username);
+  }, [errors.username]);
 
   const togglePasswordVisibility = () => {
     setShowCropper(false);
@@ -272,11 +279,16 @@ function AdminAdd() {
                   value: 3,
                   message: "Username must be at least 3 characters",
                 },
+                validate: validateUsername, // Add username format validation
               }}
               render={({ field }) => (
                 <input
                   id="username"
                   {...field}
+                  onChange={(e) => {
+                    field.onChange(e); // Update form value
+                    trigger("username"); // Force re-validation
+                  }}
                   className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   placeholder="Enter username"
                 />
@@ -285,13 +297,13 @@ function AdminAdd() {
             {errors.username && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.username.message}</p>
             )}
-            {usernameStatus.isChecking && (
+            {!errors.username && usernameStatus.isChecking && (
               <p className="text-gray-500 text-xs sm:text-sm mt-1">Checking username...</p>
             )}
-            {!usernameStatus.isChecking && usernameStatus.exists && (
+            {!errors.username && !usernameStatus.isChecking && usernameStatus.exists && (
               <p className="text-red-500 text-xs sm:text-sm mt-1">{usernameStatus.message}</p>
             )}
-            {!usernameStatus.isChecking && !usernameStatus.exists && usernameStatus.message && (
+            {!errors.username && !usernameStatus.isChecking && !usernameStatus.exists && usernameStatus.message && (
               <p className="text-green-500 text-xs sm:text-sm mt-1">{usernameStatus.message}</p>
             )}
           </motion.div>
@@ -350,49 +362,49 @@ function AdminAdd() {
             )}
           </motion.div>
 
-         {/* Password */}
-<motion.div variants={fieldVariants}>
-  <label htmlFor="password" className="block text-md font-medium text-gray-600">
-    Password
-  </label>
-  <div className="relative w-full">
-    <Controller
-      name="password"
-      control={control}
-      rules={{
-        required: "Password is required",
-        minLength: {
-          value: 6,
-          message: "Password must be at least 6 characters",
-        },
-      }}
-      render={({ field }) => (
-        <input
-          id="password"
-          {...field}
-          type={showPassword ? "text" : "password"}
-          className="w-full p-2 pr-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-          placeholder="Enter password"
-        />
-      )}
-    />
-    <button
-      type="button"
-      onClick={togglePasswordVisibility}
-      className="absolute inset-y-0 right-0  max-w-10 max-h-10 flex items-center pr-3 text-gray-500 hover:text-gray-700"
-      style={{ zIndex: 10 }} // Ensure the icon is above other elements
-    >
-      {showPassword ? (
-        <AiOutlineEyeInvisible className="h-5 w-5" />
-      ) : (
-        <AiOutlineEye className="h-5 w-5" />
-      )}
-    </button>
-  </div>
-  {errors.password && (
-    <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.password.message}</p>
-  )}
-</motion.div>
+          {/* Password */}
+          <motion.div variants={fieldVariants}>
+            <label htmlFor="password" className="block text-md font-medium text-gray-600">
+              Password
+            </label>
+            <div className="relative w-full">
+              <Controller
+                name="password"
+                control={control}
+                rules={{
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                }}
+                render={({ field }) => (
+                  <input
+                    id="password"
+                    {...field}
+                    type={showPassword ? "text" : "password"}
+                    className="w-full p-2 pr-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                    placeholder="Enter password"
+                  />
+                )}
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 max-w-10 max-h-10 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                style={{ zIndex: 10 }} // Ensure the icon is above other elements
+              >
+                {showPassword ? (
+                  <AiOutlineEyeInvisible className="h-5 w-5" />
+                ) : (
+                  <AiOutlineEye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.password.message}</p>
+            )}
+          </motion.div>
 
           {/* Profile Image */}
           <motion.div variants={fieldVariants}>

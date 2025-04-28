@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import { FaExclamationCircle } from 'react-icons/fa';
 import { usePageAnimation } from './usePageAnimation'; // Adjust the import path as needed
 import './BlogList.css'; // Optional: For custom styling
 
@@ -89,7 +89,12 @@ const BlogList = () => {
         </motion.h2>
         <div className="flex-grow overflow-y-auto">
           {loading ? (
-            <div className="text-center py-6 sm:py-8 md:py-10">
+            <motion.div
+              className="text-center py-6 sm:py-8 md:py-10"
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+            >
               <svg
                 className="animate-spin h-6 w-6 mx-auto text-gray-600"
                 viewBox="0 0 24 24"
@@ -105,13 +110,33 @@ const BlogList = () => {
                 <path fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z" />
               </svg>
               Loading...
-            </div>
+            </motion.div>
           ) : error ? (
-            <div className="text-center py-6 sm:py-8 md:py-10 text-red-600">{error}</div>
+            <motion.div
+              className="flex items-center justify-center py-6 sm:py-8 md:py-10"
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full text-center">
+                <FaExclamationCircle className="text-red-500 text-4xl mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
+                <p className="text-gray-600">{error}</p>
+              </div>
+            </motion.div>
           ) : blogs.length === 0 ? (
-            <div className="text-center py-6 sm:py-8 md:py-10 text-gray-600">
-              No blog posts found.
-            </div>
+            <motion.div
+              className="flex items-center justify-center py-6 sm:py-8 md:py-10"
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full text-center">
+                <FaExclamationCircle className="text-gray-500 text-4xl mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">No Blog Posts Found</h2>
+                <p className="text-gray-600">No blog posts are available at the moment.</p>
+              </div>
+            </motion.div>
           ) : (
             <motion.div
               ref={gridRef || formRef} // Use gridRef, fallback to formRef

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
@@ -7,10 +6,10 @@ import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
-import { getCroppedImg, fileToBase64, validateEmail } from "./ImageUtil";
+import { getCroppedImg, fileToBase64, validateEmail, validateUsername } from "./ImageUtil";
 import { motion } from "framer-motion";
+import useUsernameCheck from "./ImageUtil";
 import { usePageAnimation } from "../usePageAnimation";
-import useUsernameCheck from "./ImageUtil"; 
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
@@ -48,27 +47,8 @@ const TeacherEnroll = () => {
 
   const location = useLocation();
   const { formRef, controls, sectionVariants, containerVariants, fieldVariants, buttonVariants } = usePageAnimation(location.pathname, step);
-  // Username validation state
-    const [usernameStatus, setUsernameStatus] = useState({
-      exists: false,
-      message: "",
-      isChecking: false,
-    });
-  
-  useEffect(() => {
-    window.history.scrollRestoration = "manual";
-    window.scrollTo(0, 0);
-    const handleScroll = () => {
-      if (window.scrollY > 0) {
-        window.scrollTo(0, 0);
-      }
-    };
-    handleScroll();
-    window.addEventListener("load", handleScroll);
-    return () => window.removeEventListener("load", handleScroll);
-  }, []);
 
-  const { control, handleSubmit, trigger, reset, formState: { errors }, setValue } = useForm({
+  const { control, handleSubmit, trigger, reset, formState: { errors }, setValue, watch } = useForm({
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -96,6 +76,22 @@ const TeacherEnroll = () => {
     },
     mode: "onChange",
   });
+
+  const username = watch("userPass.username");
+  const { usernameStatus } = useUsernameCheck(username, 500);
+
+  useEffect(() => {
+    window.history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    handleScroll();
+    window.addEventListener("load", handleScroll);
+    return () => window.removeEventListener("load", handleScroll);
+  }, []);
 
   const onCropChange = useCallback((cropper) => {
     const coords = cropper.getCoordinates();
@@ -260,17 +256,16 @@ const TeacherEnroll = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       try {
-                // Check username before submission
-                if (usernameStatus.exists) {
-                  setModal({
-                    isOpen: true,
-                    title: "Invalid Username",
-                    message: "This username already exists. Please choose a different username.",
-                    isSuccess: false,
-                  });
-                  return;
-                }
-        
+        if (usernameStatus.exists) {
+          setModal({
+            isOpen: true,
+            title: "Invalid Username",
+            message: "This username already exists. Please choose a different username.",
+            isSuccess: false,
+          });
+          return;
+        }
+
         if (!data.image) {
           throw new Error("Please upload an image");
         }
@@ -294,7 +289,7 @@ const TeacherEnroll = () => {
           teacherData,
           {
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type":"application/json",
               Authorization: `Bearer ${token}`,
             },
           }
@@ -308,7 +303,6 @@ const TeacherEnroll = () => {
         reset();
         setStep(1);
         setImagePreview(null);
-        setUsernameStatus({ exists: false, message: "", isChecking: false });
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -389,7 +383,7 @@ const TeacherEnroll = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <motion.div className="hidden md:block space-y-4" variants={containerVariants}>
             {step === 1 && (
-              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
+              <motion.div className="flex justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <PersonalDetails
                   control={control}
                   handleImageChange={customHandleImageChange}
@@ -403,11 +397,18 @@ const TeacherEnroll = () => {
               </motion.div>
             )}
             {step === 2 && (
-              <motion.div className="flex  justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
+              <motion.div className="flex justify-center gap-5 [&>*]:flex-1" variants={containerVariants}>
                 <motion.div className="space-y-4" variants={containerVariants}>
                   <Professional_Details control={control} errors={errors} variants={fieldVariants} />
                 </motion.div>
-                <User_Password control={control} errors={errors} variants={fieldVariants} />
+                <User_Password
+                  control={control}
+                  errors={errors}
+                  variants={fieldVariants}
+                  usernameStatus={usernameStatus}
+                  watch={watch}
+                  trigger={trigger}
+                />
               </motion.div>
             )}
             <motion.div className="flex justify-between mt-4" variants={containerVariants}>
@@ -428,7 +429,7 @@ const TeacherEnroll = () => {
                 type="button"
                 onClick={() => nextStep(true)}
                 className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
-                disabled={isSubmitting}
+                disabled={isSubmitting || usernameStatus.exists}
                 variants={buttonVariants}
                 whileHover="hover"
                 whileTap="tap"
@@ -452,7 +453,16 @@ const TeacherEnroll = () => {
             )}
             {step === 2 && <Contact_Details control={control} errors={errors} variants={fieldVariants} />}
             {step === 3 && <Professional_Details control={control} errors={errors} variants={fieldVariants} />}
-            {step === 4 && <User_Password control={control} errors={errors} variants={fieldVariants} />}
+            {step === 4 && (
+              <User_Password
+                control={control}
+                errors={errors}
+                variants={fieldVariants}
+                usernameStatus={usernameStatus}
+                watch={watch}
+                trigger={trigger}
+              />
+            )}
             <motion.div className="flex justify-between mt-4" variants={containerVariants}>
               {step > 1 && (
                 <motion.button
@@ -471,7 +481,7 @@ const TeacherEnroll = () => {
                 type="button"
                 onClick={() => nextStep(false)}
                 className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
-                disabled={isSubmitting}
+                disabled={isSubmitting || usernameStatus.exists}
                 variants={buttonVariants}
                 whileHover="hover"
                 whileTap="tap"
@@ -725,16 +735,8 @@ const Professional_Details = ({ control, errors, variants }) => {
   );
 };
 
-const User_Password = ({ control, variants, errors, usernameStatus, setUsernameStatus }) => {
-  // Use the custom hook for username validation
-  const { watch } = control;
+const User_Password = ({ control, variants, errors, usernameStatus, watch, trigger }) => {
   const username = watch("userPass.username");
-  const { usernameStatus: hookUsernameStatus } = useUsernameCheck(username);
-
-  // Sync hook's usernameStatus with component's usernameStatus
-  useEffect(() => {
-    setUsernameStatus(hookUsernameStatus);
-  }, [hookUsernameStatus, setUsernameStatus]);
 
   return (
     <motion.div className="space-y-3" variants={variants}>
@@ -742,24 +744,47 @@ const User_Password = ({ control, variants, errors, usernameStatus, setUsernameS
         Username Password
       </motion.h2>
       <motion.div variants={variants}>
-        <Field
-          label="Username"
+        <label htmlFor="userPass.username" className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+          Username <span className="text-red-500">*</span>
+        </label>
+        <Controller
           name="userPass.username"
           control={control}
-          type="text"
-          required
-          autoComplete="off"
-          variants={variants}
-          errors={errors}
+          rules={{
+            required: "Username is required",
+            minLength: {
+              value: 3,
+              message: "Username must be at least 3 characters",
+            },
+            validate: validateUsername,
+          }}
+          render={({ field }) => (
+            <input
+              {...field}
+              type="text"
+              id="userPass-username"
+              autoComplete="off"
+              onChange={(e) => {
+                field.onChange(e);
+                trigger("userPass.username");
+              }}
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
+                errors.userPass?.username ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+          )}
         />
-        {usernameStatus.message && (
-          <p
-            className={`mt-1 text-xs md:text-sm ${
-              usernameStatus.exists ? "text-red-500" : "text-green-500"
-            }`}
-          >
-            {usernameStatus.isChecking ? "Checking..." : usernameStatus.message}
-          </p>
+        {errors.userPass?.username && (
+          <p className="mt-1 text-xs md:text-sm text-red-500">{errors.userPass.username.message}</p>
+        )}
+        {!errors.userPass?.username && usernameStatus.isChecking && (
+          <p className="mt-1 text-xs md:text-sm text-gray-500">Checking...</p>
+        )}
+        {!errors.userPass?.username && !usernameStatus.isChecking && usernameStatus.exists && (
+          <p className="mt-1 text-xs md:text-sm text-red-500">{usernameStatus.message}</p>
+        )}
+        {!errors.userPass?.username && !usernameStatus.isChecking && !usernameStatus.exists && usernameStatus.message && (
+          <p className="mt-1 text-xs md:text-sm text-green-500">{usernameStatus.message}</p>
         )}
       </motion.div>
       <PasswordField
@@ -774,7 +799,6 @@ const User_Password = ({ control, variants, errors, usernameStatus, setUsernameS
     </motion.div>
   );
 };
-
 
 const Field = ({ label, name, control, type, required, validate, autoComplete, errors, variants }) => {
   const getErrorMessage = () => {
@@ -905,7 +929,6 @@ const SelectField = ({ label, name, control, options, required, errors, variants
   );
 };
 
-// PasswordField (unchanged)
 const PasswordField = ({ control, label, name, required, autoComplete, variants, errors }) => {
   const [showPassword, setShowPassword] = useState(false);
   return (

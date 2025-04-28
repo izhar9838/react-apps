@@ -26,9 +26,9 @@ const FeeSubmissionForm = () => {
   const onSubmit = async (data) => {
     const feesData = {
       amount: parseInt(data.amount, 10),
-      fee_type: data.fee_type.join(", "),
+      fee_type: data.fee_type,
       payment_mode: data.payment_mode,
-      student: { studentId: data.studentId },
+      studentId: data.studentId,
     };
     setIsSubmitting(true);
     try {
@@ -42,7 +42,7 @@ const FeeSubmissionForm = () => {
       setSlipData({
         studentId: data.studentId,
         amount: data.amount,
-        fee_type: data.fee_type.join(", "),
+        fee_type: data.fee_type,
         payment_mode: data.payment_mode,
         paymentId: response.data.paymentId || "N/A",
       });
