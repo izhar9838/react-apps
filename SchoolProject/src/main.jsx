@@ -42,6 +42,8 @@ import StudentProfile from './pages/student/StudentProfile.jsx';
 import NotesDisplay from './pages/student/NotesDisplay.jsx';
 import StudentSchedule from './pages/student/StudentSchdule.jsx';
 import AnnouncementForm from './pages/admin/AnnouncementForm.jsx';
+import EventAlbum from './pages/EventAlbum.jsx';
+import AnnouncementsPage from './pages/AnnouncementsPage.jsx';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -68,6 +70,7 @@ const router = createBrowserRouter(
       <Route path="/accountInfo" element={<AccountPage />} />
       <Route path="/accountInfo/edit-profile" element={<EditProfile />} />
       <Route path="/accountInfo/change-password" element={<ChangePassword />} />
+      <Route path="/announcement" element={<AnnouncementsPage />} />
       <Route path="/blog-news/blog/:id" element={<BlogDetails />} /> {/* Corrected route */}
       <Route
         path="/admin/studentform"

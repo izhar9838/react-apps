@@ -1,0 +1,65 @@
+.album-container {
+  position: relative;
+  /* background-color: white; */
+  border-radius: 1rem;
+  padding: 1rem;
+  overflow: visible;
+}
+
+.polaroid {
+  position: absolute;
+  border: 10px solid white;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+.polaroid:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: scale(1.1) translate(-50%, -50%);
+  z-index: 30;
+}
+
+@media (max-width: 768px) {
+  .album-container {
+    max-width: 90vw;
+    aspect-ratio: 1 / 1;
+    padding: 0.5rem;
+  }
+
+  .polaroid {
+    width: 120px !important;
+    height: 84px !important;
+    border-width: 6px;
+  }
+
+  .polaroid:hover {
+    transform: scale(1.05) translate(-50%, -50%);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .album-container {
+    max-width: 80vw;
+    aspect-ratio: 4 / 3;
+    padding: 1rem;
+  }
+
+  .polaroid {
+    width: 160px !important;
+    height: 112px !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .album-container {
+    max-width: 900px;
+    aspect-ratio: 4 / 3;
+    padding: 1.5rem;
+  }
+
+  .polaroid {
+    width: 200px !important;
+    height: 140px !important;
+  }
+}

@@ -1,5 +1,5 @@
-// File: AnnouncementForm.jsx
-// Description: This component is used to create a new school announcement.
+// File: CreateTimetable.jsx
+// Description: This component is used to create a new timetable entry.
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
@@ -100,18 +100,15 @@ const CreateTimetable = () => {
               Class <span className="text-red-500">*</span>
             </label>
             <select
-              {...register("className", { required: "Class is required" })}
+              {...register("className", { required: true })}
               className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.className ? "border-red-500" : ""
+                errors.className ? "border-red-500" : "border-gray-300"
               }`}
             >
               {["Nursery", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"].map((cls) => (
                 <option key={cls} value={cls}>{cls}</option>
               ))}
             </select>
-            {errors.className && (
-              <p className="mt-1 text-sm text-red-500">{errors.className.message}</p>
-            )}
           </motion.div>
 
           <motion.div variants={fieldVariants}>
@@ -121,20 +118,15 @@ const CreateTimetable = () => {
             <input
               type="text"
               {...register("period", {
-                required: "Time Period is required",
+                required: true,
                 pattern: {
                   value: /^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
                   message: "Format should be HH:MM-HH:MM (e.g., 8:00-8:45)",
                 },
               })}
               placeholder="e.g., 8:00-8:45"
-              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.period ? "border-red-500" : ""
-              }`}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            {errors.period && (
-              <p className="mt-1 text-sm text-red-500">{errors.period.message}</p>
-            )}
           </motion.div>
 
           <motion.div variants={fieldVariants}>
@@ -143,15 +135,10 @@ const CreateTimetable = () => {
             </label>
             <input
               type="text"
-              {...register("subject", { required: "Subject is required" })}
+              {...register("subject", { required: true })}
               placeholder="Enter subject"
-              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.subject ? "border-red-500" : ""
-              }`}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            {errors.subject && (
-              <p className="mt-1 text-sm text-red-500">{errors.subject.message}</p>
-            )}
           </motion.div>
 
           <motion.div variants={fieldVariants}>
@@ -160,15 +147,10 @@ const CreateTimetable = () => {
             </label>
             <input
               type="text"
-              {...register("teacher", { required: "Teacher is required" })}
+              {...register("teacher", { required: true })}
               placeholder="Enter teacher name"
-              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.teacher ? "border-red-500" : ""
-              }`}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            {errors.teacher && (
-              <p className="mt-1 text-sm text-red-500">{errors.teacher.message}</p>
-            )}
           </motion.div>
 
           <motion.button

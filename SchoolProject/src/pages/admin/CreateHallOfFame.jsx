@@ -241,6 +241,12 @@ const CreateHallOfFame = () => {
         >
           Add Hall of Fame Entry
         </motion.h2>
+        <motion.p
+          className="text-sm text-gray-600 mb-4 text-center"
+          variants={fieldVariants}
+        >
+          All fields marked with <span className="text-red-500">*</span> are required
+        </motion.p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
           <motion.div variants={fieldVariants}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -248,15 +254,12 @@ const CreateHallOfFame = () => {
             </label>
             <input
               type="text"
-              {...register("name", { required: "Name is required" })}
+              {...register("name", { required: true })}
               placeholder="Enter name"
               className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 text-sm sm:text-base ${
                 errors.name ? "border-red-500" : "border-gray-300"
               }`}
             />
-            {errors.name && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.name.message}</p>
-            )}
           </motion.div>
 
           <motion.div variants={fieldVariants}>
@@ -265,15 +268,10 @@ const CreateHallOfFame = () => {
             </label>
             <input
               type="text"
-              {...register("achievement", { required: "Achievement is required" })}
+              {...register("achievement", { required: true })}
               placeholder="Enter achievement"
-              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 text-sm sm:text-base ${
-                errors.achievement ? "border-red-500" : "border-gray-300"
-              }`}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             />
-            {errors.achievement && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.achievement.message}</p>
-            )}
           </motion.div>
 
           <motion.div variants={fieldVariants}>
@@ -283,7 +281,7 @@ const CreateHallOfFame = () => {
             <Controller
               name="image"
               control={control}
-              rules={{ required: "Image is required" }}
+              rules={{ required: true }}
               render={({ field: { onChange, value, ...field } }) => (
                 <div className="relative">
                   <input
@@ -312,9 +310,6 @@ const CreateHallOfFame = () => {
                         Remove
                       </motion.button>
                     </div>
-                  )}
-                  {errors.image && (
-                    <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.image.message}</p>
                   )}
                 </div>
               )}

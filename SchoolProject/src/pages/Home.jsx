@@ -226,7 +226,7 @@ function Home() {
             className="cursor-pointer"
             onClick={() => {
               window.scrollTo(0, 0);
-              navigate("/blog-news");
+              navigate("/announcement");
             }}
             variants={newsVariants.cardVariants}
             whileHover={{ scale: 1.05 }}

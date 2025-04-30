@@ -91,62 +91,66 @@ const FeeSubmissionForm = () => {
         >
           Fee Submission
         </motion.h2>
+        <motion.p
+          className="text-sm text-gray-600 mb-4 text-center"
+          variants={fieldVariants}
+        >
+          All fields marked with <span className="text-red-500">*</span> are required
+        </motion.p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Student ID */}
           <motion.div variants={fieldVariants}>
             <label htmlFor="studentId" className="block text-md font-medium text-gray-600">
-              Student ID
+              Student ID <span className="text-red-500">*</span>
             </label>
             <Controller
               name="studentId"
               control={control}
-              rules={{ required: "Student ID is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <input
                   id="studentId"
                   {...field}
-                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base ${
+                    errors.studentId ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Enter Student ID (e.g., STUD123)"
                 />
               )}
             />
-            {errors.studentId && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.studentId.message}</p>
-            )}
           </motion.div>
 
           {/* Amount */}
           <motion.div variants={fieldVariants}>
             <label htmlFor="amount" className="block text-md font-medium text-gray-600">
-              Amount
+              Amount <span className="text-red-500">*</span>
             </label>
             <Controller
               name="amount"
               control={control}
-              rules={{ required: "Amount is required", pattern: { value: /^\d+$/, message: "Enter a valid number" } }}
+              rules={{ required: true, pattern: { value: /^\d+$/, message: "Enter a valid number" } }}
               render={({ field }) => (
                 <input
                   id="amount"
                   {...field}
                   type="number"
-                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   placeholder="Enter amount"
                 />
               )}
             />
-            {errors.amount && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.amount.message}</p>
-            )}
           </motion.div>
 
           {/* Fee Type */}
           <motion.div variants={fieldVariants}>
-            <label className="block text-md font-medium text-gray-600">Fee Type</label>
+            <label className="block text-md font-medium text-gray-600">
+              Fee Type <span className="text-red-500">*</span>
+            </label>
             <Controller
               name="fee_type"
               control={control}
               defaultValue={[]}
-              rules={{ required: "Fee Type is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <div className="space-y-2">
                   {["Tuition Fee", "Examination Fee", "Other"].map((option) => (
@@ -169,25 +173,22 @@ const FeeSubmissionForm = () => {
                 </div>
               )}
             />
-            {errors.fee_type && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.fee_type.message}</p>
-            )}
           </motion.div>
 
           {/* Payment Mode */}
           <motion.div variants={fieldVariants}>
             <label htmlFor="payment_mode" className="block text-md font-medium text-gray-600">
-              Payment Mode
+              Payment Mode <span className="text-red-500">*</span>
             </label>
             <Controller
               name="payment_mode"
               control={control}
-              rules={{ required: "Payment mode is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <select
                   id="payment_mode"
                   {...field}
-                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 >
                   <option value="">Select Payment Mode</option>
                   <option value="Cash">Cash</option>
@@ -196,9 +197,6 @@ const FeeSubmissionForm = () => {
                 </select>
               )}
             />
-            {errors.payment_mode && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.payment_mode.message}</p>
-            )}
           </motion.div>
 
           {/* Submit Button */}

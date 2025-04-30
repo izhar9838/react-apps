@@ -227,7 +227,7 @@ const ChangePassword = () => {
   );
 };
 
-// Updated Field Component with Show/Hide Password (unchanged)
+// Updated Field Component with Conditional Red Border
 const Field = ({ label, name, control, type, required, validate, variants, errors }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -240,7 +240,7 @@ const Field = ({ label, name, control, type, required, validate, variants, error
         <Controller
           name={name}
           control={control}
-          rules={{ required: required ? `${label} is required` : false, validate }}
+          rules={{ required: required ? true : false, validate }}
           render={({ field }) => (
             <input
               {...field}
@@ -248,7 +248,7 @@ const Field = ({ label, name, control, type, required, validate, variants, error
               id={name}
               autoComplete="off"
               className={`w-full p-3 pr-10 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                errors[name] ? "border-red-500" : "border-gray-300"
+                name === "currentPassword" && errors[name] ? "border-red-500" : "border-gray-300"
               }`}
             />
           )}
@@ -256,14 +256,11 @@ const Field = ({ label, name, control, type, required, validate, variants, error
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute inset-y-0 right-0  max-w-10 max-h-10 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+          className="absolute inset-y-0 right-0 max-w-10 max-h-10 flex items-center pr-3 text-gray-500 hover:text-gray-700"
         >
           {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
         </button>
       </div>
-      {errors[name] && (
-        <p className="mt-1 text-sm text-red-500">{errors[name].message}</p>
-      )}
     </motion.div>
   );
 };
