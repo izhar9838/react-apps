@@ -120,8 +120,8 @@ const CreateTimetable = () => {
               {...register("period", {
                 required: true,
                 pattern: {
-                  value: /^\d{1,2}:\d{2}-\d{1,2}:\d{2}$/,
-                  message: "Format should be HH:MM-HH:MM (e.g., 8:00-8:45)",
+                  
+                  
                 },
               })}
               placeholder="e.g., 8:00-8:45"

@@ -819,7 +819,7 @@ const Field = ({ label, name, control, type, required, validate, autoComplete, e
         name={name}
         control={control}
         rules={{
-          required: required ? `${label} is required` : false,
+          required: required ,
           validate,
         }}
         render={({ field }) => (
@@ -829,8 +829,7 @@ const Field = ({ label, name, control, type, required, validate, autoComplete, e
               type={type}
               id={name.replace(".", "-")}
               autoComplete={autoComplete || "off"}
-              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
-                getErrorMessage() ? "border-red-500" : "border-gray-300"
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm  "border-gray-300"
               }`}
             />
             {getErrorMessage() && (
@@ -852,7 +851,7 @@ const ImageField = ({ label, name, control, handleImageChange, imagePreview, req
       <Controller
         name={name}
         control={control}
-        rules={{ required: required ? `${label} is required` : false }}
+        rules={{ required: required}}
         render={({ field: { onChange, value, ...field } }) => (
           <div>
             <input
@@ -910,8 +909,7 @@ const SelectField = ({ label, name, control, options, required, errors, variants
             <select
               {...field}
               id={name.replace(".", "-")}
-              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
-                getErrorMessage() ? "border-red-500" : "border-gray-300"
+              className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm  "border-gray-300"
               }`}
             >
               <option value="">Select {label}</option>
@@ -921,7 +919,7 @@ const SelectField = ({ label, name, control, options, required, errors, variants
                 </option>
               ))}
             </select>
-            {getErrorMessage() && <p className="text-red-500 text-xs mt-1">{getErrorMessage()}</p>}
+            
           </div>
         )}
       />

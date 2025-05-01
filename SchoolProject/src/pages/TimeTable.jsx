@@ -47,12 +47,26 @@ const Timetable = () => {
           const uniquePeriods = [...new Set(normalizedData.map(item => item.period))]
             .filter(p => p)
             .sort((a, b) => {
-              // Parse start time from period (e.g., "9:00-9:45" -> "9:00")
+              // Parse start time from period (e.g., "9:00AM-9:45AM" or "9:00-9:45")
               const getStartTime = (period) => {
                 const [start] = period.split('-').map(s => s.trim());
-                const [hours, minutes] = start.split(':').map(Number);
+                let hours, minutes;
+                
+                // Handle AM/PM format
+                if (start.includes('AM') || start.includes('PM')) {
+                  const isPM = start.includes('PM');
+                  const cleanTime = start.replace(/(AM|PM)/i, '').trim();
+                  [hours, minutes = 0] = cleanTime.split(':').map(Number);
+                  if (isPM && hours !== 12) hours += 12; // Convert PM to 24-hour
+                  if (!isPM && hours === 12) hours = 0; // Convert 12 AM to 0
+                } else {
+                  // Assume 24-hour format
+                  [hours, minutes = 0] = start.split(':').map(Number);
+                }
+                
                 return hours * 60 + minutes; // Convert to minutes for comparison
               };
+              
               return getStartTime(a) - getStartTime(b);
             });
           console.log("Unique Periods:", uniquePeriods);
@@ -143,7 +157,7 @@ const Timetable = () => {
                     const entry = timetables.find(
                       (t) => t.className === className.toLowerCase() && t.period === period
                     );
-                    console.log(`Checking: className=${className.toLowerCase()}, period=${period}, entry=`, entry); // Debug
+                    
                     return (
                       <td key={`${className}-${period}`} className="table-cell">
                         {entry ? (

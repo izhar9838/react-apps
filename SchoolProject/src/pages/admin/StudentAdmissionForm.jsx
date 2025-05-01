@@ -896,15 +896,14 @@ const Field = ({ label, name, control, type, required, validate, autoComplete, v
     <Controller
       name={name}
       control={control}
-      rules={{ required: required ? `${label} is required` : false, validate }}
+      rules={{ required: required , validate }}
       render={({ field }) => (
         <input
           {...field}
           type={type}
           id={name.replace(".", "-")}
           autoComplete={autoComplete || "off"}
-          className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
-            errors[name.split(".")[0]]?.[name.split(".")[1]] ? "border-red-500" : "border-gray-300"
+          className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm "border-gray-300"
           }`}
         />
       )}
@@ -924,7 +923,7 @@ const ImageField = ({ label, name, control, handleImageChange, imagePreview, req
       <Controller
         name={name}
         control={control}
-        rules={{ required: required ? `${label} is required` : false }}
+        rules={{ required: required  }}
         render={({ field: { onChange, value, ...field } }) => (
           <div>
             <input
@@ -971,8 +970,7 @@ const SelectField = ({ label, name, control, options, required, variants, errors
         <select
           {...field}
           id={name.replace(".", "-")}
-          className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm ${
-            errors[name.split(".")[0]]?.[name.split(".")[1]] ? "border-red-500" : "border-gray-300"
+          className={`w-full p-1.5 md:p-2 border rounded-md text-xs md:text-sm  "border-gray-300"
           }`}
         >
           <option value="">Select {label}</option>
