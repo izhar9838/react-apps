@@ -66,7 +66,7 @@ const BlogForm = () => {
         image: imageBase64,
       };
 
-      await axios.post('http://localhost:9090/api/teacher/postBlog', payload, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/teacher/postBlog`, payload, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,

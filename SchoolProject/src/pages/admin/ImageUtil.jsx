@@ -114,7 +114,7 @@ const useUsernameCheck = (username,debounceMs = 500) => {
         setUsernameStatus((prev) => ({ ...prev, isChecking: true }));
         const token = localStorage.getItem("authToken");
         const response = await axios.post(
-          "http://localhost:9090/api/admin/check-username",
+          `${import.meta.env.VITE_BACKEND_URL}/api/admin/check-username`,
           { username: usernameToCheck },
           {
             headers: {

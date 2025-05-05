@@ -34,7 +34,7 @@ const BlogDetail = () => {
     }
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:9090/api/public/blog/${id}`);
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/blog/${id}`);
       setBlog({
         ...response.data,
         image: response.data.image

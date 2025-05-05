@@ -69,7 +69,7 @@ const ChangePassword = () => {
         };
 
         const response = await axios.patch(
-          "http://localhost:9090/api/public/change-password",
+          `${import.meta.env.VITE_BACKEND_URL}/api/public/change-password`,
           payload,
           {
             headers: {

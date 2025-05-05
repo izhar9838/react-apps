@@ -33,7 +33,7 @@ const AnnouncementForm = () => {
   const onSubmit = async (data) => {
     try {
       const token = localStorage.getItem('authToken');
-      await axios.post('http://localhost:9090/api/admin/createAnnoucement', data, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/createAnnoucement`, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

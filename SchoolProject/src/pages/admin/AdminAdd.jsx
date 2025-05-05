@@ -206,7 +206,7 @@ function AdminAdd() {
 
       const authToken = localStorage.getItem("authToken");
 
-      const response = await axios.post("http://localhost:9090/api/admin/add-admin", formData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/add-admin`, formData, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,

@@ -285,7 +285,7 @@ const TeacherEnroll = () => {
           throw new Error("Authentication token not found");
         }
         const response = await axios.post(
-          "http://localhost:9090/api/admin/enrollTeacher",
+          `${import.meta.env.VITE_BACKEND_URL}/api/admin/enrollTeacher`,
           teacherData,
           {
             headers: {

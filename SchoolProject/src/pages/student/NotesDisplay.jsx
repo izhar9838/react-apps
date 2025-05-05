@@ -35,7 +35,7 @@ const NotesDisplay = () => {
       const token = localStorage.getItem('authToken');
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:9090/api/student/getNotes', {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/student/getNotes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('API Response:', response.data);

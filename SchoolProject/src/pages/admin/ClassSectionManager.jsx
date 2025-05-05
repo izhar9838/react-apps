@@ -18,7 +18,7 @@ const ClassSectionManager = () => {
   const fetchClasses = async () => {
     const token = localStorage.getItem('authToken');
     try {
-      const response = await axios.get("http://localhost:9090/api/admin/classes", {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/admin/classes`, {
         headers: { "Authorization": `Bearer ${token}` },
       });
       const fetchedClasses = Array.isArray(response.data) ? response.data : [];
@@ -36,7 +36,7 @@ const ClassSectionManager = () => {
   const fetchSections = async (className) => {
     const token = localStorage.getItem('authToken');
     try {
-      const response = await axios.get(`http://localhost:9090/api/admin/classes/${className}/sections`, {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/admin/classes/${className}/sections`, {
         headers: { "Authorization": `Bearer ${token}` },
       });
       setSections(Array.isArray(response.data) ? response.data : []);
@@ -87,7 +87,7 @@ const ClassSectionManager = () => {
 
     const token = localStorage.getItem('authToken');
     try {
-      await axios.post(`http://localhost:9090/api/admin/classes/${selectedClass}/sections`, sectionData, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/classes/${selectedClass}/sections`, sectionData, {
         headers: { "Authorization": `Bearer ${token}` },
       });
       fetchSections(selectedClass);
@@ -113,7 +113,7 @@ const ClassSectionManager = () => {
 
     const token = localStorage.getItem('authToken');
     try {
-      await axios.put(`http://localhost:9090/api/admin/classes/${selectedClass}/sections/${section.name}`, 
+      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/admin/classes/${selectedClass}/sections/${section.name}`, 
         { ...section, capacity },
         { headers: { "Authorization": `Bearer ${token}` } }
       );

@@ -19,7 +19,7 @@ const StudentProfile = () => {
       const token = localStorage.getItem('authToken');
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:9090/api/student/getprofile`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/student/getprofile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStudentData(response.data);

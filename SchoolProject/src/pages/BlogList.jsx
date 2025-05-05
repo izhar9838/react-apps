@@ -24,7 +24,7 @@ const BlogList = () => {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:9090/api/public/getBlogs'); // Added Axios request
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/getBlogs`); // Added Axios request
         const validatedBlogs = response.data.map(blog => {
           let image = null;
           if (blog.image) {

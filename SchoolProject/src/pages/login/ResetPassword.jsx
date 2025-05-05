@@ -25,7 +25,7 @@ function ResetPassword() {
     }
 
     try {
-      const response = await axios.post('http://localhost:9090/api/public/reset-password', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/public/reset-password`, {
         otp: otp, // Use OTP as token
         email, // Include email in the request
         newPassword,

@@ -87,7 +87,7 @@ const StudentAdmissionForm = () => {
   const fetchClasses = async () => {
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.get("http://localhost:9090/api/admin/classes", {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/admin/classes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setClasses(Array.isArray(response.data) ? response.data : []);
@@ -208,7 +208,7 @@ const StudentAdmissionForm = () => {
         };
         const token = localStorage.getItem("authToken");
         const response = await axios.post(
-          "http://localhost:9090/api/admin/enrollStudent",
+          `${import.meta.env.VITE_BACKEND_URL}/api/admin/enrollStudent`,
           studentData,
           {
             headers: {

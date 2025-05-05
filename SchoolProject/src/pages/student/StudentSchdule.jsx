@@ -31,7 +31,7 @@ const StudentSchedule = () => {
       try {
         const startTime = Date.now();
         const response = await axios.get(
-          `http://localhost:9090/api/student/schedule`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/student/schedule`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

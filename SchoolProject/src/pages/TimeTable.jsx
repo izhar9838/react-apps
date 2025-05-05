@@ -29,7 +29,7 @@ const Timetable = () => {
     const fetchTimetable = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:9090/api/public/getTimeTable");
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/getTimeTable`);
         console.log("API Response:", response.data);
         if (Array.isArray(response.data) && response.data.length > 0) {
           // Normalize data

@@ -16,7 +16,7 @@ const AnnouncementsPage = () => {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const response = await axios.get("http://localhost:9090/api/public/announcements", {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/announcements`, {
 
         });
         setAnnouncements(response.data || []);

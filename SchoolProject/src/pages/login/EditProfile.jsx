@@ -77,7 +77,7 @@ const EditProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:9090/api/public/edit-profile", {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/edit-profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { fullName, email, phoneNumber, image } = response.data;
@@ -205,7 +205,7 @@ const EditProfile = () => {
         console.log("Profile Data:", profileData);
 
         const response = await axios.put(
-          "http://localhost:9090/api/public/updateProfile",
+          `${import.meta.env.VITE_BACKEND_URL}/api/public/updateProfile`,
           profileData,
           {
             headers: {

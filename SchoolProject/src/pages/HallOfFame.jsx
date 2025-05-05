@@ -29,7 +29,7 @@ const HallOfFame = () => {
   const fetchHallOfFameData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:9090/api/public/getHallOfFame");
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/getHallOfFame`);
       setHallOfFameData(response.data);
       setError(null);
     } catch (err) {

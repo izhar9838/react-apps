@@ -33,7 +33,7 @@ const FeeSubmissionForm = () => {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.post("http://localhost:9090/api/admin/feesSubmission", feesData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/feesSubmission`, feesData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

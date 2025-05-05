@@ -191,7 +191,7 @@ const CreateHallOfFame = () => {
       };
       const token = localStorage.getItem("authToken");
 
-      await axios.post("http://localhost:9090/api/admin/add-hallOfFame", payload, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/add-hallOfFame`, payload, {
         headers: {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),

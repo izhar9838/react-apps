@@ -46,7 +46,9 @@ const LoginForm = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post('http://localhost:9090/api/public/login', data, {
+      // console.log(`Here :${process.env.BACKNEND_URL}`);
+      
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/public/login`, data, {
         headers: {
           'Content-Type': 'application/json',
         }

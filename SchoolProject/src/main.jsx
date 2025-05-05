@@ -44,6 +44,7 @@ import StudentSchedule from './pages/student/StudentSchdule.jsx';
 import AnnouncementForm from './pages/admin/AnnouncementForm.jsx';
 import EventAlbum from './pages/EventAlbum.jsx';
 import AnnouncementsPage from './pages/AnnouncementsPage.jsx';
+import WordLikeEditor from './pages/WordLikeEditor.jsx';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -65,6 +66,7 @@ const router = createBrowserRouter(
         }
       />
       <Route path="/hall-of-fame" element={<HallOfFame />} />
+      <Route path="/editor" element={<WordLikeEditor />} />
       <Route path="/time-table" element={<Timetable />} />
       <Route path="/blog-news" element={<BlogList />} />
       <Route path="/accountInfo" element={<AccountPage />} />

@@ -14,7 +14,7 @@ function ForgotPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:9090/api/public/forgot-password', { email });
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/public/forgot-password`, { email });
       setMessage(response.data);
       
       setStep(2); // Move to OTP verification step
@@ -27,7 +27,7 @@ function ForgotPassword() {
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:9090/api/public/verify-otp', { email, otp });
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/public/verify-otp`, { email, otp });
       setMessage(response.data);
       navigate(`/reset-password/${otp}`, { state: { email } });
     } catch (error) {

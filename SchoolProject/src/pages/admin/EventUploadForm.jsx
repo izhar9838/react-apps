@@ -173,7 +173,7 @@ const EventUploadForm = () => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.post('http://localhost:9090/api/events', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/events`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

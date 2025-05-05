@@ -19,7 +19,7 @@ const AccountPage = () => {
     const fetchAccountDetails = async () => {
       const token = localStorage.getItem("authToken");
       try {
-        const response = await axios.get("http://localhost:9090/api/public/accountInfo", {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/accountInfo`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);

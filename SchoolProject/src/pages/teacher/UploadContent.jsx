@@ -26,7 +26,7 @@ function UploadContent() {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get("http://localhost:9090/api/teacher/classes", {
+        const response = await axios.get(`${process.env.BACKNEND_URL}/api/teacher/classes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         // Expecting response.data to be an array of objects with id, name, description
@@ -67,7 +67,7 @@ function UploadContent() {
       };
       console.log(payload);
 
-      await axios.post("http://localhost:9090/api/teacher/upload-notes", payload, {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/teacher/upload-notes`, payload, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
