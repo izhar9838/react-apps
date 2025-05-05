@@ -11,4 +11,18 @@ export default defineConfig({
       plugins: [tailwindcss, autoprefixer], // Use imported modules
     },
   },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom', 'react-redux'],
+          cropper: ['react-advanced-cropper'],
+          animations: ['framer-motion'],
+          forms: ['react-hook-form'],
+          http: ['axios']
+        }
+      }
+    }
+  }
 });

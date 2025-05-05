@@ -76,6 +76,7 @@ const EditProfile = () => {
   // Fetch profile data on mount (unchanged)
   useEffect(() => {
     const fetchProfile = async () => {
+
       try {
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/public/edit-profile`, {
           headers: { Authorization: `Bearer ${token}` },
